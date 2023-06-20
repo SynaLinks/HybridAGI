@@ -52,16 +52,12 @@ def main():
                     description='The AI used to create a dataset of tasks for the Hybrid AGI',
                     epilog='See https://github.com/SynaLinks/HybridAGI for more information.')
 
-    parser.add_argument('--private',
-                    action='store_true',
-                    help="Private mode (uses LocalAI instead of OpenAI's server).")
-
     args = parser.parse_args()
 
     cfg = Config()
     embedding = OpenAIEmbeddings()
 
-    if args.private is True:
+    if cfg.private_mode is True:
         llm = ChatOpenAI(temperature=cfg.temperature, model_name=cfg.fast_llm_model, openai_api_base=cfg.openai_base_path)
     else:
         llm = ChatOpenAI(temperature=cfg.temperature, model_name=cfg.fast_llm_model)
@@ -84,6 +80,6 @@ def main():
     expertise_domain = input(f"{Fore.YELLOW}> {Style.RESET_ALL}")
     trainer.run(expertise_domain)
     filename = expertise_domain.lower().replace(" ", "_")
-    output_path = os.path.join(os.path.join(cfg.downloads_directory, "datasets"), filename)+".txt"
+    output_path = os.path.join(cfg.downloads_directory, filename)+".txt"
     print(f"{Fore.YELLOW}[*] Saved into: {output_path} {Style.RESET_ALL}")
     trainer.save(output_path)

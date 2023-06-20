@@ -51,10 +51,7 @@ class VirtualShell(BaseModel):
         """Execute a shell-like command"""
         if len(args) > 0:
             cmd = args[0]
-            if len(args) > 1:
-                arguments = args[1:]
-            else:
-                arguments = []
+            arguments = args[1:]
             if cmd in self.commands_map.keys():
                 return self.commands_map[cmd].run(arguments, self.filesystem.context)
             else:

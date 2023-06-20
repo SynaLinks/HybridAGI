@@ -1,6 +1,8 @@
+archives/datasets/*.txt
+.zip
 htmlcov/
 .env
-.chainlit
+.chainlit/.*.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -2,22 +2,25 @@ import os
 import zipfile
 from colorama import Fore, Style
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Callable
 from pydantic import BaseModel, Extra, Field, root_validator
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 from hybrid_agi.filesystem.filesystem import VirtualFileSystem, basename, join, dirname
 from hybrid_agi.filesystem.text_editor import VirtualTextEditor
 from hybrid_agi.parsers.path import PathOutputParser
+from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
 
 from inspect import signature
 from langchain.tools.base import create_schema_from_function
 
-class Upload2UserTool(StructuredTool):
+class UploadTool(BaseTool):
+    hybridstore: RedisGraphHybridStore
     filesystem: VirtualFileSystem
     text_editor: VirtualTextEditor
-    downloads_directory:str = ""
+    downloads_directory:str
     path_parser = PathOutputParser()
+    func: Callable
 
     class Config:
         """Configuration for this pydantic object."""
@@ -26,10 +29,11 @@ class Upload2UserTool(StructuredTool):
 
     def __init__(
             self,
+            hybridstore: RedisGraphHybridStore,
             filesystem: VirtualFileSystem,
             text_editor: VirtualTextEditor,
             downloads_directory: str,
-            name:str = "Upload2User",
+            name:str = "Upload",
             description:str =\
     """
     Usefull to send a folder or file for testing and inspection.
@@ -41,11 +45,11 @@ class Upload2UserTool(StructuredTool):
         super().__init__(
             name = name,
             description = description,
+            hybridstore = hybridstore,
             filesystem = filesystem,
             text_editor = text_editor,
             downloads_directory = downloads_directory,
-            func = func,
-            args_schema = create_schema_from_function(f"{name}Schema", func)
+            func = func
         )
 
     def upload(self, path:str) -> str:
@@ -68,9 +72,9 @@ class Upload2UserTool(StructuredTool):
         """
         if not self.text_editor.exists(path):
             raise ValueError("No such file or directory.")
-        name = datetime.now().strftime("%d-%m-%Y_%H:%M:%S_"+ basename(path))
+        name = datetime.now().strftime("%d-%m-%Y_%H:%M:%S_"+basename(path))
         filename = os.path.join(self.downloads_directory, name)
-        f = zipfile.ZipFile(filename, mode='a')
+        f = zipfile.ZipFile(filename+".zip", mode='a')
         if self.text_editor.is_file(path):
             file_content = self.text_editor.get_document(path)
             f.writestr(path, file_content)
@@ -95,3 +99,9 @@ class Upload2UserTool(StructuredTool):
             document_path = join(folder_path, basename(document_name))
             file_content = self.text_editor.get_document(document_path)
             zip_file.writestr(document_path, file_content)
+
+    def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        return self.upload(query.strip())
+
+    def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        return self._run(query, run_manager)

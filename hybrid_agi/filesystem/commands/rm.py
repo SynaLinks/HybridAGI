@@ -4,8 +4,8 @@ from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext
 
 class Remove(BaseShellCommand):
-    name = "rm"
-    description = "remove the input file"
+    name:str = "rm"
+    description:str = "remove the input file"
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to remove a file"""

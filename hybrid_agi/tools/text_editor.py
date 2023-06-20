@@ -1,3 +1,4 @@
+import shlex
 from typing import Optional, Type, List, Tuple
 from pydantic import BaseModel, Extra, Field, root_validator
 from langchain.base_language import BaseLanguageModel
@@ -11,7 +12,23 @@ from langchain.chains.llm import LLMChain
 from inspect import signature
 from langchain.tools.base import create_schema_from_function
 
-class WriteFileTool(StructuredTool):
+def _parse_output(output:str):
+    try:
+        args = shlex.split(output)
+    except Exception as err: 
+        if "No closing quotation" in str(err):
+            try:
+                args = shlex.split('"'+output+'"')
+            except Exception as err:
+                raise err
+        else:
+            raise err
+    path = args[0]
+    path = path.replace(",", "")
+    data = args[1]
+    return path, data
+
+class WriteFileTool(BaseTool):
     filesystem: VirtualFileSystem
     text_editor: VirtualTextEditor
     path_parser = PathOutputParser()
@@ -25,6 +42,7 @@ class WriteFileTool(StructuredTool):
     """
     Usefull when you want to write into a new file.
     The Input should be the target path followed by the data to write.
+    Both parameters needs to be double quoted.
     """
         ):
         func = self.write_file
@@ -34,7 +52,6 @@ class WriteFileTool(StructuredTool):
             description = description,
             filesystem = filesystem,
             text_editor = text_editor,
-            func = func,
             args_schema = create_schema_from_function(f"{name}Schema", func)
         )
 
@@ -48,17 +65,18 @@ class WriteFileTool(StructuredTool):
         try:
             path = self.path_parser.parse(path)
             path = self.filesystem.context.eval_path(path)
-            return self.text_editor.write_document(path, data)
+            return self.text_editor.write_document(path, text)
         except Exception as err:
             return str(err)
 
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        try:
-            super()._run(query, run_manager)
-        except Exception as err:
-            return str(err)
+        path, data = _parse_output(query)
+        return self.write_file(path, data)
 
-class UpdateFileTool(StructuredTool):
+    def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        return self._run(query, run_manager)
+
+class UpdateFileTool(BaseTool):
     filesystem: VirtualFileSystem
     text_editor: VirtualTextEditor
     path_parser = PathOutputParser()
@@ -77,7 +95,7 @@ class UpdateFileTool(StructuredTool):
     """
     Usefull when you want to modify an existing file using your own LLM.
     The Input should be the target path followed by the modifications to make.
-    Make sure to include you goal/instruction and every necessary modification to make.
+    Both parameters needs to be double quoted.
     """
         ):
         func = self.update_file
@@ -86,7 +104,6 @@ class UpdateFileTool(StructuredTool):
             description = description,
             filesystem = filesystem,
             text_editor = text_editor,
-            func = func,
             args_schema = create_schema_from_function(f"{name}Schema", func)
         )
 
@@ -94,20 +111,20 @@ class UpdateFileTool(StructuredTool):
         try:
             path = self.path_parser.parse(path)
             path = self.filesystem.context.eval_path(path)
-            return self.text_editor.update_document(path, data)
+            return self.text_editor.update_document(path, modifications)
         except Exception as err:
             return str(err)
 
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        try:
-            super()._run(query, run_manager)
-        except Exception as err:
-            return str(err)
+        path, data = _parse_output(query)
+        return self.update_file(path, data)
 
-class ReadFileTool(StructuredTool):
+    def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        return self._run(query, run_manager)
+
+class ReadFileTool(BaseTool):
     filesystem: VirtualFileSystem
     text_editor: VirtualTextEditor
-    
     path_parser = PathOutputParser()
 
     class Config:
@@ -127,14 +144,11 @@ class ReadFileTool(StructuredTool):
     Display one chunk at a time, use multiple times with the same target to scroll.
     """
         ):
-        func = self.read_file
         super().__init__(
             name = name,
             description = description,
             filesystem = filesystem,
-            text_editor = text_editor,
-            func = func,
-            args_schema = create_schema_from_function(f"{name}Schema", func)
+            text_editor = text_editor
         )
 
     def read_file(self, path: str) -> str:
@@ -146,7 +160,7 @@ class ReadFileTool(StructuredTool):
             return str(err)
 
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        try:
-            super()._run(query, run_manager)
-        except Exception as err:
-            return str(err)
+        return self.read_file(query.strip())
+
+    def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        return self._run(query, run_manager)

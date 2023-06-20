@@ -4,8 +4,8 @@ from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext, dirname
 
 class MakeDirectory(BaseShellCommand):
-    name = "mkdir"
-    description = "make a new directory"
+    name:str = "mkdir"
+    description:str = "make a new directory"
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to create a directory"""

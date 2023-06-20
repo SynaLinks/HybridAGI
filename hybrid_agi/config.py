@@ -51,7 +51,6 @@ class Config():
         self.openai_base_path = os.environ.get('OPENAI_API_BASE', 'http://localhost:8080/v1')
 
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "archives")
-        self.downloads_directory = os.getenv("DOCUMENTATION_DIRECTORY", "")
 
         self.user_language = os.getenv("USER_LANGUAGE", "english")
         self.user_expertise = os.getenv("USER_EXPERTISE", "Nothing")

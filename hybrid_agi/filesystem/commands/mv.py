@@ -4,8 +4,8 @@ from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext, dirname
 
 class Move(BaseShellCommand):
-    name = "mv"
-    description = "move the target file or folder into the destination file"
+    name:str = "mv"
+    description:str = "move the target file or folder to destination"
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to move a file or folder"""

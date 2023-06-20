@@ -4,8 +4,8 @@ from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext
 
 class ChangeDirectory(BaseShellCommand):
-    name = "cd"
-    description = "change the current working directory"
+    name :str = "cd"
+    description :str = "change the current working directory"
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to change directory"""

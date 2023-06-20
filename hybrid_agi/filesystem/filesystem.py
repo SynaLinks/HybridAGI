@@ -124,14 +124,15 @@ class VirtualFileSystem(FileSystemUtility):
             self,
             hybridstore: RedisGraphHybridStore
         ):
+        context = FileSystemContext()
         super().__init__(
             hybridstore = hybridstore,
-            context = FileSystemContext()
+            context = context
         )
         # Create the root & home directory
         self.hybridstore.metagraph.query('MERGE (:Folder {name:"/"})')
         # Create the home directory
         self.create_folder("/home")
-        self.create_folder("/home/hybrid_agi")
-        self.create_folder("/home/hybrid_agi/Workspace")
-        self.create_folder("/home/hybrid_agi/Research")
+        self.create_folder("/home/user")
+        self.create_folder("/home/user/Workspace")
+        self.create_folder("/home/user/Research")

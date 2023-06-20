@@ -35,6 +35,7 @@ SELF_CHAT_TEMPLATE=\
 
 The following is a conversation with yourself.
 You MUST speak in {language}.
+Critisize and show your work.
 
 Current conversation:
 
@@ -55,8 +56,6 @@ class SelfChatTool(BaseTool):
     description: str =\
     """
     Usefull to create textual content using your own LLM.
-    The Input should include the goal/instruction and every necessary information.
-    The Observation is from your own perspective, adressed to you.
     """
     verbose = True
 

@@ -17,9 +17,6 @@ If you have any suggestions for additional features, we encourage you to open an
 
 - **General purpose and collaborative Hierarchical Task Network (HTN) planner:** The AGI system learns and memorizes structured plans as graphs, resulting in improved speed, efficiency, and better collaborative problem-solving capabilities. This feature allows the system to tackle complex tasks and adapt its planning based on acquired knowledge and experience.
 
-Example of generated plan:
-![plan_example](img/plan.png)
-
 - **Virtual filesystem:** Leveraging the power of the metagraph, the AGI system can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
 
 - **Local hybrid storage:** Hybrid AGI prioritizes your data privacy and security. With local hybrid storage, you have complete ownership and control over your data, ensuring that sensitive information remains protected.

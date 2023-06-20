@@ -1,3 +1,4 @@
+import json
 from typing import Optional, List, Dict, Any
 from langchain.schema import Document
 from hybrid_agi.filesystem.filesystem import FileSystemUtility, dirname
@@ -162,17 +163,22 @@ class VirtualTextEditor(FileSystemUtility):
         if self.current_consulted_document != "":
             if self.current_consulted_document == path:
                 content_key = self.get_next(self.last_content_consulted)
-                if content_key != "":
+                next_key = self.get_next(content_key)
+                if next_key != "":
                     self.last_content_consulted = content_key
-                    return self.hybridstore.get_content(content_key)
+                    return str(self.hybridstore.get_content(content_key)) + "\n [...]"
                 else:
                     self.current_consulted_document = ""
-                    self.last_content_consulted = ""
-                    return "End Of File"
+                    self.last_content_consulted = content_key
+                    return str(self.hybridstore.get_content(content_key)) + "\n [End Of File]"
         content_key = self.get_beginning_of_file(path)
         self.current_consulted_document = path
         self.last_content_consulted = content_key
         return self.hybridstore.get_content(content_key)
+
+    def _read_content(self, path):
+        """Extracts the summary and knowledge graph"""
+        pass
 
     def get_document(self, path:str) -> str:
         """

@@ -32,11 +32,11 @@ from hybrid_agi.tools.text_editor import (
 )
 
 from hybrid_agi.tools.self_chat import SelfChatTool
-from hybrid_agi.tools.ui.upload import UIUpload2UserTool
+from hybrid_agi.tools.ui.upload import UIUploadTool
 
 from hybrid_agi.tools.ui.ask_user import UIAskUserTool
 
-from hybrid_agi.agents.ui.planners import UIHTNPlanner
+from hybrid_agi.agents.planners.htn_planner import HTNPlanner
 
 cfg = Config()
 
@@ -99,6 +99,14 @@ def load():
         verbose = cfg.debug_mode
     )
 
+    # if cfg.wipe_redis_on_start:
+    #     index = VirtualFileSystemIndexWrapper(
+    #         hybridstore = hybridstore,
+    #         filesystem = virtual_filesystem,
+    #         text_editor = virtual_text_editor
+    #     )
+    #     index.add_folders(["../HybridAGI"], folder_names=["/home/user/HybridAGI"])
+
     commands = [
         ChangeDirectory(hybridstore=hybridstore),
         ListDirectory(hybridstore=hybridstore),
@@ -134,10 +142,11 @@ def load():
         text_editor=virtual_text_editor
     )
     
-    upload = UIUpload2UserTool(
+    upload = UIUploadTool(
+        hybridstore = hybridstore,
         filesystem = virtual_filesystem,
         text_editor = virtual_text_editor,
-        downloads_directory=cfg.downloads_directory
+        downloads_directory = cfg.downloads_directory
     )
 
     if cfg.auto_mode is False:
@@ -151,7 +160,7 @@ def load():
         primitives = []
         cl.Message(content="WARNING ! Autonomous mode enabled.").send()
 
-    primitives = [
+    primitives.extend([
         Tool(
             name=write_file.name,
             func=write_file.run,
@@ -182,9 +191,9 @@ def load():
             func=shell_tool.run,
             description=shell_tool.description
         )
-    ]
+    ])
 
-    planner = UIHTNPlanner(
+    planner = HTNPlanner(
         hybridstore,
         llm,
         primitives,
@@ -200,7 +209,3 @@ def load():
 def run(agent, input):
     res = agent.run(input)
     cl.Message(content=res).send()
-
-# @cl.langchain_postprocess
-# def postprocess(output: str):
-#     cl.Message(content=output).send()

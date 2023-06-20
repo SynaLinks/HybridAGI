@@ -4,14 +4,15 @@ from typing import Optional
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
 
 from hybrid_agi.parsers.path import PathOutputParser
-from hybrid_agi.tools.upload import Upload2UserTool
+from hybrid_agi.tools.upload import UploadTool
 
 
-class UIUpload2UserTool(Upload2UserTool):
+class UIUploadTool(UploadTool):
+
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        parser = PathOutputParser()
-        path = parser.parse(query)
         try:
+            path = self.path_parser.parse(query)
+            path = self.filesystem.context.eval_path(path)
             filename = self.zip_and_download(path)
             absolute_path = os.path.abspath(filename)
             cl.Message(
@@ -19,3 +20,4 @@ class UIUpload2UserTool(Upload2UserTool):
             ).send()
         except Exception as err:
             return err
+    
