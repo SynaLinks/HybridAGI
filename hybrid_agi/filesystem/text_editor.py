@@ -1,3 +1,5 @@
+"""The virtual text editor. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 import json
 from typing import Optional, List, Dict, Any
 from langchain.schema import Document
@@ -81,14 +83,15 @@ class VirtualTextEditor(FileSystemUtility):
         """Method to write a document."""
         if self.exists(path):
             return "Already exist, cannot override."
+        self.create_document(path)
         texts = []
         folder = dirname(path)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
         sub_docs = text_splitter.split_documents([Document(page_content=text, metadata=metadata)])
         texts = [d.page_content for d in sub_docs]
         metadatas = [d.metadata for d in sub_docs]
-        self.create_document(path)
         keys = self.hybridstore.add_texts(texts, metadatas=metadatas)
+        self.create_document(path)
         for idx, key in enumerate(keys):
             self.hybridstore.metagraph.query('MERGE (n:Content {name:"'+key+'"})')
             self.hybridstore.metagraph.query('MATCH (n:Document {name:"'+path+'"}), (m:Content {name:"'+key+'"}) MERGE (n)-[:CONTAINS]->(m)')
@@ -166,19 +169,19 @@ class VirtualTextEditor(FileSystemUtility):
                 next_key = self.get_next(content_key)
                 if next_key != "":
                     self.last_content_consulted = content_key
-                    return str(self.hybridstore.get_content(content_key)) + "\n [...]"
+                    return str(self.hybridstore.get_content(content_key)) + "\n[...]"
                 else:
                     self.current_consulted_document = ""
                     self.last_content_consulted = content_key
-                    return str(self.hybridstore.get_content(content_key)) + "\n [End Of File]"
+                    return str(self.hybridstore.get_content(content_key)) + "\n[End Of File]"
         content_key = self.get_beginning_of_file(path)
         self.current_consulted_document = path
         self.last_content_consulted = content_key
-        return self.hybridstore.get_content(content_key)
+        return str(self.hybridstore.get_content(content_key)) + "\n[...]"
 
     def _read_content(self, path):
         """Extracts the summary and knowledge graph"""
-        pass
+        raise NotImplementedError("Not implemented yet.")
 
     def get_document(self, path:str) -> str:
         """

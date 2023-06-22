@@ -1,3 +1,5 @@
+"""The pwd command. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 from typing import List
 from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext

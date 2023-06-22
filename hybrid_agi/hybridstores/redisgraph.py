@@ -1,3 +1,5 @@
+"""The hybrid vector/graph storage. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 import uuid
 import numpy as np
 from typing import Callable, Type, Optional, Any, Dict

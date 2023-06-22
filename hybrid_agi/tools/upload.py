@@ -1,3 +1,5 @@
+"""The upload tool. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 import os
 import zipfile
 from colorama import Fore, Style

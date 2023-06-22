@@ -1,4 +1,4 @@
-
+"""HybridAGI's main prompts. Copyright (C) 2023 SynaLinks. License: GPLv3"""
 
 HYBRID_AGI_SELF_DESCRIPTION=\
 """

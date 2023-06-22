@@ -1,3 +1,5 @@
+"""The main app. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.embeddings import OpenAIEmbeddings
@@ -99,13 +101,13 @@ def load():
         verbose = cfg.debug_mode
     )
 
-    # if cfg.wipe_redis_on_start:
-    #     index = VirtualFileSystemIndexWrapper(
-    #         hybridstore = hybridstore,
-    #         filesystem = virtual_filesystem,
-    #         text_editor = virtual_text_editor
-    #     )
-    #     index.add_folders(["../HybridAGI"], folder_names=["/home/user/HybridAGI"])
+    if cfg.wipe_redis_on_start:
+        index = VirtualFileSystemIndexWrapper(
+            hybridstore = hybridstore,
+            filesystem = virtual_filesystem,
+            text_editor = virtual_text_editor
+        )
+        index.add_folders(["../HybridAGI"], folder_names=["/home/user/HybridAGI"])
 
     commands = [
         ChangeDirectory(hybridstore=hybridstore),

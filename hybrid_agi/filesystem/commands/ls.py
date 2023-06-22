@@ -1,3 +1,5 @@
+"""The ls command. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 import os
 from typing import List
 from hybrid_agi.filesystem.commands.base import BaseShellCommand

@@ -1,3 +1,5 @@
+"""The tools related to the virtual text editor. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 import shlex
 from typing import Optional, Type, List, Tuple
 from pydantic import BaseModel, Extra, Field, root_validator

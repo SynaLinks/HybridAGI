@@ -4,6 +4,9 @@ The meta knowledge graph, often referred to as the metagraph, is a fundamental s
 
 To visualize it, open you browser for RedisInsight, open RedisGraph tab and and look for the `graph:metagraph` in the graph list.
 
+![HybridAGI's metagraph](img/metagraph.png)
+The metagraph of HybridAGI containing its own codebase, in orange is the folders, in yellow the documents and in blue its content.
+
 ## RedisGraph schema
 ### Labels:
 - Folder: Represents a folder.

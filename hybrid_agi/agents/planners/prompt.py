@@ -1,18 +1,4 @@
-## The collaborative LLM based HTN planner.
-## Copyright (C) 2023 SynaLinks.
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program. If not, see <https://www.gnu.org/licenses/>.
+"""The prompts for the LLM based HTN planner. Copyright (C) 2023 SynaLinks. License: GPLv3"""
 
 from langchain.prompts.prompt import PromptTemplate
 
@@ -48,11 +34,11 @@ Please adhere to the following instructions:
 - You should always AskUser to specify the goal/objective.
 - Feel free to Plannify if the task is challenging.
 - Organize your work and projects into relevant folders.
-- Check the filesystem before any operation on a file using the VirtualShell.
+- Check the filesystem before any operation by listing the files using the VirtualShell.
 - Save important data into files, it is your only long-term memory.
 - Feel free to navigate into the filesystem using the VirtualShell.
 - You must think, act and speak in {language} language.
-- Always send your production for inspection and testing using Upload.
+- Always send your production for inspection and testing after modification using Upload.
 - Your FinalAnswer should contains a description of your actions including the location of modified files, mistakes and success in {language}.
 - Reflect on your interactions and your mistakes, critisize and show your work.
 - Perform ONLY your assigned task.

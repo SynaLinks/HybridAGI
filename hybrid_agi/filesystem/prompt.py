@@ -1,3 +1,5 @@
+"""The prompt for updating text. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 UPDATE_TEXT_TEMPLATE=\
 """
 Please Output update the input Text to integrate the following Modifications if relevant.

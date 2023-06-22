@@ -1,3 +1,5 @@
+"""The base class for the virtual shell commands. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 import os
 import abc
 from typing import Optional, List

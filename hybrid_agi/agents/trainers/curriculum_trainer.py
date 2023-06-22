@@ -1,3 +1,5 @@
+"""The curriculum trainer. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+
 from colorama import Fore
 from colorama import Style
 from langchain.base_language import BaseLanguageModel

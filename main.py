@@ -1,4 +1,3 @@
-from hybrid_agi.main import main
+"""The main entry point. Copyright (C) 2023 SynaLinks. License: GPLv3"""
 
-if __name__ == "__main__":
-    main()
+from hybrid_agi.app import start, run, load
