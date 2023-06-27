@@ -22,7 +22,7 @@ class GraphProgramInterpreter(BaseModel):
     allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
     language: str = "English"
-    monitoring: bool = False,
+    monitoring: bool = True
     verbose: bool = True
 
     class Config:
@@ -39,7 +39,7 @@ class GraphProgramInterpreter(BaseModel):
             tools:List[Tool] = [],
             max_iteration: int = 50,
             language: str = "English",
-            monitoring: bool = False,
+            monitoring: bool = True,
             verbose: bool = True
         ):
         if program_key == "":
@@ -155,15 +155,17 @@ class GraphProgramInterpreter(BaseModel):
                 print(f"{Fore.YELLOW}{prompt}{Style.RESET_ALL}")
             elif prompt.startswith("Decision:"):
                 print(f"{Fore.BLUE}{prompt}{Style.RESET_ALL}")
+            elif prompt.startswith("Critique:"):
+                print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
             else:
                 print(f"{prompt}")
         self.prompt += "\n" + prompt
 
     def monitor(self):
         """Method to monitor the process"""
-        prompt = "You are an expert in self-reflexion. Please reflect on your actions and decisions but never answer them.\nCritique:"
+        prompt = "Critisize the above process and show your work. Without additionnal information.\nCritique:"
         critique = self.predict(prompt)
-        self.update(prompt + " " + critique)
+        self.update(f"Critique: {critique}")
 
     def clear(self):
         """Clear the prompt"""

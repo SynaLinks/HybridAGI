@@ -201,6 +201,7 @@ def load():
         tools = tools,
         language = cfg.user_language,
         max_iteration = cfg.max_iteration,
+        monitoring = cfg.monitoring,
         verbose = cfg.debug_mode
     )
     return interpreter
