@@ -82,8 +82,7 @@ class VirtualTextEditor(FileSystemUtility):
     def write_document(self, path: str, text: str, metadata: Dict[Any, Any]={}) -> str:
         """Method to write a document."""
         if self.exists(path):
-            return "Already exist, cannot override."
-        self.create_document(path)
+            return "Cannot write: Already exist, cannot override."
         texts = []
         folder = dirname(path)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
@@ -91,16 +90,19 @@ class VirtualTextEditor(FileSystemUtility):
         texts = [d.page_content for d in sub_docs]
         metadatas = [d.metadata for d in sub_docs]
         keys = self.hybridstore.add_texts(texts, metadatas=metadatas)
-        self.create_document(path)
-        for idx, key in enumerate(keys):
-            self.hybridstore.metagraph.query('MERGE (n:Content {name:"'+key+'"})')
-            self.hybridstore.metagraph.query('MATCH (n:Document {name:"'+path+'"}), (m:Content {name:"'+key+'"}) MERGE (n)-[:CONTAINS]->(m)')
-            if idx > 0:
-                self.hybridstore.metagraph.query('MATCH (n:Content {name:"'+keys[idx-1]+'"}), (m:Content {name:"'+key+'"}) MERGE (n)-[:NEXT]->(m)')
         if len(keys) > 0:
+            self.create_document(path)
+            for idx, key in enumerate(keys):
+                self.hybridstore.metagraph.query('MERGE (n:Content {name:"'+key+'"})')
+                self.hybridstore.metagraph.query('MATCH (n:Document {name:"'+path+'"}), (m:Content {name:"'+key+'"}) MERGE (n)-[:CONTAINS]->(m)')
+                if idx > 0:
+                    self.hybridstore.metagraph.query('MATCH (n:Content {name:"'+keys[idx-1]+'"}), (m:Content {name:"'+key+'"}) MERGE (n)-[:NEXT]->(m)')
             self.hybridstore.metagraph.query('MATCH (n:Document {name:"'+path+'"}), (m:Content {name:"'+keys[0]+'"}) MERGE (n)-[:BOF]->(m)')
             self.hybridstore.metagraph.query('MATCH (n:Document {name:"'+path+'"}), (m:Content {name:"'+keys[len(keys)-1]+'"}) MERGE (n)-[:EOF]->(m)')
-        return "Successfuly created file"
+            return "Successfuly created file"
+        else:
+            self.create_document(path)
+            return "Cannot write: Input text empty"
 
     def update_document(self, path:str, modifications:str) -> str:
         """Method to update a document."""
@@ -156,7 +158,7 @@ class VirtualTextEditor(FileSystemUtility):
         """
         Method to read a document.
         This method display only one content at a time.
-        Use it multiple times with the same target to scroll.
+        Use it multiple times with the same target path to scroll.
         """
         if self.exists(path):
             if self.is_folder(path):
@@ -167,21 +169,39 @@ class VirtualTextEditor(FileSystemUtility):
             if self.current_consulted_document == path:
                 content_key = self.get_next(self.last_content_consulted)
                 next_key = self.get_next(content_key)
-                if next_key != "":
-                    self.last_content_consulted = content_key
-                    return str(self.hybridstore.get_content(content_key)) + "\n[...]"
-                else:
-                    self.current_consulted_document = ""
-                    self.last_content_consulted = content_key
-                    return str(self.hybridstore.get_content(content_key)) + "\n[End Of File]"
-        content_key = self.get_beginning_of_file(path)
-        self.current_consulted_document = path
+            else:
+                content_key = self.get_beginning_of_file(path)
+                next_key = self.get_next(content_key)
+        else:
+            content_key = self.get_beginning_of_file(path)
+            next_key = self.get_next(content_key)
+        
+        if next_key != "":
+            self.current_consulted_document = path
+        else:
+            self.current_consulted_document = ""
+        content = str(self.hybridstore.get_content(content_key))
+        # self._read_content(content)
         self.last_content_consulted = content_key
-        return str(self.hybridstore.get_content(content_key)) + "\n[...]"
 
-    def _read_content(self, path):
+        if next_key != "":
+            return content + "\n...\n[Use multiple times to scroll]"
+        else:
+            return content
+
+    def _read_content(self, content_key:str):
         """Extracts the summary and knowledge graph"""
-        raise NotImplementedError("Not implemented yet.")
+        result = self.hybridstore.metagraph.query('MATCH (n:Content {name:"'+content_key+'"})-[:REPRESENTS]->(m:Graph) RETURN m')
+        if len(result.result_set) == 0:
+            content = str(self.hybridstore.get_content(content_key))
+            graph = self.graph_extractor.from_text(content)
+            self.hybridstore.metagraph.query('MATCH (n:Content {name:"'+content_key+'"}), (m:Graph {name:"'+graph.name+'"}) MERGE (m)-[:REPRESENTS]->(n)')
+
+        result = self.hybridstore.metagraph.query('MATCH (n:Content {name:"'+content_key+'"})-[:REPRESENTS]->(m:Content) RETURN m')
+        if len(result.result_set) == 0:
+            content = str(self.hybridstore.get_content(content_key))
+            summary_key = self.summary_extractor.from_text(content)
+            self.hybridstore.metagraph.query('MATCH (n:Content {name:"'+content_key+'"}), (m:Content {name:"'+summary_key+'"}) MERGE (m)-[:REPRESENTS]->(n)')
 
     def get_document(self, path:str) -> str:
         """

@@ -7,21 +7,19 @@ If you have any suggestions for additional features, we encourage you to open an
 
 ## ✨ Key Features
 
-- **Efficient storage**: The hybrid vector/graph database optimally stores both unstructured and structured knowledge acquired by the AGI system, ensuring efficient utilization of resources and maximizing performance.
+- **Efficient Storage**: The hybrid vector/graph database optimally stores both unstructured and structured knowledge acquired by the AGI system, ensuring efficient utilization of resources and maximizing performance.
 
-- **Metagraph representation**: The AGI system builds its own knowledge representation using a powerful [metagraph](metagraph.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
+- **Metagraph Representation**: The AGI system builds its own knowledge representation using a powerful [metagraph](metagraph.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
 
-- [WIP] **Hybrid knowledge retrieval**: The AGI system empowers users with versatile knowledge retrieval capabilities. It can explicitly request textual and graph data from the system's memory using Cypher queries, enabling precise and targeted information retrieval. Additionally, the system supports similarity-based retrieval, allowing you to discover related knowledge based on semantic similarity. This flexible approach caters to diverse information needs and enhances the exploration of knowledge.
+- **Graph Based Programming**: The AGI system encode its behavior using a turing complete program represented as an [action and decision graph](program.md) in its memory. This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow ? just modify `main.cypher`.
 
-- [WIP] **Granular knowledge exploration:** By aggregating graphs across different levels of abstraction, the AGI system gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
+- **Graph Program Interpreter**: We introduce a revolutionary Langchain Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision, this advanced feature enables the AGI to handle complex tasks with ease and safety.
 
-- **General purpose and collaborative Hierarchical Task Network (HTN) planner:** The AGI system learns and memorizes structured plans as graphs, resulting in improved speed, efficiency, and better collaborative problem-solving capabilities. This feature allows the system to tackle complex tasks and adapt its planning based on acquired knowledge and experience.
+- **Virtual Filesystem:** Leveraging the power of the metagraph, the AGI system can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
 
-- **Virtual filesystem:** Leveraging the power of the metagraph, the AGI system can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
+- **Local Hybrid Storage:** Hybrid AGI prioritizes your data privacy and security. With local hybrid storage, you have complete ownership and control over your data, ensuring that sensitive information remains protected.
 
-- **Local hybrid storage:** Hybrid AGI prioritizes your data privacy and security. With local hybrid storage, you have complete ownership and control over your data, ensuring that sensitive information remains protected.
-
-- **Free software:** Hybrid AGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is freely available, inviting contributions from a diverse range of users, and empowering the collective intelligence of the community.
+- **Free Software:** Hybrid AGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is under GNU GPL, inviting contributions from a diverse range of users, and empowering the collective intelligence of the community.
 
 ## 💡 Why Hybrid AGI Systems Matter
 
@@ -46,7 +44,7 @@ If you want to use the private mode (uses a local model instead of OpenAI's mode
 ```
 More information on how to setup for local model [here](https://github.com/go-skynet/LocalAI)
 
-## Setup the config file
+## Setup
 
 Update the `.env.template` with your details and preferences and rename it `.env`
 
@@ -72,7 +70,7 @@ To set up the hybrid database, follow these steps:
 
 Once the database is set up, launch the AGI with the following command:
 ```
-chainlit run app.py -w
+chainlit run main.py -w
 ```
 
 ## Credits

@@ -4,16 +4,19 @@ import os
 from typing import List
 from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext, dirname
+from hybrid_agi.parsers.path import PathOutputParser
 
 class MakeDirectory(BaseShellCommand):
     name:str = "mkdir"
     description:str = "make a new directory"
+    path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to create a directory"""
         if len(args)==0:
             raise ValueError("Cannot create directory: Missing operand. Try 'mkdir --help' for more information.")
-        path = args[0]         
+        path = args[0]
+        path = self.path_parser.parse(path)
         if path.startswith("-"):
             raise ValueError(f"Cannot create directory: Options not supported")
         path = ctx.eval_path(path)

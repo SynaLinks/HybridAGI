@@ -13,16 +13,12 @@ from hybrid_agi.filesystem.text_editor import VirtualTextEditor
 from hybrid_agi.parsers.path import PathOutputParser
 from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
 
-from inspect import signature
-from langchain.tools.base import create_schema_from_function
-
 class UploadTool(BaseTool):
     hybridstore: RedisGraphHybridStore
     filesystem: VirtualFileSystem
     text_editor: VirtualTextEditor
     downloads_directory:str
     path_parser = PathOutputParser()
-    func: Callable
 
     class Config:
         """Configuration for this pydantic object."""
@@ -36,14 +32,11 @@ class UploadTool(BaseTool):
             text_editor: VirtualTextEditor,
             downloads_directory: str,
             name:str = "Upload",
-            description:str =\
-    """
-    Usefull to send a folder or file for testing and inspection.
-    The Input should be the target path.
-    """
+            description:str ="""
+            Usefull to send a folder or file for testing and inspection.
+            The input should be the target path.
+            """
         ):
-        func = self.upload
-        description = f"{name}{signature(func)} - {description.strip()}"
         super().__init__(
             name = name,
             description = description,
@@ -51,7 +44,6 @@ class UploadTool(BaseTool):
             filesystem = filesystem,
             text_editor = text_editor,
             downloads_directory = downloads_directory,
-            func = func
         )
 
     def upload(self, path:str) -> str:

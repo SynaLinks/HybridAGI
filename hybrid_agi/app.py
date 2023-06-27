@@ -38,7 +38,10 @@ from hybrid_agi.tools.ui.upload import UIUploadTool
 
 from hybrid_agi.tools.ui.ask_user import UIAskUserTool
 
-from hybrid_agi.agents.planners.htn_planner import HTNPlanner
+from hybrid_agi.agents.planners.task_planner.task_planner import TaskPlanner
+from hybrid_agi.agents.interpreters.program_interpreter import GraphProgramInterpreter
+
+from hybrid_agi.prompt import HYBRID_AGI_SELF_DESCRIPTION
 
 cfg = Config()
 
@@ -151,18 +154,12 @@ def load():
         downloads_directory = cfg.downloads_directory
     )
 
-    if cfg.auto_mode is False:
-        primitives = [
-            Tool(
-                name=ask_user.name,
-                func=ask_user.run,
-                description=ask_user.description
-            )]
-    else:
-        primitives = []
-        cl.Message(content="WARNING ! Autonomous mode enabled.").send()
-
-    primitives.extend([
+    tools = [
+        Tool(
+            name=ask_user.name,
+            func=ask_user.run,
+            description=ask_user.description
+        ),
         Tool(
             name=write_file.name,
             func=write_file.run,
@@ -193,19 +190,20 @@ def load():
             func=shell_tool.run,
             description=shell_tool.description
         )
-    ])
+    ]
 
-    planner = HTNPlanner(
+    instructions = HYBRID_AGI_SELF_DESCRIPTION
+
+    interpreter = GraphProgramInterpreter(
         hybridstore,
         llm,
-        primitives,
-        user_language=cfg.user_language,
-        user_expertise=cfg.user_expertise,
-        max_depth = cfg.max_depth,
-        max_breadth = cfg.max_breadth,
-        verbose=cfg.debug_mode
+        prompt = instructions,
+        tools = tools,
+        language = cfg.user_language,
+        max_iteration = cfg.max_iteration,
+        verbose = cfg.debug_mode
     )
-    return planner
+    return interpreter
 
 @cl.langchain_run
 def run(agent, input):

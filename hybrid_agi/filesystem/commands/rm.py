@@ -4,10 +4,12 @@ import os
 from typing import List
 from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext
+from hybrid_agi.parsers.path import PathOutputParser
 
 class Remove(BaseShellCommand):
     name:str = "rm"
     description:str = "remove the input file"
+    path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to remove a file"""
@@ -15,6 +17,7 @@ class Remove(BaseShellCommand):
         folder_flag = False
         if len(args)>0:
             path = args[0]
+            path = self.path_parser.parse(path)
         else:
             return "Cannot remove: Missing operand. Try 'rm --help' for more information."
         if path.startswith("-"):

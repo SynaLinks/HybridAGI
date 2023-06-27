@@ -4,10 +4,12 @@ import os
 from typing import List
 from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext, dirname
+from hybrid_agi.parsers.path import PathOutputParser
 
 class Move(BaseShellCommand):
     name:str = "mv"
     description:str = "move the target file or folder to destination"
+    path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to move a file or folder"""
@@ -16,7 +18,9 @@ class Move(BaseShellCommand):
         if len(args) < 2:
             raise ValueError("Cannot move: Missing file operand. Try 'rm --help' for more information.")
         target_path = args[0]
+        target_path = self.path_parser.parse(target_path)
         destination_path = args[1]
+        destination_path = self.path_parser.parse(destination_path)
                
         target_path = ctx.eval_path(target_path)
         destination_path = ctx.eval_path(destination_path)

@@ -1,5 +1,6 @@
 """The script to add HybridAGI source code into the hybridstore. Copyright (C) 2023 SynaLinks. License: GPLv3"""
 
+import argparse
 from colorama import Fore, Style
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
@@ -11,6 +12,7 @@ from hybrid_agi.filesystem.filesystem import VirtualFileSystem
 
 from hybrid_agi.filesystem.text_editor import VirtualTextEditor
 from hybrid_agi.indexes.filesystem import VirtualFileSystemIndexWrapper
+from hybrid_agi.graph_loaders.cypher_loader import CypherGraphLoader
 
 BANNER =\
 """
@@ -40,8 +42,7 @@ def main():
         embedding_function = embedding.embed_query
     )
 
-    if cfg.wipe_redis_on_start:
-        hybridstore.clear()
+    hybridstore.clear()
 
     virtual_filesystem = VirtualFileSystem(hybridstore)
 
@@ -53,16 +54,14 @@ def main():
         verbose = cfg.debug_mode
     )
 
-    print(f"{Fore.YELLOW}[*] Adding my own codebase into the hybridstore... this may take a while.{Style.RESET_ALL}")
-
+    print(f"{Fore.YELLOW}[*] Adding my own source code into the hybridstore... this may take a while.{Style.RESET_ALL}")
     index = VirtualFileSystemIndexWrapper(
         hybridstore = hybridstore,
         filesystem = virtual_filesystem,
         text_editor = virtual_text_editor,
         verbose = cfg.debug_mode
     )
-    index.add_folders(["../HybridAGI"], folder_names=["/home/user/HybridAGI"])
-
+    index.add_folders(["../HybridAGI"], folder_names=["/home/user/Workspace/HybridAGI"])
     print(f"{Fore.YELLOW}[*] Done.{Style.RESET_ALL}")
 
 if __name__ == "__main__":

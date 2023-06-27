@@ -40,9 +40,8 @@ class PathOutputParser(BaseOutputParser):
         return instructions
 
     def fix_path(self, path):
+        path = path.replace('"', "")
         path = path.strip()
-        path = path.rstrip()
-        path = path.lstrip()
         if len(path) > 1:
             if path[len(path)-1] == "/":
                 path = path[:len(path)-1]

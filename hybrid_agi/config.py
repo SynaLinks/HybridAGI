@@ -14,10 +14,13 @@ class Config():
         self.auto_mode = os.getenv("AUTO_MODE", "False") == "True"
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
-        self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
+        self.temperature = float(os.getenv("TEMPERATURE", "0.0"))
 
         self.max_depth = int(os.getenv("MAX_DEPTH", "3"))
         self.max_breadth = int(os.getenv("MAX_BREADTH", "5"))
+
+        self.max_iteration = int(os.getenv("MAX_ITERATION", "50"))
+        self.monitoring = os.getenv("MONITORING", "False") == "True"
 
         self.chunk_size = int(os.getenv("CHUNK_SIZE", 1000))
         self.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", 0))

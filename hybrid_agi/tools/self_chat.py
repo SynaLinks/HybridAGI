@@ -9,16 +9,11 @@ from langchain.chains.llm import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 
-from hybrid_agi.prompt import (
-    HYBRID_AGI_SELF_DESCRIPTION,
-    HYBRID_AGI_CORE_VALUES
-)
+from hybrid_agi.prompt import HYBRID_AGI_SELF_DESCRIPTION
 
 SELF_CHAT_TEMPLATE=\
 """
 {self_description}
-{core_values}
-
 The following is a conversation with yourself.
 You MUST speak in {language}.
 Critisize and show your work.
@@ -30,7 +25,7 @@ AI:"""
 
 
 SELF_CHAT_PROMPT = PromptTemplate(
-    input_variables=["self_description", "core_values", "language", "history"],
+    input_variables=["self_description", "language", "history"],
     template = SELF_CHAT_TEMPLATE
 )
 
@@ -42,8 +37,9 @@ class SelfChatTool(BaseTool):
     description: str =\
     """
     Usefull to create textual content using your own LLM.
+    The input should contains every information needed.
     """
-    verbose = True
+    verbose = False
 
     def __init__(
             self,
@@ -66,7 +62,6 @@ class SelfChatTool(BaseTool):
             self.memory.chat_memory.add_ai_message(query)
             answer = chain.predict(
                 self_description=HYBRID_AGI_SELF_DESCRIPTION,
-                core_values=HYBRID_AGI_CORE_VALUES,
                 language=self.language,
                 history=self.memory.load_memory_variables({})["history"]
             )

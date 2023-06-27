@@ -10,8 +10,8 @@ class AskUserTool(BaseTool):
     language:str = "English"
     name = "AskUser"
     description = f"""
-    Usefull to ask additional information.
-    The Input MUST be a question in {language}.
+    Usefull to ask User for additionnal information.
+    The input MUST be a question in {language}.
     The Observation is from the perspective of the User responding to you.
     """
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:

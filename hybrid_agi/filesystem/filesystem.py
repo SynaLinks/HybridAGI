@@ -121,4 +121,3 @@ class VirtualFileSystem(FileSystemUtility):
         self.create_folder("/home")
         self.create_folder("/home/user")
         self.create_folder("/home/user/Workspace")
-        self.create_folder("/home/user/Research")

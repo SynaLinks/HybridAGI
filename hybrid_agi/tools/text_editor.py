@@ -11,8 +11,14 @@ from hybrid_agi.filesystem.filesystem import VirtualFileSystem
 from hybrid_agi.filesystem.text_editor import VirtualTextEditor
 from hybrid_agi.parsers.path import PathOutputParser
 from langchain.chains.llm import LLMChain
-from inspect import signature
-from langchain.tools.base import create_schema_from_function
+
+
+class PathWithDataInputSchema(BaseModel):
+    path: str
+    data: str
+
+class PathInputSchema(BaseModel):
+    path: str
 
 def _parse_output(output:str):
     try:
@@ -47,14 +53,12 @@ class WriteFileTool(BaseTool):
     Both parameters needs to be double quoted.
     """
         ):
-        func = self.write_file
-        description = f"{name}{signature(func)} - {description.strip()}"
         super().__init__(
             name = name,
             description = description,
             filesystem = filesystem,
             text_editor = text_editor,
-            args_schema = create_schema_from_function(f"{name}Schema", func)
+            # args_schema = PathWithDataInputSchema
         )
 
     class Config:
@@ -100,13 +104,12 @@ class UpdateFileTool(BaseTool):
     Both parameters needs to be double quoted.
     """
         ):
-        func = self.update_file
         super().__init__(
             name = name,
             description = description,
             filesystem = filesystem,
             text_editor = text_editor,
-            args_schema = create_schema_from_function(f"{name}Schema", func)
+            # args_schema = PathWithDataInputSchema
         )
 
     def update_file(self, path:str, modifications:str) -> str:
@@ -141,8 +144,8 @@ class ReadFileTool(BaseTool):
             name = "ReadFile",
             description =\
     """
-    Usefull when you want to read a existing file.
-    The Input should be the target path.
+    Usefull when you want to read or check an existing file.
+    The input should be the target path.
     Display one chunk at a time, use multiple times with the same target to scroll.
     """
         ):
@@ -150,7 +153,8 @@ class ReadFileTool(BaseTool):
             name = name,
             description = description,
             filesystem = filesystem,
-            text_editor = text_editor
+            text_editor = text_editor,
+            args_schema = PathInputSchema
         )
 
     def read_file(self, path: str) -> str:

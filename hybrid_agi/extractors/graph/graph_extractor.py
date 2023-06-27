@@ -1,18 +1,4 @@
-## The graph extractor.
-## Copyright (C) 2023 SynaLinks.
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program. If not, see <https://www.gnu.org/licenses/>.
+"""The graph extractor. Copyright (C) 2023 SynaLinks. License: GPLv3"""
 
 import uuid
 from colorama import Fore, Style
@@ -26,7 +12,8 @@ from langchain.chains.llm import LLMChain
 from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
 from hybrid_agi.extractors.graph.prompt import (
     GRAPH_EXTRACTION_THINKING_PROMPT,
-    GRAPH_EXTRACTION_PROMPT
+    GRAPH_EXTRACTION_PROMPT,
+    GRAPH_EXAMPLE
 )
 
 from hybrid_agi.parsers.cypher import CypherOutputParser
@@ -46,8 +33,8 @@ class GraphExtractor(BaseModel):
     def from_text(self, text:str) -> Optional[Graph]:
         """Create graph from text."""
         thinking_chain = LLMChain(llm=self.llm, prompt=GRAPH_EXTRACTION_THINKING_PROMPT, verbose=self.verbose)
-        thoughts = thinking_chain.predict(input=text)
-        graph = self.extract_graph(text, GRAPH_EXTRACTION_PROMPT.partial(thoughts=thoughts))
+        thought = thinking_chain.predict(input=text)
+        graph = self.extract_graph(text, GRAPH_EXTRACTION_PROMPT.partial(thought=thought, example=GRAPH_EXAMPLE))
         if graph is not None:
             self.hybridstore.metagraph.query('MERGE (:Plan {name:"'+graph.name+'"})')
         return graph

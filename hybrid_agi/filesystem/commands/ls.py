@@ -4,16 +4,19 @@ import os
 from typing import List
 from hybrid_agi.filesystem.commands.base import BaseShellCommand
 from hybrid_agi.filesystem.filesystem import FileSystemContext, basename
+from hybrid_agi.parsers.path import PathOutputParser
 
 class ListDirectory(BaseShellCommand):
     name: str = "ls"
     description: str = "list the input directory"
+    path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to list folder/directory"""
         result_list = ""
         if len(args)>0:
             path = args[0]
+            path = self.path_parser.parse(path)
         else:
             path = ctx.working_directory
         if path.startswith("-"):

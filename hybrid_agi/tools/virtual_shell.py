@@ -11,8 +11,8 @@ from hybrid_agi.filesystem.shell import VirtualShell
 
 from hybrid_agi.parsers.path import PathOutputParser
 
-from inspect import signature
-from langchain.tools.base import create_schema_from_function
+class CommandInputSchema(BaseModel):
+    command: str
 
 class VirtualShellTool(BaseTool):
     virtual_shell: VirtualShell
@@ -38,20 +38,26 @@ class VirtualShellTool(BaseTool):
         super().__init__(
             name = name,
             description = description,
-            virtual_shell = virtual_shell
+            virtual_shell = virtual_shell,
+            args_schema = CommandInputSchema
         )
         
     def execute(self, command: str) -> str:
-        args = shlex.split(command)
-        if ["|", "||", "&", "&&", ">", ">>", "<", "<<", ";"] in args:
-            raise ValueError("Piping, redirection and multiple commands are not supported: Use one command at a time, without semicolon.")
+        s = shlex.shlex(command, punctuation_chars=True)
+        args = list(s)
+        for symbol in ["|", "||", "&", "&&", ">", ">>", "<", "<<", ";"]:
+            if symbol in args:
+                raise ValueError("Piping, redirection and multiple commands are not supported: Use one command at a time, without semicolon.")
         try:
             return self.virtual_shell.execute(args)
         except Exception as err:
             return str(err)
 
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        return self.execute(query.strip())
+        try:
+            return self.execute(query.strip())
+        except Exception as err:
+            return str(err)
 
     def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         return self._run(query, run_manager)

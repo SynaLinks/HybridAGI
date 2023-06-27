@@ -40,8 +40,8 @@ class RedisGraphHybridStore(Redis):
         self.plan_key = plan_key
         # RedisGraph client for the metagraph
         self.metagraph = Graph(self.graph_key+":metagraph", self.client)
-        # RedisGraph client for the ontology (Not yet implemented)
-        self.ontology = Graph(self.graph_key+":ontology", self.client)
+        # RedisGraph client for the main program
+        self.main = Graph(self.graph_key+":main", self.client)
 
     def get_content(self, content_key:str) -> str:
         """Get content from Redis"""

@@ -1,23 +1,10 @@
-## The prompts for extracting graph as Cypher.
-## Copyright (C) 2023 SynaLink.
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the tertext_editorms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program. If not, see <https://www.gnu.org/licenses/>.
+"""The prompts for extracting graph as Cypher. Copyright (C) 2023 SynaLinks. License: GPLv3"""
 
 from langchain.prompts.prompt import PromptTemplate
 
 GRAPH_EXTRACTION_THINKING_TEMPLATE =\
 """Analyzing the provided text, please identify the entities present and outline their relationships with each other.
+Please, show your work.
 
 Text:
 {input}
@@ -31,12 +18,17 @@ Your Cypher query should prevent the creation of duplicate nodes in the database
 Use double quotes for nodes properties. Use only the name property of the nodes and avoid using any relationship properties.
 Remove any trailing punctuation at the end of the query. Use only the relationship types for the predicate and avoid using nodes/labels for relations.
 
+Ensure to follow the following format:
+EXAMPLE
+{example}
+END OF EXAMPLE
+
 Please provide the Cypher query as the output, without any additional information.
 
 Text:
 {input}
-Thoughts:
-{thoughts}
+Thought:
+{thought}
 Output:"""
 
 GRAPH_EXTRACTION_THINKING_PROMPT = PromptTemplate(
@@ -45,7 +37,20 @@ GRAPH_EXTRACTION_THINKING_PROMPT = PromptTemplate(
 )
 
 GRAPH_EXTRACTION_PROMPT = PromptTemplate(
-    input_variables=["input", "thoughts"],
+    input_variables=["input", "example", "thought"],
     template=GRAPH_EXTRACTION_TEMPLATE
 )
 
+GRAPH_EXAMPLE=\
+"""
+Output:
+CREATE 
+(e1:Task {name: "Blind Bake Pie Crust", purpose:"Prepare for filling"}),
+(e2:Task {name: "Cook Bacon", purpose:"Add savor"}),
+... (N times depending on the number of entities)
+(e13:Task {name: "Bake for 5 More Minutes", purpose:"Be sure to cook well"}),
+(e6)-[:REQUIRES]->(e5),
+... (N times depending on the number of relations)
+(e12)-[:REQUIRES]->(e10),
+(e13)-[:REQUIRES]->(e10)
+"""
