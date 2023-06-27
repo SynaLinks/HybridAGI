@@ -11,9 +11,13 @@ If you have any suggestions for additional features, we encourage you to open an
 
 - **Metagraph Representation**: The AGI system builds its own knowledge representation using a powerful [metagraph](metagraph.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
 
+- **Hybrid knowledge retrieval**: The AGI system empowers users with versatile knowledge retrieval capabilities. It can explicitly request textual and graph data from the system's memory using Cypher queries, enabling precise and targeted information retrieval. Additionally, the system supports similarity-based retrieval, allowing you to discover related knowledge based on semantic similarity. This flexible approach caters to diverse information needs and enhances the exploration of knowledge.
+
+- **Granular knowledge exploration:** By aggregating graphs across different levels of abstraction, the AGI system gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
+
 - **Graph Based Programming**: The AGI system encode its behavior using a turing complete program represented as an [action and decision graph](program.md) in its memory. This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow ? just modify `main.cypher`.
 
-- **Graph Program Interpreter**: We introduce a revolutionary Langchain Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision, this advanced feature enables the AGI to handle complex tasks with ease and safety.
+- **Graph Program Interpreter**: We introduce a revolutionary Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision, this advanced feature enables the AGI to handle complex tasks with ease and safety.
 
 - **Virtual Filesystem:** Leveraging the power of the metagraph, the AGI system can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
 
@@ -67,6 +71,16 @@ To set up the hybrid database, follow these steps:
 4. In RedisInsight, use the IP address of your Docker container and the port number indicated as `6379` here.
 
 ## 🚀 Launch the Hybrid AGI
+
+First, you need to load the source code of HybridAGI if you wish to use it to update itself:
+```
+python3 load_source.py
+```
+
+Then, load the main program into the database:
+```
+python load_main.py
+```
 
 Once the database is set up, launch the AGI with the following command:
 ```
