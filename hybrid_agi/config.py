@@ -1,4 +1,4 @@
-"""The class that store the system configuration. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The class that store the system configuration. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import os
 from dotenv import load_dotenv
@@ -11,13 +11,9 @@ class Config():
     """Initialize the Config class"""
     def __init__(self):
         self.debug_mode = os.getenv("DEBUG_MODE", "True") == "True"
-        self.auto_mode = os.getenv("AUTO_MODE", "False") == "True"
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
-        self.temperature = float(os.getenv("TEMPERATURE", "0.0"))
-
-        self.max_depth = int(os.getenv("MAX_DEPTH", "3"))
-        self.max_breadth = int(os.getenv("MAX_BREADTH", "5"))
+        self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
         self.max_iteration = int(os.getenv("MAX_ITERATION", "50"))
         self.monitoring = os.getenv("MONITORING", "False") == "True"
@@ -40,6 +36,6 @@ class Config():
         self.openai_base_path = os.environ.get('OPENAI_API_BASE', 'http://localhost:8080/v1')
 
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "archives")
+        self.library_directory = os.getenv("LIBRARY_DIRECTORY", "")
 
-        self.user_language = os.getenv("USER_LANGUAGE", "english")
-        self.user_expertise = os.getenv("USER_EXPERTISE", "Nothing")
+        self.user_language = os.getenv("USER_LANGUAGE", "English")

@@ -14,5 +14,3 @@ docker run -v redisinsight:/db -p 8001:8001 redislabs/redisinsight:latest
 2. Open your browser at [http://localhost:8001](http://localhost:8001).
 
 3. In RedisInsight, use the IP address of your Docker container and the port number indicated as `6379` here.
-
-## FAQ

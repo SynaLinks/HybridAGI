@@ -1,13 +1,11 @@
 # Hybrid AGI: Unleash the Power of Combined Vector and Graph Databases
-## The New AGI Operating System.
-
-If you have any suggestions for additional features, we encourage you to open an issue as this project is currently in its initial phase. Version 0.0.1 is scheduled for release by the end of June. While we welcome your assistance, please note that the current version may not be fully functional.
+## The New AGI Operating System. Alpha release !
 
 *Hybrid AGI is a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, it empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
 
 ## ✨ Key Features
 
-- **Efficient Storage**: The hybrid vector/graph database optimally stores both unstructured and structured knowledge acquired by the AGI system, ensuring efficient utilization of resources and maximizing performance.
+- **Efficient Storage**: The hybrid vector/graph database optimally stores both unstructured and structured knowledge acquired by the AGI system, ensuring efficient utilization of resources and maximizing performance. 
 
 - **Metagraph Representation**: The AGI system builds its own knowledge representation using a powerful [metagraph](metagraph.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
 
@@ -15,9 +13,9 @@ If you have any suggestions for additional features, we encourage you to open an
 
 - **Granular knowledge exploration:** By aggregating graphs across different levels of abstraction, the AGI system gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
 
-- **Graph Based Programming**: The AGI system encode its behavior using a turing complete program represented as an [action and decision graph](program.md). This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow ? just modify `main.cypher`.
+- **Graph Based Programming**: The AGI system encode its behavior using a turing complete program represented as an [action and decision graph](program.md). This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow ? just modify [HybridAGI library](https://github.com/SynaLinks/HybridAGI-library).
 
-- **Graph Program Interpreter**: We introduce a revolutionary Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision, this advanced feature enables the AGI to handle complex tasks with ease and safety.
+- **Graph Program Interpreter**: We introduce a revolutionary Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision this state-of-the-art feature enables the AGI to handle complex tasks with ease and safety.
 
 - **Virtual Filesystem:** Leveraging the power of the metagraph, the AGI system can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
 
@@ -40,6 +38,11 @@ Hybrid AGI systems offer numerous advantages that propel the field of AGI forwar
 ```
 git clone https://github.com/SynaLinks/HybridAGI
 pip3 install -r requirements.txt
+```
+
+Install the programs library:
+```
+./install_library.sh
 ```
 
 If you want to use the private mode (uses a local model instead of OpenAI's models):
@@ -70,16 +73,16 @@ To set up the hybrid database, follow these steps:
 
 4. In RedisInsight, use the IP address of your Docker container and the port number indicated as `6379` here.
 
-## 🚀 Launch the Hybrid AGI
+## 🚀 Launch Hybrid AGI
 
-First, you need to load the source code of HybridAGI if you wish to use it to update itself:
+First, you need to load the source code of HybridAGI if you wish to use it to upgrade itself:
 ```
 python3 load_source.py
 ```
 
-Then, load the main program into the database:
+Then, load the programs into the database:
 ```
-python load_main.py
+python3 load_library.py
 ```
 
 Once the database is set up, launch the AGI with the following command:

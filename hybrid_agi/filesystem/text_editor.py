@@ -1,4 +1,4 @@
-"""The virtual text editor. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The virtual text editor. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import json
 from typing import Optional, List, Dict, Any

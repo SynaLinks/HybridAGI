@@ -1,4 +1,4 @@
-"""The prompts for extracting graph as Cypher. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The prompts for extracting graph as Cypher. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from langchain.prompts.prompt import PromptTemplate
 
@@ -45,10 +45,10 @@ GRAPH_EXAMPLE=\
 """
 Output:
 CREATE 
-(e1:Task {name: "Blind Bake Pie Crust", purpose:"Prepare for filling"}),
-(e2:Task {name: "Cook Bacon", purpose:"Add savor"}),
+(e1:Task {name: "Blind Bake Pie Crust"}),
+(e2:Task {name: "Cook Bacon"}),
 ... (N times depending on the number of entities)
-(e13:Task {name: "Bake for 5 More Minutes", purpose:"Be sure to cook well"}),
+(e13:Task {name: "Bake for 5 More Minutes"}),
 (e6)-[:REQUIRES]->(e5),
 ... (N times depending on the number of relations)
 (e12)-[:REQUIRES]->(e10),

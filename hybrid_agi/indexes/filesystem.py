@@ -1,3 +1,5 @@
+"""The virtual filesystem index. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import os
 from colorama import Fore, Style
 from typing import List, Optional
@@ -18,7 +20,7 @@ class VirtualFileSystemIndexWrapper(FileSystemUtility):
         assert len(names) == len(documents)
         for i, doc in enumerate(documents):
             if self.verbose:
-                print(f"{Fore.YELLOW}[*] Adding document {names[i]}...{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[*] Adding document '{Fore.YELLOW}{names[i]}{Fore.GREEN}'...{Style.RESET_ALL}")
             path = self.filesystem.context.eval_path(names[i])
             self.text_editor.write_document(path, doc.page_content, metadata=doc.metadata)
 
@@ -28,7 +30,7 @@ class VirtualFileSystemIndexWrapper(FileSystemUtility):
         for i, folder in enumerate(folders):
             folder_name = os.path.basename(folder) if folder_names is None else folder_names[i]
             if self.verbose:
-                print(f"{Fore.YELLOW}[*] Adding folder {folder_name}...{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[*] Adding folder '{Fore.YELLOW}{folder_name}{Fore.GREEN}'...{Style.RESET_ALL}")
             self.create_folder(folder_name)
             for dirpath, dirnames, filenames in os.walk(folder):
                 if dirpath.find("__") > 0 or dirpath.find(".git") > 0:
@@ -36,9 +38,9 @@ class VirtualFileSystemIndexWrapper(FileSystemUtility):
                 for dirname in dirnames:
                     if not dirname.startswith("__") and not dirname.startswith(".git"):
                         path = join([dirpath.replace(folder, folder_name), dirname])
-                        self.create_folder(path)
                         if self.verbose:
-                            print(f"{Fore.YELLOW}[*] Adding folder {path}...{Style.RESET_ALL}")
+                            print(f"{Fore.GREEN}[*] Adding folder '{Fore.YELLOW}{path}{Fore.GREEN}'...{Style.RESET_ALL}")
+                        self.create_folder(path)
                 for filename in filenames:
                     if not filename.startswith(".") and not filename.endswith(".zip"):
                         source = os.path.join(dirpath, filename)

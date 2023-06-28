@@ -1,3 +1,5 @@
+"""The ask user tool for chainlit. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import chainlit as cl
 from typing import Optional
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
@@ -8,6 +10,6 @@ class UIAskUserTool(AskUserTool):
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         res = cl.AskUserMessage(content=query, timeout=30).send()
         if res:
-            return "User response: "+res["content"]
+            return "The User responded with: "+res["content"]
         else:
-            return "User response:"
+            return "The User did not respond"

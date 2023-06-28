@@ -1,4 +1,4 @@
-"""The tools related to the virtual text editor. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The tools related to the virtual text editor. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import shlex
 from typing import Optional, Type, List, Tuple
@@ -58,7 +58,7 @@ class WriteFileTool(BaseTool):
             description = description,
             filesystem = filesystem,
             text_editor = text_editor,
-            # args_schema = PathWithDataInputSchema
+            args_schema = PathWithDataInputSchema
         )
 
     class Config:
@@ -109,7 +109,7 @@ class UpdateFileTool(BaseTool):
             description = description,
             filesystem = filesystem,
             text_editor = text_editor,
-            # args_schema = PathWithDataInputSchema
+            args_schema = PathWithDataInputSchema
         )
 
     def update_file(self, path:str, modifications:str) -> str:

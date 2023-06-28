@@ -1,3 +1,5 @@
+"""The upload tool for chainlit. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import os
 import chainlit as cl
 from typing import Optional

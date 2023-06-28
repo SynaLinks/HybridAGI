@@ -1,4 +1,4 @@
-"""The hybrid vector/graph storage. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The hybrid vector/graph storage. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import uuid
 import numpy as np
@@ -20,7 +20,7 @@ class RedisGraphHybridStore(Redis):
         metadata_key: str = "metadata",
         vector_key: str = "content_vector",
         graph_key: str = "graph",
-        plan_key: str = "plan",
+        program_key: str = "program",
         relevance_score_fn: Optional[
             Callable[[float], float]
         ] = _default_relevance_score,
@@ -36,12 +36,12 @@ class RedisGraphHybridStore(Redis):
         )
         # The graph key used to store the graphs
         self.graph_key = graph_key
-        # The plan key used to store the plans
-        self.plan_key = plan_key
+        # The program key used to store the programs
+        self.program_key = program_key
         # RedisGraph client for the metagraph
         self.metagraph = Graph(self.graph_key+":metagraph", self.client)
-        # RedisGraph client for the main program
-        self.main = Graph(self.graph_key+":main", self.client)
+        # RedisGraph client for the main graph program
+        self.main = Graph(self.program_key+":main", self.client)
 
     def get_content(self, content_key:str) -> str:
         """Get content from Redis"""

@@ -1,4 +1,4 @@
-"""The base class for graph loaders. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The base class for graph loaders. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import abc
 import redis

@@ -1,4 +1,4 @@
-"""The ask user tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The speak tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from colorama import Fore
 from colorama import Style
@@ -6,24 +6,18 @@ from typing import Optional
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 
-class AskUserTool(BaseTool):
+class SpeakTool(BaseTool):
     language:str = "English"
-    name = "AskUser"
+    name = "Speak"
     description = f"""
-    Usefull to ask User for additionnal information.
+    Usefull to tell information.
     The input MUST be a question in {language}.
-    The Observation is from the perspective of the User responding to you.
     """
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """Use the tool."""
-        print(f"\n{Fore.YELLOW}[*] "+query+f"{Style.RESET_ALL}")
-        response = input(f"> ")
-        if response:
-            return "The User responded with: "+response
-        else:
-            return "The User did not respond"
+        print(f"\n{Fore.GREEN}[*] "+query+f"{Style.RESET_ALL}")
+        return "Success"
 
     async def _arun(self, query: str,  run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
         """Use the tool asynchronously."""
-        raise NotImplementedError("AskUser does not support async")
-
+        raise NotImplementedError("Speak does not support async")

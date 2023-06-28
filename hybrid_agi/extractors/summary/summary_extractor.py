@@ -1,4 +1,4 @@
-"""The summary extractor. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The summary extractor. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import Optional
 from pydantic import BaseModel, Extra
@@ -29,6 +29,6 @@ class SummaryExtractor(BaseModel):
             ids = self.hybridstore.add_texts([summary])
         key = ids[0]
         if key != "":
-            self.hybridstore.metagraph.query('MERGE (:Content {name:"'+key+'"})')
+            self.hybridstore.metagraph.query('MERGE (:Summary {name:"'+key+'"})')
         return key
 

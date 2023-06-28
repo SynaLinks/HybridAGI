@@ -1,4 +1,4 @@
-"""The upload tool. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The upload tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import os
 import zipfile

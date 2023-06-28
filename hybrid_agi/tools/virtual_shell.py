@@ -1,4 +1,4 @@
-"""The virtual shell tool. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The virtual shell tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import shlex
 from typing import Optional, Type, List, Tuple, Callable

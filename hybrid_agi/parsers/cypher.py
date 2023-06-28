@@ -13,6 +13,7 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program. If not, see <https://www.gnu.org/licenses/>.
+"""The Cypher output parser. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from langchain.schema import BaseOutputParser
 

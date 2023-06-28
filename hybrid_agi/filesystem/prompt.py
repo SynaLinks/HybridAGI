@@ -1,4 +1,4 @@
-"""The prompt for updating text. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The prompt for updating text. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 UPDATE_TEXT_TEMPLATE=\
 """

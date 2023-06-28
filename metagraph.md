@@ -1,4 +1,4 @@
-# What is the meta knowledge graph?
+# What is Hydrid AGI meta knowledge graph?
 
 The meta knowledge graph, often referred to as the metagraph, is a fundamental structure that captures the current state of the AGI's hybrid memory. It serves as a hierarchical representation of documents, folders and associated structures extracted from them. Enabling the AGI to reason effectively at various levels of abstraction.
 
@@ -9,26 +9,29 @@ The metagraph of HybridAGI containing its own codebase, in orange is the folders
 
 ## RedisGraph schema
 ### Labels:
-- Folder: Represents a folder.
-- Document: Represents a document.
-- Content: Represents a chunk of content.
-- Graph: Represents a graph.
+- Folder: Represents a folder
+- Document: Represents a document
+- Content: Represents a chunk of content (from a document)
+- Graph: Represents a graph
+- Summary: Represents a summary from a content, document or folder
 
 ### Properties:
 - Folder:
-  - name: The name of the folder.
+  - name: The name of the folder
 - Document:
-  - name: The name of the document.
+  - name: The name of the document
 - Content:
-  - name: The index of the content within the vector memory.
+  - name: The index of the content within the vector memory
 - Graph:
-  - name: The index of the graph within the graph memory.
+  - name: The index of the graph within the graph memory
+- Summary:
+  - name: The index of the summary within the vector memory
 
 ### Relationship types:
-- REPRESENTS: Represents when a graph represents a content, document, or folder.
-- SUMMARIZES: Represents when a content summarizes a content, document or folder
-- CONTAINS: Represents the composition between contents, graphs, and folders.
+- REPRESENTS: Represents when a graph represents a content, document, or folder
+- SUMMARIZES: Represents when a summary summarizes a content, document or folder
+- CONTAINS: Represents the composition between contents, graphs, summaries and folders
 
-- BOF: Represents the starting content of a document.
+- BOF: Represents the starting content of a document
 - EOF: Represents the ending content of a document
 - NEXT: Represents the next content of a document

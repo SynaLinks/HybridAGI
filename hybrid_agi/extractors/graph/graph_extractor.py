@@ -1,4 +1,4 @@
-"""The graph extractor. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The graph extractor. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import uuid
 from colorama import Fore, Style

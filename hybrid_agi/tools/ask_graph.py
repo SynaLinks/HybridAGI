@@ -1,4 +1,4 @@
-"""The ask graph tool. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The ask graph tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import Optional
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun

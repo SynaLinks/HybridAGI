@@ -1,4 +1,4 @@
-"""The script to add HybridAGI source code into the hybridstore. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The script to add HybridAGI source code into the hybridstore. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import argparse
 from colorama import Fore, Style
@@ -15,17 +15,22 @@ from hybrid_agi.indexes.filesystem import VirtualFileSystemIndexWrapper
 from hybrid_agi.graph_loaders.cypher_loader import CypherGraphLoader
 
 BANNER =\
-"""
+f"""{Fore.BLUE}
 o  o o   o o--o  o--o  o-O-o o-o         O   o-o  o-O-o 
 |  |  \ /  |   | |   |   |   |  \       / \ o       |   
 O--O   O   O--o  O-Oo    |   |   O     o---o|  -o   |   
 |  |   |   |   | |  \    |   |  /      |   |o   |   |   
 o  o   o   o--o  o   o o-O-o o-o       o   o o-o  o-O-o
-    Unleash the Power of Combined Vector and Graph Databases
+    {Fore.GREEN}Unleash the Power of Combined Vector and Graph Databases{Style.RESET_ALL}
 """
 
 def main():
-    print(f"{Fore.YELLOW}{BANNER}{Style.RESET_ALL}")
+    print(BANNER)
+
+    parser = argparse.ArgumentParser(description='Load HybridAGI source code.')
+    parser.add_argument('-c', '--clear', action='store_true', help="Clear the hybridstore if enabled")
+    args = parser.parse_args()
+
     cfg = Config()
 
     embedding = OpenAIEmbeddings()
@@ -42,7 +47,8 @@ def main():
         embedding_function = embedding.embed_query
     )
 
-    hybridstore.clear()
+    if args.clear:
+        hybridstore.clear()
 
     virtual_filesystem = VirtualFileSystem(hybridstore)
 
@@ -54,7 +60,7 @@ def main():
         verbose = cfg.debug_mode
     )
 
-    print(f"{Fore.YELLOW}[*] Adding my own source code into the hybridstore... this may take a while.{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}[*] Adding my own source code into the hybridstore... this may take a while.{Style.RESET_ALL}")
     index = VirtualFileSystemIndexWrapper(
         hybridstore = hybridstore,
         filesystem = virtual_filesystem,

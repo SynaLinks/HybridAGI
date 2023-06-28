@@ -1,4 +1,4 @@
-"""The prompts for extracting summary. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The prompts for extracting summary. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from langchain.prompts.prompt import PromptTemplate
 

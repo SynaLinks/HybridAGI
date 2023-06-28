@@ -1,4 +1,6 @@
-from typing import List, Optional
+"""The graph program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+from collections import deque
+from typing import List, Optional, Iterable
 from pydantic import BaseModel, Extra
 from colorama import Fore, Style
 from redisgraph import Node, Graph 
@@ -18,7 +20,10 @@ class GraphProgramInterpreter(BaseModel):
     program: Optional[Graph] = None
     prompt: str = ""
     default_prompt: str = ""
+    program_stack: Iterable = deque()
+    iteration: int = 0
     max_iteration: int = 50
+    max_decision_attemps: int = 5
     allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
     language: str = "English"
@@ -38,6 +43,7 @@ class GraphProgramInterpreter(BaseModel):
             prompt:str = "",
             tools:List[Tool] = [],
             max_iteration: int = 50,
+            max_decision_attemps: int = 5,
             language: str = "English",
             monitoring: bool = True,
             verbose: bool = True
@@ -52,6 +58,8 @@ class GraphProgramInterpreter(BaseModel):
             program = program,
             prompt = prompt,
             default_prompt = prompt,
+            max_iteration = max_iteration,
+            max_decision_attemps = max_decision_attemps,
             language = language,
             monitoring = monitoring,
             verbose = verbose
@@ -60,39 +68,16 @@ class GraphProgramInterpreter(BaseModel):
             self.allowed_tools.append(tool.name)
             self.tools_map[tool.name] = tool
 
-    def run(self, objective:str):
-        self.clear()
-        self.update(f"The objective given by the User is: {objective}\n")
-        result = self.program.query('MATCH (n:Control {name:"Start"}) RETURN n')
-        if len(result.result_set) == 0:
-            raise ValueError("No entry point in the program")
-        if len(result.result_set) > 1:
-            raise ValueError("Multiple entry point in the program")
-        starting_node = result.result_set[0][0]
-        current_node = self.get_next(starting_node)
-        next_node = None
-        iteration = 0
-        while True:
-            if current_node.label == "Action":
-                self.use_tool(current_node)
-                next_node = self.get_next(current_node)
-                if self.monitoring is True:
-                    self.monitor()
-            elif current_node.label == "Decision":
-                next_node = self.decide(current_node)
-            elif current_node.label == "Control":
-                if current_node.properties["name"] == "End":
-                    break
-                if next_node is None:
-                    return "Program failed after reaching a non-terminated path"
-            if iteration > self.max_iteration:
-                return "Program failed after reaching max iteration"
-            current_node = next_node
-        return "Program Success"
+    def get_current_program(self) -> Optional[Graph]:
+        """Method to retreive the current plan from the stack"""
+        if len(self.program_stack) > 0:
+            return self.program_stack[len(self.program_stack)-1]
+        return None
 
     def get_next(self, node:Node) -> Optional[Node]:
+        """Method to get the next node"""
         name = node.properties["name"]
-        result = self.program.query('MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n')
+        result = self.get_current_program().query('MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n')
         if len(result.result_set) > 0:
             return result.result_set[0][0]
         return None
@@ -104,26 +89,71 @@ class GraphProgramInterpreter(BaseModel):
         prediction = chain.predict(language=self.language)
         return prediction
 
+    def execute_program(self, program_index:str):
+        """Method to execute a program"""
+        program = Graph(program_index, self.hybridstore.client)
+        self.program_stack.append(program)
+        result = self.get_current_program().query('MATCH (n:Control {name:"Start"}) RETURN n')
+        if len(result.result_set) == 0:
+            raise ValueError("No entry point in the program")
+        if len(result.result_set) > 1:
+            raise ValueError("Multiple entry point in the program")
+        starting_node = result.result_set[0][0]
+        current_node = self.get_next(starting_node)
+        next_node = None
+        self.iteration = 0
+        while True:
+            if current_node.label == "Program":
+                program_index = current_node.properties["name"]
+                self.execute_program(program_index)
+                next_node = self.get_next(current_node)
+            elif current_node.label == "Action":
+                self.use_tool(current_node)
+                next_node = self.get_next(current_node)
+                if self.monitoring:
+                    self.monitor()
+            elif current_node.label == "Decision":
+                next_node = self.decide(current_node)
+                if self.monitoring:
+                    self.monitor()
+            elif current_node.label == "Control":
+                if current_node.properties["name"] == "End":
+                    break
+            else:
+                raise RuntimeError("Invalid label for node. Please verify your programs.")
+            if next_node is None:
+                raise RuntimeError("Program failed after reaching a non-terminated path. Please verify your programs.")
+            current_node = next_node
+            self.iteration += 1
+            if self.iteration > self.max_iteration:
+                raise RuntimeError("Program failed after reaching max iteration")
+        self.program_stack.pop()
+
     def decide(self, node:Node) -> Node:
+        """Method to make a decision"""
         # get possible output options
         question = node.properties["name"]
         purpose = node.properties["purpose"]
         prompt = f"Decision: {question} Please answer without additional information.\nDecision Purpose: {purpose}\n"
         outcomes = []
-        result = self.program.query('MATCH (n:Decision {name:"'+question+'", purpose:"'+purpose+'"})-[r]->() RETURN type(r)')
+        result = self.get_current_program().query('MATCH (n:Decision {name:"'+question+'", purpose:"'+purpose+'"})-[r]->() RETURN type(r)')
         for record in result.result_set:
             outcomes.append(record[0])
         choice = " or ".join(outcomes)
-        prompt += f"Decision Answer (must be {choice}):"
+        prompt += f"Decision Answer (must be {choice}): "
         decision = ""
+        attemps = 0
         while True:
-            decision = self.predict(prompt)
+            decision = self.predict(prompt).strip()
+            attemps += 1
             if decision in outcomes:
                 break
+            if attemps > self.max_decision_attemps:
+                raise ValueError(f"Failed to decide after {attemps} attemps. Please verify your programs.")
         prompt += decision
-        result = self.program.query('MATCH (:Decision {name:"'+question+'", purpose:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
-        next_node = result.result_set[0][0]
         self.update(prompt)
+        result = self.get_current_program().query('MATCH (:Decision {name:"'+question+'", purpose:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
+        next_node = result.result_set[0][0]
         return next_node
 
     def use_tool(self, node:Node) -> str:
@@ -132,9 +162,14 @@ class GraphProgramInterpreter(BaseModel):
         tool_name = node.properties["tool"]
         tool_params_prompt = node.properties["params"]
         tool_prompt = f"Action: {tool_name}\nAction Purpose: {action_purpose}\nAction Input: {tool_params_prompt}"
-        tool_input = self.predict(tool_prompt)
-        observation = self.execute_tool(tool_name, tool_input)
-        final_prompt = f"Action: {tool_name}\nAction Purpose: {action_purpose}\nAction Input: {tool_input}\nAction Observation:{observation}"
+        if tool_name != "Predict":
+            tool_input = self.predict(tool_prompt)
+            observation = self.execute_tool(tool_name, tool_input)
+            final_prompt = f"Action: {tool_name}\nAction Purpose: {action_purpose}\nAction Input: {tool_input}\nAction Observation: {observation}"
+        else:
+            tool_input = tool_prompt
+            observation = self.predict(tool_prompt)
+            final_prompt = f"Action: {tool_name}\nAction Purpose: {action_purpose}\nAction Input: {tool_input}\n{observation}"
         self.update(final_prompt)
 
     def execute_tool(self, name:str, query:str):
@@ -152,13 +187,13 @@ class GraphProgramInterpreter(BaseModel):
         """Method to update the program prompt"""
         if self.verbose:
             if prompt.startswith("Action:"):
-                print(f"{Fore.YELLOW}{prompt}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{prompt}{Style.RESET_ALL}")
             elif prompt.startswith("Decision:"):
                 print(f"{Fore.BLUE}{prompt}{Style.RESET_ALL}")
             elif prompt.startswith("Critique:"):
-                print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
+                print(f"{Fore.MAGENTA}{prompt}{Style.RESET_ALL}")
             else:
-                print(f"{prompt}")
+                print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
         self.prompt += "\n" + prompt
 
     def monitor(self):
@@ -168,5 +203,16 @@ class GraphProgramInterpreter(BaseModel):
         self.update(f"Critique: {critique}")
 
     def clear(self):
-        """Clear the prompt"""
+        """Method to clear the prompt"""
         self.prompt = self.default_prompt
+
+    def run(self, objective:str):
+        """Method to run the agent"""
+        self.clear()
+        self.update(f"The objective given by the User is: {objective}")
+        try:
+            self.execute_program(self.hybridstore.main.name)
+            result = self.predict("Final Answer:")
+            return result
+        except Exception as err:
+            return f"Error occured: {str(err)}"

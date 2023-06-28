@@ -1,4 +1,4 @@
-"""The virtual shell. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The virtual shell. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import os
 import datetime

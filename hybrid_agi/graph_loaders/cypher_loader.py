@@ -1,4 +1,4 @@
-"""The Cypher graph loader. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The Cypher graph loader. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import uuid
 from redisgraph import Graph

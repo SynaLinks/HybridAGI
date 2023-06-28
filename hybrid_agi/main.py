@@ -1,12 +1,11 @@
-"""The main app. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+from colorama import Fore, Style
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import Tool
-
-import chainlit as cl
 
 from hybrid_agi.config import Config
 
@@ -33,8 +32,8 @@ from hybrid_agi.tools.text_editor import (
     ReadFileTool
 )
 
-from hybrid_agi.tools.ui.ask_user import UIAskUserTool
-from hybrid_agi.tools.ui.upload import UIUploadTool
+from hybrid_agi.tools.ask_user import AskUserTool
+from hybrid_agi.tools.upload import UploadTool
 
 from hybrid_agi.agents.interpreters.program_interpreter import GraphProgramInterpreter
 
@@ -42,8 +41,18 @@ from hybrid_agi.prompt import HYBRID_AGI_SELF_DESCRIPTION
 
 cfg = Config()
 
-@cl.on_chat_start
-def start():
+BANNER = \
+f"""{Fore.BLUE}
+o  o o   o o--o  o--o  o-O-o o-o         O   o-o  o-O-o 
+|  |  \ /  |   | |   |   |   |  \       / \ o       |   
+O--O   O   O--o  O-Oo    |   |   O     o---o|  -o   |   
+|  |   |   |   | |  \    |   |  /      |   |o   |   |   
+o  o   o   o--o  o   o o-O-o o-o       o   o o-o  o-O-o
+    {Fore.GREEN}Unleash the Power of Combined Vector and Graph Databases{Style.RESET_ALL}
+"""
+
+def main():
+    print(BANNER)
     llm = None
     if cfg.private_mode is True:
         llm = ChatOpenAI(
@@ -68,19 +77,10 @@ def start():
     message = LLMChain(llm=llm, prompt=prompt).predict(
         language = cfg.user_language
     )
-    cl.Message(
-        content = message
-    ).send()
+    print(f"{Fore.YELLOW}[*] {message}{Style.RESET_ALL}")
+    objective = input("> ")
 
-@cl.langchain_factory
-def load():
     embedding = OpenAIEmbeddings()
-
-    llm = None
-    if cfg.private_mode is True:
-        llm = ChatOpenAI(temperature=cfg.temperature, model_name=cfg.fast_llm_model, openai_api_base=cfg.openai_base_path)
-    else:
-        llm = ChatOpenAI(temperature=cfg.temperature, model_name=cfg.fast_llm_model)
 
     hybridstore = RedisGraphHybridStore(
         redis_url = cfg.redis_url,
@@ -124,7 +124,7 @@ def load():
         commands = commands
     )
 
-    ask_user = UIAskUserTool(language=cfg.user_language)
+    ask_user = AskUserTool(language=cfg.user_language)
 
     shell_tool = VirtualShellTool(virtual_shell=virtual_shell)
 
@@ -143,7 +143,7 @@ def load():
         text_editor=virtual_text_editor
     )
     
-    upload = UIUploadTool(
+    upload = UploadTool(
         hybridstore = hybridstore,
         filesystem = virtual_filesystem,
         text_editor = virtual_text_editor,
@@ -195,9 +195,8 @@ def load():
         monitoring = cfg.monitoring,
         verbose = cfg.debug_mode
     )
-    return interpreter
+    result = interpreter.run(objective)
+    print(f"{Fore.YELLOW}[*] {result}{Style.RESET_ALL}")
 
-@cl.langchain_run
-def run(agent, input):
-    res = agent.run(input)
-    cl.Message(content=res).send()
+if __name__ == "__main__":
+    main()
