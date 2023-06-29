@@ -12,5 +12,4 @@ test_result = test_runner.run(test_suite)
 
 cov.stop()
 cov.report()
-cov.html_report(directory='htmlcov')
 cov.save()

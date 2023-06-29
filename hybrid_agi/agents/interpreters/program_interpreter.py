@@ -21,7 +21,6 @@ class GraphProgramInterpreter(BaseModel):
     prompt: str = ""
     default_prompt: str = ""
     program_stack: Iterable = deque()
-    iteration: int = 0
     max_iteration: int = 50
     max_decision_attemps: int = 5
     allowed_tools: List[str] = []
@@ -101,7 +100,7 @@ class GraphProgramInterpreter(BaseModel):
         starting_node = result.result_set[0][0]
         current_node = self.get_next(starting_node)
         next_node = None
-        self.iteration = 0
+        iteration = 0
         while True:
             if current_node.label == "Program":
                 program_index = current_node.properties["name"]
@@ -124,8 +123,8 @@ class GraphProgramInterpreter(BaseModel):
             if next_node is None:
                 raise RuntimeError("Program failed after reaching a non-terminated path. Please verify your programs.")
             current_node = next_node
-            self.iteration += 1
-            if self.iteration > self.max_iteration:
+            iteration += 1
+            if iteration > self.max_iteration:
                 raise RuntimeError("Program failed after reaching max iteration")
         self.program_stack.pop()
 

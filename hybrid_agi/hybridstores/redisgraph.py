@@ -42,6 +42,8 @@ class RedisGraphHybridStore(Redis):
         self.metagraph = Graph(self.graph_key+":metagraph", self.client)
         # RedisGraph client for the main graph program
         self.main = Graph(self.program_key+":main", self.client)
+        # RedisGraph client for the playground (allowing to test programs in realtime)
+        self.playground = Graph(self.program_key+":playground", self.client)
 
     def get_content(self, content_key:str) -> str:
         """Get content from Redis"""

@@ -2,19 +2,19 @@
 
 Let's dive into Hybrid AGI powerfull programs !
 
-## Concept
+## Introducing Graph-Of-Prompt
 
 While Large Language Models excel at generating text, they often lack logic and reasoning abilities. Hybrid architectures come to the rescue by bridging this gap. Although previous methods like Tree-Of-Prompt have shown effectiveness, they can be costly, slow, and not always relevant. In the following paragraphs, we introduce the concept of Generalized Decision and Action Graphs. These graphs can be viewed as cognitive programs that make probabilistic decisions and dictate the behavior of HybridAGI. This remarkable feature, called Graph-Of-Prompt, empowers the system to follow Turing complete programs composed of prompts to use external tools.
 
-# Graph oriented prompt programming
+## Graph oriented prompt programming
 
-Thanks to the design choices of HybridAGI programming, shaping behavior is as simple as editing a `.cypher` file.
+Thanks to the design choices of HybridAGI programming, shaping its behavior is as simple as editing a `.cypher` file.
 
 Programs are Cypher files that contain a property graph representing a cognitive program.
 
 This program is a property graph with the following schema.
 
-## Program schema
+## Graph Program schema
 ### Labels:
 - Control: Represents a control point (start or end of the program).
 - Action: Represents an action (the use of a tool).
@@ -48,15 +48,11 @@ The output of a decision-making process is the next node to evaluate, based on t
 
 Actions are a type of node that involve the use of tools by the Agent. The choice of the tool and its purpose is defined by the user in the program, while the tool's parameters are inferred from the prompt.
 
-## Monitoring
-
-Monitoring is a special feature that allows the AGI to self-critique during program execution, leading to better outcomes. You can enable or disable this feature in your `.env` file. However, enabling monitoring may result in slower execution. In theory, if your program is well-written and includes loops, monitoring may not be necessary.
-
 ## Understanding limitations
 
 The main limitation of this approach is that the working memory is constrained by the maximum size of the prompt. Therefore, efficient handling of complex tasks relies on the ability to save and retrieve information.
 
-## Your first programs
+# Your first program
 
 Here is the minimal backbone for coding a graph program:
 
@@ -85,7 +81,7 @@ Now we can experiment with decisions:
 CREATE
 (start:Control {name:"Start"}),
 (ask_question:Action {name:"Ask question to clarify the objective", tool:"AskUser", params:"Pick one question to clarify the objective and ask it in {language}\nQuestion:"}),
-(is_anything_unclear:Decision {name:"Is there anything unclear in the objective?", purpose:"Find out if there is anything unclear in the objective. Let's think this out in a step by step way."}),
+(is_anything_unclear:Decision {name:"Is there anything unclear in the objective?", purpose:"Find out if there is anything unclear in the objective."}),
 (end:Control {name:"End"}),
 (start)-[:NEXT]->(ask_question),
 (ask_question)-[:NEXT]->(is_anything_unclear),
@@ -93,7 +89,24 @@ CREATE
 (is_anything_unclear)-[:NO]->(end)
 ```
 
-Then we can use this behavior using sub-programs:
+To enhance this program, we can use prompting techniques like the famous "Let's think in a step by step way" or add more option to the decision process to better take into account uncertainty:
+
+```clarify_objective.cypher
+CREATE
+(start:Control {name:"Start"}),
+(ask_question:Action {name:"Ask question to clarify the objective", tool:"AskUser", params:"Pick one question to clarify the objective and ask it in {language}\nQuestion:"}),
+(is_anything_unclear:Decision {name:"Is there anything unclear in the objective?", purpose:"Find out if there is anything unclear in the objective. Let's think this out in a step by step way to be sure we have the right answer."}),
+(clarify:Action {name:"Clarify the given objective", tool:"Predict", params:"The clarified objective.\Objective:"}),
+(end:Control {name:"End"}),
+(start)-[:NEXT]->(ask_question),
+(ask_question)-[:NEXT]->(is_anything_unclear),
+(is_anything_unclear)-[:MAYBE]->(ask_question),
+(is_anything_unclear)-[:YES]->(ask_question),
+(is_anything_unclear)-[:NO]->(clarify),
+(clarify)-[:NEXT]->(end)
+```
+
+Finally we can use this behavior inside other programs using sub-programs:
 
 ```main.cypher
 CREATE
@@ -103,3 +116,5 @@ CREATE
 (start)-[:NEXT]->(clarify_objective),
 (clarify_objective)-[:NEXT]->(end)
 ```
+
+Now that you understand the basics, let's start !
