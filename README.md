@@ -5,17 +5,17 @@
 
 ## ✨ Key Features
 
-- **Efficient Storage**: The hybrid vector/graph database optimally stores both unstructured and structured knowledge acquired by the AGI system, ensuring efficient utilization of resources and maximizing performance. 
+- **Efficient Storage:** The hybrid vector/graph database optimally stores both unstructured and structured knowledge acquired by the AGI system, ensuring efficient utilization of resources and maximizing performance. 
 
-- **Metagraph Representation**: The AGI system builds its own knowledge representation using a powerful [metagraph](metagraph.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
+- **Metagraph Representation:** The AGI system builds its own knowledge representation using a powerful [Metagraph](METAGRAPH.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
 
-- **Hybrid knowledge retrieval**: The AGI system empowers users with versatile knowledge retrieval capabilities. It can explicitly request textual and graph data from the system's memory using Cypher queries, enabling precise and targeted information retrieval. Additionally, the system supports similarity-based retrieval, allowing you to discover related knowledge based on semantic similarity. This flexible approach caters to diverse information needs and enhances the exploration of knowledge.
+- **Hybrid knowledge retrieval:** The AGI system empowers users with versatile knowledge retrieval capabilities. It can explicitly request textual and graph data from the system's memory using Cypher queries, enabling precise and targeted information retrieval. Additionally, the system supports similarity-based retrieval, allowing you to discover related knowledge based on semantic similarity. This flexible approach caters to diverse information needs and enhances the exploration of knowledge.
 
 - **Granular knowledge exploration:** By aggregating graphs across different levels of abstraction, the AGI system gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
 
-- **Graph Based Programming**: The AGI system encode its behavior using a turing complete program represented as an [action and decision graph](program.md). This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow ? just modify [HybridAGI library](https://github.com/SynaLinks/HybridAGI-library).
+- **Graph Based Programming:** The AGI system encode its behavior using a turing complete program represented as an action and decision graph. This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow? [Learn how to program Hybrid AGI](PROGRAMS.md)!
 
-- **Graph Program Interpreter**: We introduce a revolutionary Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision this state-of-the-art feature enables the AGI to handle complex tasks with ease and safety.
+- **Graph Program Interpreter:** We introduce a revolutionary Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision this state-of-the-art feature enables the AGI to handle complex tasks with ease and safety.
 
 - **Virtual Filesystem:** Leveraging the power of the metagraph, the AGI system can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
 
@@ -77,17 +77,22 @@ To set up the hybrid database, follow these steps:
 
 First, you need to load the source code of HybridAGI if you wish to use it to upgrade itself:
 ```
-python3 load_source.py
+python3 load_source.py --clear // Use the clear option to reset the hybridstore
 ```
 
 Then, load the programs into the database:
 ```
-python3 load_library.py
+python3 load_programs.py --clear // Use the clear option to reset the hybridstore
 ```
 
 Once the database is set up, launch the AGI with the following command:
 ```
-chainlit run main.py -w
+chainlit run app.py -w
+```
+
+For the bolds, you can launch the AGI without GUI with:
+```
+python3 main.py
 ```
 
 ## Credits
