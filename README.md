@@ -85,12 +85,12 @@ To launch HybridAGI, follow these steps:
 
 1. Load the source code of HybridAGI if you wish to use it to upgrade itself:
    ```
-   python3 load_source.py --clear // Use the clear option to reset the hybridstore
+   python3 load_source.py // Use the --clear option to reset the hybridstore
    ```
 
 2. Load the programs into the database:
    ```
-   python3 load_programs.py --clear // Use the clear option to reset the hybridstore
+   python3 load_programs.py // Use the --clear option to reset the hybridstore
    ```
 
 3. Once the database is set up, launch the AGI with the following command:
