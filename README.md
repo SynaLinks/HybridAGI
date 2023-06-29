@@ -13,7 +13,7 @@
 
 - **Granular knowledge exploration:** By aggregating graphs across different levels of abstraction, the AGI system gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
 
-- **Graph Based Programming:** The AGI system encode its behavior using a turing complete program represented as an action and decision graph. This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow? [Learn how to program Hybrid AGI](PROGRAMS.md)!
+- **Graph Based Programming:** The AGI system encode its behavior using a turing complete program represented as a Generalized Decision and Action Graph. This capability ensure the system to follow a structured and logical behavior. Wants to adapt its behavior to your workflow? [Learn how to program Hybrid AGI](PROGRAMS.md)!
 
 - **Graph Program Interpreter:** We introduce a revolutionary Agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision this state-of-the-art feature enables the AGI to handle complex tasks with ease and safety.
 
