@@ -33,6 +33,7 @@ from hybrid_agi.tools.text_editor import (
 )
 
 from hybrid_agi.tools.ask_user import AskUserTool
+from hybrid_agi.tools.speak import SpeakTool
 from hybrid_agi.tools.upload import UploadTool
 
 from hybrid_agi.agents.interpreters.program_interpreter import GraphProgramInterpreter
@@ -125,6 +126,7 @@ def main():
     )
 
     ask_user = AskUserTool(language=cfg.user_language)
+    speak = SpeakTool(language=cfg.user_language)
 
     shell_tool = VirtualShellTool(virtual_shell=virtual_shell)
 
@@ -155,6 +157,11 @@ def main():
             name=ask_user.name,
             func=ask_user.run,
             description=ask_user.description
+        ),
+        Tool(
+            name=speak.name,
+            func=speak.run,
+            description=speak.description
         ),
         Tool(
             name=write_file.name,

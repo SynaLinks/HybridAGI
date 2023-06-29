@@ -34,6 +34,7 @@ from hybrid_agi.tools.text_editor import (
 )
 
 from hybrid_agi.tools.ui.ask_user import UIAskUserTool
+from hybrid_agi.tools.ui.speak import UISpeakTool
 from hybrid_agi.tools.ui.upload import UIUploadTool
 
 from hybrid_agi.agents.interpreters.program_interpreter import GraphProgramInterpreter
@@ -125,6 +126,7 @@ def load():
     )
 
     ask_user = UIAskUserTool(language=cfg.user_language)
+    speak = UISpeakTool(language=cfg.user_language)
 
     shell_tool = VirtualShellTool(virtual_shell=virtual_shell)
 
@@ -155,6 +157,11 @@ def load():
             name=ask_user.name,
             func=ask_user.run,
             description=ask_user.description
+        ),
+        Tool(
+            name=speak.name,
+            func=speak.run,
+            description=speak.description
         ),
         Tool(
             name=write_file.name,
