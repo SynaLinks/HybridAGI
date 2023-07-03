@@ -13,7 +13,7 @@ Welcome to the HybridAGI repository, a cutting-edge, free, and open-source softw
 
 - **Granular Knowledge Exploration:** By aggregating graphs across different levels of abstraction, HybridAGI gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
 
-- **Graph-Based Programming:** HybridAGI allows you to encode its behavior using a Turing complete program represented as a Generalized Decision and Action Graph. This capability ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](PROGRAMS.md)!
+- **Graph-Based Programming:** HybridAGI allows you to encode its behavior using a Turing complete program represented as a Generalized Decision and Action Graph. This capability ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-library)!
 
 - **Graph Program Interpreter:** We introduce a revolutionary agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision-making, this state-of-the-art feature enables the AGI to handle complex tasks with ease and safety.
 

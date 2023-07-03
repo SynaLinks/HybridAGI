@@ -17,15 +17,17 @@ class GraphProgramInterpreter(BaseModel):
     hybridstore: RedisGraphHybridStore
     llm: BaseLanguageModel
     program_key: str
-    program: Optional[Graph] = None
     prompt: str = ""
     default_prompt: str = ""
+    final_prompt: str = ""
+    monitoring_prompt: str = ""
     program_stack: Iterable = deque()
     max_iteration: int = 50
     max_decision_attemps: int = 5
     allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
     language: str = "English"
+    tools_instructions: str = ""
     monitoring: bool = True
     verbose: bool = True
 
@@ -40,6 +42,8 @@ class GraphProgramInterpreter(BaseModel):
             llm: BaseLanguageModel,
             program_key:str = "",
             prompt:str = "",
+            monitoring_prompt:str = "",
+            final_prompt:str = "",
             tools:List[Tool] = [],
             max_iteration: int = 50,
             max_decision_attemps: int = 5,
@@ -49,13 +53,16 @@ class GraphProgramInterpreter(BaseModel):
         ):
         if program_key == "":
             program_key = hybridstore.main.name
-        program = Graph(program_key, hybridstore.client)
+        final_prompt = final_prompt if final_prompt else "Final Answer:"
+        monitoring_prompt = monitoring_prompt if monitoring_prompt else "Critisize and show your work. Without additionnal information.\nCritique:"
         super().__init__(
             hybridstore = hybridstore,
             llm = llm,
             program_key = program_key,
             program = program,
             prompt = prompt,
+            monitoring_prompt = monitoring_prompt,
+            final_prompt = final_prompt,
             default_prompt = prompt,
             max_iteration = max_iteration,
             max_decision_attemps = max_decision_attemps,
@@ -63,9 +70,12 @@ class GraphProgramInterpreter(BaseModel):
             monitoring = monitoring,
             verbose = verbose
         )
+        self.tools_instructions = "You have access to the following tools:\n"
         for tool in tools:
+            self.tools_instructions += f"{tool.name}:{tool.description}"
             self.allowed_tools.append(tool.name)
             self.tools_map[tool.name] = tool
+        self.prompt += self.tools_instructions
 
     def get_current_program(self) -> Optional[Graph]:
         """Method to retreive the current plan from the stack"""
@@ -197,21 +207,20 @@ class GraphProgramInterpreter(BaseModel):
 
     def monitor(self):
         """Method to monitor the process"""
-        prompt = "Critisize the above process and show your work. Without additionnal information.\nCritique:"
-        critique = self.predict(prompt)
+        critique = self.predict(self.monitoring_prompt)
         self.update(f"Critique: {critique}")
 
     def clear(self):
         """Method to clear the prompt"""
-        self.prompt = self.default_prompt
+        self.prompt = self.default_prompt + self.tools_instructions
 
     def run(self, objective:str):
         """Method to run the agent"""
         self.clear()
         self.update(f"The objective given by the User is: {objective}")
         try:
-            self.execute_program(self.hybridstore.main.name)
-            result = self.predict("Final Answer:")
+            self.execute_program(self.program_key)
+            result = self.predict(self.final_prompt)
             return result
         except Exception as err:
             return f"Error occured: {str(err)}"

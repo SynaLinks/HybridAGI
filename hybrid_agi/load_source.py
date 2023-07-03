@@ -67,7 +67,7 @@ def main():
         text_editor = virtual_text_editor,
         verbose = cfg.debug_mode
     )
-    index.add_folders(["../HybridAGI"], folder_names=["/home/user/Workspace/HybridAGI"])
+    index.add_folders(["../HybridAGI", cfg.library_directory], folder_names=["/home/user/Workspace/HybridAGI", "/home/user/Workspace/MyGraphPrograms"])
     print(f"{Fore.YELLOW}[*] Done.{Style.RESET_ALL}")
 
 if __name__ == "__main__":
