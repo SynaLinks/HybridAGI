@@ -59,7 +59,6 @@ class GraphProgramInterpreter(BaseModel):
             hybridstore = hybridstore,
             llm = llm,
             program_key = program_key,
-            program = program,
             prompt = prompt,
             monitoring_prompt = monitoring_prompt,
             final_prompt = final_prompt,
