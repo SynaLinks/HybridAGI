@@ -7,7 +7,8 @@ from langchain.tools import BaseTool, StructuredTool, Tool, tool
 class LoadProgramTool(BaseTool):
     hybridstore: RedisGraphVectorStore
     name = "LoadProgram"
-    description = f"""
+    description = \
+    """
     Usefull to load a Cypher program for testing
     """
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
@@ -20,10 +21,10 @@ class LoadProgramTool(BaseTool):
 
 class SimulateProgramTool(BaseTool):
     hybridstore: RedisGraphVectorStore
-    tools = List[BaseTool] = []
-    tools = List[BaseTool] = []
-    name = "SimulateProgram"
-    description = f"""
+    tools: List[BaseTool] = []
+    name: str = "SimulateProgram"
+    description: str = \
+    """
     Usefull to simulate the execution of a Cypher graph program for testing
     """
 

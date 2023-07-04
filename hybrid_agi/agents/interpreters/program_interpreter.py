@@ -53,7 +53,7 @@ class GraphProgramInterpreter(BaseModel):
         ):
         if program_key == "":
             program_key = hybridstore.main.name
-        final_prompt = final_prompt if final_prompt else "Final Answer:"
+        final_prompt = final_prompt if final_prompt else "The final answer in {language}.\nFinal Answer:"
         monitoring_prompt = monitoring_prompt if monitoring_prompt else "Critisize and show your work. Without additionnal information.\nCritique:"
         super().__init__(
             hybridstore = hybridstore,
