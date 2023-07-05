@@ -185,7 +185,7 @@ class VirtualTextEditor(FileSystemUtility):
         self.last_content_consulted = content_key
 
         if next_key != "":
-            return content + "\n...\n[Use multiple times to scroll]"
+            return content + "\n\n[...]"
         else:
             return content
 

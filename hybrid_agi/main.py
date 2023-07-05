@@ -125,8 +125,8 @@ def main():
         commands = commands
     )
 
-    ask_user = AskUserTool(language=cfg.user_language)
-    speak = SpeakTool(language=cfg.user_language)
+    ask_user = AskUserTool()
+    speak = SpeakTool()
 
     shell_tool = VirtualShellTool(virtual_shell=virtual_shell)
 

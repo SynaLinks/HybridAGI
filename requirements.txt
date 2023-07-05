@@ -4,3 +4,4 @@ langchain
 openai
 chainlit
 coverage
+tiktoken

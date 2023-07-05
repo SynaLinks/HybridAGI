@@ -12,7 +12,6 @@ from hybrid_agi.filesystem.filesystem import VirtualFileSystem
 
 from hybrid_agi.filesystem.text_editor import VirtualTextEditor
 from hybrid_agi.indexes.filesystem import VirtualFileSystemIndexWrapper
-from hybrid_agi.graph_loaders.cypher_loader import CypherGraphLoader
 
 BANNER =\
 f"""{Fore.BLUE}

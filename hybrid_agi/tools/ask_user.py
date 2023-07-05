@@ -7,16 +7,15 @@ from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, Callback
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 
 class AskUserTool(BaseTool):
-    language:str = "English"
     name = "AskUser"
-    description = f"""
+    description = \
+    """
     Usefull to ask User for additionnal information.
-    The input MUST be a question in {language}.
     The Observation is from the perspective of the User responding to you.
     """
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """Use the tool."""
-        print(f"\n{Fore.YELLOW}[*] "+query+f"{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}[*] "+query+f"{Style.RESET_ALL}")
         response = input(f"> ")
         if response:
             return "The User responded with: "+response

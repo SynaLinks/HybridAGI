@@ -1,21 +1,23 @@
-"""The ask graph tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The similarity search tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import Optional
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 
-from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
-
-class AskGraphTool(BaseTool):
+class SimilaritySearch(BaseTool):
     hybridstore: RedisGraphHybridStore
-    name = "AskGraph"
+    name = "SimilaritySearch"
     description = f"""
-    Usefull to check facts and find links between entities inside a file or folder.
-    The Input should have the destination path on the first line and then the question to ask.
+    Usefull to find similar content.
+    The Input should be the content to find.
     """
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """Use the tool."""
-        raise NotImplementedError("Not implemented yet")
+        try:
+            retreiver = self.hybridstore.as_retreiver()
+
+        except Exception as err:
+            return str(err)
 
     async def _arun(self, query: str,  run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
         """Use the tool asynchronously."""

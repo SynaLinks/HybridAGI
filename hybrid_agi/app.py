@@ -125,8 +125,8 @@ def load():
         commands = commands
     )
 
-    ask_user = UIAskUserTool(language=cfg.user_language)
-    speak = UISpeakTool(language=cfg.user_language)
+    ask_user = UIAskUserTool()
+    speak = UISpeakTool()
 
     shell_tool = VirtualShellTool(virtual_shell=virtual_shell)
 

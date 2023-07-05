@@ -32,10 +32,11 @@ class UploadTool(BaseTool):
             text_editor: VirtualTextEditor,
             downloads_directory: str,
             name:str = "Upload",
-            description:str ="""
-            Usefull to send a folder or file for testing and inspection.
-            The input should be the target path.
-            """
+            description:str = \
+        """
+    Usefull to upload a folder or file to the User.
+    The Input should be the target path.
+        """
         ):
         super().__init__(
             name = name,

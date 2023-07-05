@@ -7,11 +7,10 @@ from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, Callback
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 
 class SpeakTool(BaseTool):
-    language:str = "English"
     name = "Speak"
-    description = f"""
+    description = \
+    """
     Usefull to tell information to the User.
-    The input MUST be a question in {language}.
     """
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """Use the tool."""

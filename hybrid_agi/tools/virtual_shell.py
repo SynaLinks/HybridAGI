@@ -26,7 +26,7 @@ class VirtualShellTool(BaseTool):
             self,
             virtual_shell: VirtualShell = None,
             name: str = "VirtualShell",
-            description: str = "Usefull to navigate into your hybrid database and organize it"
+            description: str = "Usefull to navigate into your hybrid database and organize it."
         ):
         description = \
     f"""

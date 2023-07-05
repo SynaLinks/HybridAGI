@@ -142,7 +142,7 @@ class ReadFileTool(BaseTool):
             filesystem: VirtualFileSystem,
             text_editor: VirtualTextEditor,
             name = "ReadFile",
-            description =\
+            description = \
     """
     Usefull when you want to read or check an existing file.
     The input should be the target path.
