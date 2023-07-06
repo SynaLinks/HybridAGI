@@ -1,4 +1,7 @@
 # Hybrid AGI: Unleash the Power of Combined Vector and Graph Databases
+
+[![](https://dcbadge.vercel.app/api/server/BX5wTy6H)](https://discord.gg/BX5wTy6H)
+
 ## The New AGI Operating System!
 
 Welcome to the HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.
@@ -31,7 +34,7 @@ Hybrid AGI systems offer numerous advantages that propel the field of AGI forwar
 - **Enhanced Reasoning Capabilities:** The combination of structured and unstructured data reduces hallucination and enables reasoning on various data types.
 - **Uncovering Complex Relationships:** By navigating paths in graphs, the AGI system can discover hidden and intricate connections between different concepts.
 - **Integrating Prior Knowledge:** The system can leverage structured and unstructured prior knowledge such as business processes, ontologies, and documentation to enhance its understanding.
-- **Structured Planning:** Graphs enable the AGI system to follow structured plans with precision, minimizing ambiguity.
+- **Structured Planning:** Graphs enable the AGI system to follow structured programs with precision, minimizing ambiguity.
 
 ## 🎉 Installation
 
@@ -52,12 +55,12 @@ To get started with HybridAGI, follow these steps:
    ./install_library.sh
    ```
 
-   If you want to use the private mode, which utilizes a local model instead of OpenAI's models, run:
+   If you want to use the private mode, which uses a local model instead of OpenAI's models, run:
    ```
    ./install_local.sh
    ```
 
-   For more information on setting up the local model, refer to the [documentation](https://github.com/go-skynet/LocalAI).
+   For more information on setting up the local model, refer to the [LocalAI documentation](https://github.com/go-skynet/LocalAI).
 
 4. Update the `.env.template` file with your details and preferences, and rename it to `.env`.
 
