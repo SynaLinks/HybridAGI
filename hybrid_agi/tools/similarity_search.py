@@ -14,12 +14,15 @@ class SimilaritySearch(BaseTool):
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """Use the tool."""
         try:
-            retreiver = self.hybridstore.as_retreiver()
-
+            docs = self.hybridstore.simularity_search(query)
+            if docs
+                return docs[0].page_content
+            else:
+                return "Nothing find"
         except Exception as err:
             return str(err)
 
     async def _arun(self, query: str,  run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
         """Use the tool asynchronously."""
-        raise NotImplementedError("Not implemented yet")
+        raise NotImplementedError("SimilaritySearch does not support async")
 
