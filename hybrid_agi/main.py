@@ -171,12 +171,12 @@ def main():
         Tool(
             name=update_file.name,
             func=update_file.run,
-            description=write_file.description
+            description=update_file.description
         ),
         Tool(
             name=read_file.name,
             func=read_file.run,
-            description=write_file.description
+            description=read_file.description
         ),
         Tool(
             name=upload.name,
