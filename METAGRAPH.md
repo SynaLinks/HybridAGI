@@ -2,6 +2,8 @@
 
 Prepare to delve into the fascinating world of Hybrid AGI meta knowledge graph! This structure, also known as metagraph, play a crucial role in capturing and organizing the intricate web of information within an AGI's hybrid memory. Let's explore the concept of metagraph and uncover its potential for enabling effective reasoning and knowledge representation.
 
+![The metagraph](img/metagraph.png)
+
 ### The Meta Knowledge Graph in Hybrid AGI
 
 The meta knowledge graph, or metagraph, is a foundational structure that serves as a comprehensive representation of an AGI's hybrid memory. It provides a hierarchical view of documents, folders, and their associated structures, enabling the AGI system to reason effectively across multiple levels of abstraction. By capturing the interconnections and relationships among these elements, the metagraph forms the backbone of knowledge organization within the Hybrid AGI.

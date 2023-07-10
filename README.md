@@ -6,6 +6,8 @@
 
 Welcome to the HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.
 
+![The metagraph](img/metagraph.png)
+
 ## ✨ Key Features
 
 - **Efficient Storage:** HybridAGI's hybrid vector/graph database optimally stores both unstructured and structured knowledge acquired by the AGI system, ensuring efficient utilization of resources and maximizing performance.
