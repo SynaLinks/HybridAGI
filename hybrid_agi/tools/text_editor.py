@@ -50,7 +50,7 @@ class WriteFileTool(BaseTool):
     """
     Usefull when you want to write into a new file.
     The Input should be the target path followed by the data to write.
-    Both parameters needs to be double quoted.
+    Both parameters needs to be double quoted without punctuation between them.
     """
         ):
         super().__init__(
@@ -101,7 +101,7 @@ class UpdateFileTool(BaseTool):
     """
     Usefull when you want to modify an existing file using your own LLM.
     The Input should be the target path followed by the modifications to make.
-    Both parameters needs to be double quoted.
+    Both parameters needs to be double quoted without punctuation between them.
     """
         ):
         super().__init__(

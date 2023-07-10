@@ -72,7 +72,7 @@ class UploadTool(BaseTool):
         f = zipfile.ZipFile(filename+".zip", mode='a')
         if self.text_editor.is_file(path):
             file_content = self.text_editor.get_document(path)
-            f.writestr(path, file_content)
+            f.writestr(basename(path), file_content)
         elif self.text_editor.is_folder(path):
             self.zip_folders_and_files(path, f)
         else:
@@ -84,14 +84,12 @@ class UploadTool(BaseTool):
         """Method to add folder and files"""
         result_query = self.hybridstore.metagraph.query('MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n')
         for record in result_query.result_set:
-            subfolder_name = record[0].properties["name"]
-            subfolder_path = join(subfolder_path, basename(subfolder_name))
+            subfolder_path = record[0].properties["name"]
             zip_file.mkdir(subfolder_path, mode="666")
             self.add_folders_and_files(subfolder_path, zip_file)
-            result_query = self.hybridstore.metagraph.query('MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n')
+        result_query = self.hybridstore.metagraph.query('MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n')
         for record in result_query.result_set:
-            document_name = record[0].properties["name"]
-            document_path = join(folder_path, basename(document_name))
+            document_path = record[0].properties["name"]
             file_content = self.text_editor.get_document(document_path)
             zip_file.writestr(document_path, file_content)
 
@@ -99,4 +97,4 @@ class UploadTool(BaseTool):
         return self.upload(query.strip())
 
     def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        return self._run(query, run_manager)
+        raise NotImplementedError("Upload does not support async")

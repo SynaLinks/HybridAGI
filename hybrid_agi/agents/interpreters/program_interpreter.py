@@ -13,8 +13,6 @@ from langchain.base_language import BaseLanguageModel
 from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
 from langchain.prompts.prompt import PromptTemplate
 
-from hybrid_agi.prompt import GRAPH_OF_PROMPT_TUTORIAL
-
 class GraphProgramInterpreter(BaseModel):
     """LLM based interpreter for graph programs"""
     hybridstore: RedisGraphHybridStore
@@ -24,7 +22,7 @@ class GraphProgramInterpreter(BaseModel):
     default_prompt: str = ""
     final_prompt: str = ""
     monitoring_prompt: str = ""
-    prompt_queue: Iterable = deque()
+    prompt_deque: Iterable = deque()
     program_stack: Iterable = deque()
     max_iteration: int = 50
     max_decision_attemps: int = 5
@@ -101,7 +99,7 @@ class GraphProgramInterpreter(BaseModel):
         """Predict the next words"""
         prompt_template = PromptTemplate.from_template(self.prompt+"\n"+prompt)
         chain = LLMChain(llm=self.llm, prompt=prompt_template, verbose=False)
-        prediction = chain.predict(language=self.language, tutorial=GRAPH_OF_PROMPT_TUTORIAL)
+        prediction = chain.predict(language=self.language)
         return prediction
 
     def execute_program(self, program_index:str):
@@ -216,9 +214,9 @@ class GraphProgramInterpreter(BaseModel):
             else:
                 print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
         while self.llm.get_num_tokens(self.prompt + "\n" + prompt) > self.max_token:
-            self.prompt = "\n".join(self.prompt_queue.pop())
+            self.prompt = "\n".join(self.prompt_deque.pop())
         self.prompt += "\n" + prompt
-        self.prompt_queue.appendleft(prompt)
+        self.prompt_deque.appendleft(prompt)
 
     def monitor(self):
         """Method to monitor the process"""

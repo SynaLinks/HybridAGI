@@ -16,7 +16,7 @@ Welcome to the HybridAGI repository, a cutting-edge, free, and open-source softw
 
 - **Granular Knowledge Exploration:** By aggregating graphs across different levels of abstraction, HybridAGI gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
 
-- **Graph-Based Programming:** HybridAGI allows you to encode its behavior using a Turing complete program represented as a Generalized Decision and Action Graph. This capability ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-library)!
+- **Graph-Based Prompt Programming:** HybridAGI allows you to encode its behavior using a Turing complete program represented as a Generalized Decision and Action Graph. This capability ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-library)!
 
 - **Graph Program Interpreter:** We introduce a revolutionary agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision-making, this state-of-the-art feature enables the AGI to handle complex tasks with ease and safety.
 
@@ -33,7 +33,7 @@ Hybrid AGI systems offer numerous advantages that propel the field of AGI forwar
 - **Efficient Data Representation:** Graphs excel at representing complex data and offer flexibility in querying.
 - **Enhanced Reasoning Capabilities:** The combination of structured and unstructured data reduces hallucination and enables reasoning on various data types.
 - **Uncovering Complex Relationships:** By navigating paths in graphs, the AGI system can discover hidden and intricate connections between different concepts.
-- **Integrating Prior Knowledge:** The system can leverage structured and unstructured prior knowledge such as business processes, ontologies, and documentation to enhance its understanding.
+- **Integrating Prior Knowledge:** The system can leverage structured and unstructured prior knowledge such as business processes and documentation to enhance its understanding.
 - **Structured Planning:** Graphs enable the AGI system to follow structured programs with precision, minimizing ambiguity.
 
 ## 🎉 Installation

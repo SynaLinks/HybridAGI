@@ -14,7 +14,7 @@ class SimilaritySearch(BaseTool):
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """Use the tool."""
         try:
-            docs = self.hybridstore.simularity_search(query)
+            docs = self.hybridstore.similarity_search(query)
             if docs
                 return docs[0].page_content
             else:
