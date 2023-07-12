@@ -26,14 +26,13 @@ class VirtualShellTool(BaseTool):
             self,
             virtual_shell: VirtualShell = None,
             name: str = "VirtualShell",
-            description: str = "Usefull to navigate into your hybrid database and organize it."
+            description: str = "Usefull to navigate into your hybrid database and organize it in a unix like fashion."
         ):
         description = \
     f"""
     {description}
-    You can use the following commands to interact with your hybrid memory: {list(virtual_shell.commands_map.keys())}
+    You can use the following unix commands to interact with your hybrid memory: {list(virtual_shell.commands_map.keys())}
     You can only use ONE COMMAND AT A TIME, piping, redirection and multiple commands are NOT supported.
-    Use the parameter --help for more information about the command usage.
     """
         super().__init__(
             name = name,
