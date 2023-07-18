@@ -13,13 +13,9 @@
 
 - **Metagraph Representation:** The AGI system builds its own knowledge representation using a powerful [Metagraph](METAGRAPH.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
 
-<!-- - **Hybrid Knowledge Retrieval:** HybridAGI empowers users with versatile knowledge retrieval capabilities. It can explicitly request textual and graph data from the system's memory using Cypher queries, enabling precise and targeted information retrieval. Additionally, the system supports similarity-based retrieval, allowing you to discover related knowledge based on semantic similarity. This flexible approach caters to diverse information needs and enhances the exploration of knowledge.
-
-- **Granular Knowledge Exploration:** By aggregating graphs across different levels of abstraction, HybridAGI gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis. -->
-
 - **Graph-Based Prompt Programming:** HybridAGI allows you to encode its behavior using a Turing complete program represented as a Generalized Decision and Action Graph. This capability ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-library)!
 
-- **Graph Program Interpreter:** We introduce a revolutionary agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision-making, this state-of-the-art feature enables the AGI to handle complex tasks with with precision, minimizing ambiguity.
+- **Graph Program Interpreter:** We introduce a [revolutionary agent](hybrid_agi/agents/interpreters/program_interpreter.py) that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision-making, this state-of-the-art feature enables the AGI to handle complex tasks with with precision, minimizing ambiguity.
 
 - **Virtual Filesystem:** Leveraging the power of the metagraph, HybridAGI can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
 
@@ -28,6 +24,7 @@
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community.
 
 ## Roadmap
+
 Thank you for checking out our project! Below is our exciting roadmap that outlines the future enhancements and features we plan to implement:
 
 ### Phase 1: Strengthening Core Functionality
@@ -40,8 +37,8 @@ We are committed to pushing the boundaries of our system's self-programming capa
 - **Enhancing Retrieval Capabilities**:
 Efficient and accurate retrieval of information is essential. We'll work on optimizing our retrieval algorithms, speeding up the search process and providing users with more relevant results from the metagraph and hybridstore.
 
-- **Developing a Fast Text-Only Language Model (LLM) with Large Context Windows**:
-In the context of HybridAGI, we recognize the significance of a dedicated language model tailored to text-based tasks. We will focus on creating an ultra-fast LLM capable of processing vast amounts of text data efficiently. This LLM will be designed with extra-large context windows, enabling it to understand complex textual contexts better and provide more accurate responses.
+- **Developing a Fast Text-Only Language Model (LLM) with Large Context Size**:
+In the context of HybridAGI, we recognize the significance of a dedicated language model tailored to text-based tasks. We will focus on creating an ultra-fast LLMs capable of processing vast amounts of text data efficiently. This LLM will be designed with extra-large context size, enabling HybridAGI to reason on longer programs and provide more accurate responses. We plan to train two different LLM, one for decision making and the other for acting allowing us to optimize speed and efficiency.
 
 ### Phase 2: Multimodal Support
 

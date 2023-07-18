@@ -230,7 +230,7 @@ class GraphProgramInterpreter(BaseModel):
     def run(self, objective:str):
         """Method to run the agent"""
         self.clear()
-        self.prompt += "\n"+f"The Objective is from the perspective of the User asking you to perform a task.\nObjective: {objective}"
+        self.prompt += "\n"+f"The Objective is from the perspective of the User.\nObjective: {objective}"
         print(f"{Fore.GREEN}{self.prompt}{Style.RESET_ALL}")
         self.execute_program(self.program_key)
         result = self.predict(self.final_prompt)
