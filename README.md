@@ -1,7 +1,7 @@
 # Hybrid AGI: Unleash the Power of Combined Vector and Graph Databases
 ## The New AGI Operating System
 
-[logo](img/synalinks_logo.png)
+![logo](img/synalinks_logo.png)
 
 *Welcome to the HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
 
