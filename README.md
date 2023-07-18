@@ -1,12 +1,11 @@
 # Hybrid AGI: Unleash the Power of Combined Vector and Graph Databases
+## The New AGI Operating System
 
-[![](https://dcbadge.vercel.app/api/server/BX5wTy6H)](https://discord.gg/BX5wTy6H)
+<p align="center">
+  <img height="400" src="img/synalinks_logo.png">
+</p>
 
-## The New AGI Operating System!
-
-Welcome to the HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.
-
-![The metagraph](img/metagraph.png)
+*Welcome to the HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
 
 ## ✨ Key Features
 
@@ -14,13 +13,13 @@ Welcome to the HybridAGI repository, a cutting-edge, free, and open-source softw
 
 - **Metagraph Representation:** The AGI system builds its own knowledge representation using a powerful [Metagraph](METAGRAPH.md), which acts as a dynamic map of its hybrid memory. This comprehensive snapshot allows for a holistic understanding of the system's knowledge landscape.
 
-- **Hybrid Knowledge Retrieval:** HybridAGI empowers users with versatile knowledge retrieval capabilities. It can explicitly request textual and graph data from the system's memory using Cypher queries, enabling precise and targeted information retrieval. Additionally, the system supports similarity-based retrieval, allowing you to discover related knowledge based on semantic similarity. This flexible approach caters to diverse information needs and enhances the exploration of knowledge.
+<!-- - **Hybrid Knowledge Retrieval:** HybridAGI empowers users with versatile knowledge retrieval capabilities. It can explicitly request textual and graph data from the system's memory using Cypher queries, enabling precise and targeted information retrieval. Additionally, the system supports similarity-based retrieval, allowing you to discover related knowledge based on semantic similarity. This flexible approach caters to diverse information needs and enhances the exploration of knowledge.
 
-- **Granular Knowledge Exploration:** By aggregating graphs across different levels of abstraction, HybridAGI gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis.
+- **Granular Knowledge Exploration:** By aggregating graphs across different levels of abstraction, HybridAGI gains valuable insights. This granular approach enables a detailed understanding of the interconnectedness and relationships within the knowledge, facilitating advanced reasoning and analysis. -->
 
 - **Graph-Based Prompt Programming:** HybridAGI allows you to encode its behavior using a Turing complete program represented as a Generalized Decision and Action Graph. This capability ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-library)!
 
-- **Graph Program Interpreter:** We introduce a revolutionary agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision-making, this state-of-the-art feature enables the AGI to handle complex tasks with ease and safety.
+- **Graph Program Interpreter:** We introduce a revolutionary agent that leverages logic and graphs to determine actions based on a program. By reducing ambiguity and employing probabilistic decision-making, this state-of-the-art feature enables the AGI to handle complex tasks with with precision, minimizing ambiguity.
 
 - **Virtual Filesystem:** Leveraging the power of the metagraph, HybridAGI can seamlessly operate within its own memory, creating a virtual filesystem-like environment. This enables efficient data organization, retrieval, and manipulation, enhancing the system's ability to work with information effectively and safely.
 
@@ -28,15 +27,33 @@ Welcome to the HybridAGI repository, a cutting-edge, free, and open-source softw
 
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community.
 
-## 💡 Why Hybrid AGI Systems Matter
+## Roadmap
+Thank you for checking out our project! Below is our exciting roadmap that outlines the future enhancements and features we plan to implement:
 
-Hybrid AGI systems offer numerous advantages that propel the field of AGI forward:
+### Phase 1: Strengthening Core Functionality
 
-- **Efficient Data Representation:** Graphs excel at representing complex data and offer flexibility in querying.
-- **Enhanced Reasoning Capabilities:** The combination of structured and unstructured data reduces hallucination and enables reasoning on various data types.
-- **Uncovering Complex Relationships:** By navigating paths in graphs, the AGI system can discover hidden and intricate connections between different concepts.
-- **Integrating Prior Knowledge:** The system can leverage structured and unstructured prior knowledge such as business processes and documentation to enhance its understanding.
-- **Structured Planning:** Graphs enable the AGI system to follow structured programs with precision, minimizing ambiguity.
+In this phase, our primary focus will be on improving the core capabilities of the system to ensure a robust foundation for future developments.
+
+- **Enhancing Self-Programming Capabilities**:
+We are committed to pushing the boundaries of our system's self-programming capabilities. By leveraging HybridAGI graph programs, we aim to enable our system to imagine, develop and test its own graph programs. This means the system will become more efficient, adaptive, and capable of handling a broader range of tasks.
+
+- **Enhancing Retrieval Capabilities**:
+Efficient and accurate retrieval of information is essential. We'll work on optimizing our retrieval algorithms, speeding up the search process and providing users with more relevant results from the metagraph and hybridstore.
+
+- **Developing a Fast Text-Only Language Model (LLM) with Large Context Windows**:
+In the context of HybridAGI, we recognize the significance of a dedicated language model tailored to text-based tasks. We will focus on creating an ultra-fast LLM capable of processing vast amounts of text data efficiently. This LLM will be designed with extra-large context windows, enabling it to understand complex textual contexts better and provide more accurate responses.
+
+### Phase 2: Multimodal Support
+
+Building on the strengthened core, we will focus on introducing multimodal support to the system, opening up exciting possibilities for diverse data types.
+
+- **Adding Multimodal Support into the Metagraph and Hybridstore**:
+We'll integrate support for various data modalities, including text, images, audio, and more. This enhancement will enable users to work with a rich array of data, enhancing the versatility and utility of the system.
+
+- **Integrating External Tools for Multimodal Support**:
+To ensure seamless handling and processing of different data modalities, we will collaborate with external tools and libraries specialized in multimodal data analysis. This integration will allow users to leverage cutting-edge technologies within our system.
+
+We're constantly striving to improve and expand our project, and these roadmap milestones are just a glimpse of what's in store for the future. We highly value feedback and suggestions from our community, so if you have any ideas or feature requests, please feel free to open an issue or reach out to our team. Together, we'll create a powerful and versatile platform that meets the needs of various users and use cases. Stay tuned for more updates as we make progress on this exciting journey!
 
 ## 🎉 Installation
 
