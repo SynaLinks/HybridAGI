@@ -2,7 +2,7 @@
 ## The New AGI Operating System
 
 <p align="center">
-  <img height="400" width ="480" src="img/synalinks_logo.png">
+  <img height="300" width ="360" src="img/synalinks_logo.png">
 </p>
 
 *Welcome to the HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
