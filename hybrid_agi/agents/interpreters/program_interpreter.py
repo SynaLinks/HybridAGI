@@ -214,7 +214,8 @@ class GraphProgramInterpreter(BaseModel):
             else:
                 print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
         while self.llm.get_num_tokens(self.prompt + "\n" + prompt) > self.max_token:
-            self.prompt = "\n".join(self.prompt_deque.pop())
+            self.clear()
+            self.prompt += "\n".join(self.prompt_deque.pop())
         self.prompt += "\n" + prompt
         self.prompt_deque.appendleft(prompt)
 
