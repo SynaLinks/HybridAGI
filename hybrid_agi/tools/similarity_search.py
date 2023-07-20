@@ -4,7 +4,7 @@ from typing import Optional
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 
-class SimilaritySearch(BaseTool):
+class SimilaritySearchTool(BaseTool):
     hybridstore: RedisGraphHybridStore
     name = "SimilaritySearch"
     description = f"""

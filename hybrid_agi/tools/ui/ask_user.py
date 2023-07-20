@@ -8,7 +8,7 @@ from hybrid_agi.tools.ask_user import AskUserTool
 
 class UIAskUserTool(AskUserTool):
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        res = cl.AskUserMessage(content=query, timeout=30).send()
+        res = cl.AskUserMessage(content=query, timeout=300).send()
         if res:
             return "The User responded with: "+res["content"]
         else:
