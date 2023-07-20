@@ -57,7 +57,6 @@ def start():
             temperature=cfg.temperature,
             model_name=cfg.fast_llm_model
         )
-    
     template = """
     You are Hybrid AGI, please greet the user in {language}.
     At the end, ask about what they want to do.

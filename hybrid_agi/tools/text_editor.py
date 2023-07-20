@@ -1,6 +1,6 @@
 """The tools related to the virtual text editor. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
-import shlex
+import re
 from typing import Optional, Type, List, Tuple
 from pydantic import BaseModel, Extra, Field, root_validator
 from langchain.base_language import BaseLanguageModel
@@ -12,29 +12,19 @@ from hybrid_agi.filesystem.text_editor import VirtualTextEditor
 from hybrid_agi.parsers.path import PathOutputParser
 from langchain.chains.llm import LLMChain
 
-
-class PathWithDataInputSchema(BaseModel):
-    path: str
-    data: str
-
-class PathInputSchema(BaseModel):
-    path: str
-
 def _parse_output(output:str):
-    try:
-        args = shlex.split(output)
-    except Exception as err: 
-        if "No closing quotation" in str(err):
-            try:
-                args = shlex.split('"'+output+'"')
-            except Exception as err:
-                raise err
-        else:
-            raise err
-    path = args[0]
-    path = path.replace(",", "")
-    data = args[1]
-    return path, data
+    output = output.strip()
+    if not output.endswith("\n```"):
+        output = output + "\n```"
+    pattern = r"^(?P<filename>[a-zA-Z0-9_.-]+)\n```(?P<lang>[a-zA-Z]+)\n(?P<content>.*?)\n```$"
+    match = re.match(pattern, output, re.DOTALL)
+    if match:
+        filename = match.group('filename')
+        lang = match.group('lang')
+        content = match.group('content')
+        return filename, content
+    else:
+        raise ValueError("Invalid format. Could not parse the LLM output.")
 
 class WriteFileTool(BaseTool):
     filesystem: VirtualFileSystem
@@ -49,16 +39,22 @@ class WriteFileTool(BaseTool):
             description = \
     """
     Usefull when you want to write into a new file.
-    The Input should be the target path followed by the data to write.
-    Both parameters needs to be double quoted without punctuation between them.
+    The Input should follow the following format:
+    FILENAME
+    ```LANG
+    CONTENT
+    ```
+    Where the following tokens must be replaced such that:
+    FILENAME is the lowercase file name including the file extension.
+    LANG is the markup code block language for the code's language if any.
+    CONTENT its content.
     """
         ):
         super().__init__(
             name = name,
             description = description,
             filesystem = filesystem,
-            text_editor = text_editor,
-            args_schema = PathWithDataInputSchema
+            text_editor = text_editor
         )
 
     class Config:
@@ -99,17 +95,23 @@ class UpdateFileTool(BaseTool):
             name = "UpdateFile",
             description = \
     """
-    Usefull when you want to modify an existing file using your own LLM.
-    The Input should be the target path followed by the modifications to make.
-    Both parameters needs to be double quoted without punctuation between them.
+    Usefull when you want to write into a new file.
+    The Input should follow the following format:
+    FILENAME
+    ```LANG
+    MODIFICATIONS
+    ```
+    Where the following tokens must be replaced such that:
+    FILENAME is the lowercase file name including the file extension.
+    LANG is the markup code block language for the code's language if any.
+    MODIFICATIONS are the instructions to modify the file.
     """
         ):
         super().__init__(
             name = name,
             description = description,
             filesystem = filesystem,
-            text_editor = text_editor,
-            args_schema = PathWithDataInputSchema
+            text_editor = text_editor
         )
 
     def update_file(self, path:str, modifications:str) -> str:
@@ -126,6 +128,13 @@ class UpdateFileTool(BaseTool):
 
     def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         return self._run(query, run_manager)
+
+
+class AppendFileTool(BaseTool):
+    filesystem: VirtualFileSystem
+    text_editor: VirtualTextEditor
+    path_parser = PathOutputParser()
+
 
 class ReadFileTool(BaseTool):
     filesystem: VirtualFileSystem
@@ -145,7 +154,7 @@ class ReadFileTool(BaseTool):
             description = \
     """
     Usefull when you want to read or check an existing file.
-    The input should be the target path.
+    The input should be a string containing the target path.
     Display one chunk at a time, use multiple times with the same target to scroll.
     """
         ):
@@ -153,8 +162,7 @@ class ReadFileTool(BaseTool):
             name = name,
             description = description,
             filesystem = filesystem,
-            text_editor = text_editor,
-            args_schema = PathInputSchema
+            text_editor = text_editor
         )
 
     def read_file(self, path: str) -> str:

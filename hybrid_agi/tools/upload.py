@@ -33,10 +33,10 @@ class UploadTool(BaseTool):
             downloads_directory: str,
             name:str = "Upload",
             description:str = \
-        """
+    """
     Usefull to upload a folder or file to the User.
     The Input should be the target path.
-        """
+    """
         ):
         super().__init__(
             name = name,
@@ -49,7 +49,7 @@ class UploadTool(BaseTool):
 
     def upload(self, path:str) -> str:
         try:
-            path = self.path_parser.parse(query)
+            path = self.path_parser.parse(path)
             path = self.filesystem.context.eval_path(path)
             filename = self.zip_and_download(path)
             print(f"{Fore.YELLOW}[*] Successfully archived into: {filename}{Style.RESET_ALL}")
@@ -94,7 +94,7 @@ class UploadTool(BaseTool):
             zip_file.writestr(document_path, file_content)
 
     def _run(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        return self.upload(query.strip())
+        return self.upload(query)
 
     def _arun(self, query:str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         raise NotImplementedError("Upload does not support async")
