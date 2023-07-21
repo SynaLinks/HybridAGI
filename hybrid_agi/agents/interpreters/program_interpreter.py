@@ -13,6 +13,21 @@ from langchain.base_language import BaseLanguageModel
 from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
 from langchain.prompts.prompt import PromptTemplate
 
+EVALUATION = \
+"""
+Evaluation Purpose: Evaluate the relevance of the answer to refine it if needed
+Evaluation Question: 
+You are an expert in evaluating the relevance of answers
+Please evaluate the chances of success of this response by a float between 0.0 and 100.0
+Remove any additionnal comment
+Evaluation Answer (MUST be between 0.0 and 100.0):"""
+
+REFINEMENT = \
+"""
+You are an very smart expert in improving things.
+If things can be improved, please incorporate the improvements.
+"""
+
 class GraphProgramInterpreter(BaseModel):
     """LLM based interpreter for graph programs"""
     hybridstore: RedisGraphHybridStore
@@ -32,6 +47,11 @@ class GraphProgramInterpreter(BaseModel):
     language: str = "English"
     tools_instructions: str = ""
     monitoring: bool = True
+    n_prediction_proposals: int = 2
+    n_select_sample: int = 2
+    max_thinking_steps: int = 5
+    success_threshold: float = 80.0
+    evaluation_prompt: str = ""
     verbose: bool = True
 
     class Config:
@@ -53,12 +73,17 @@ class GraphProgramInterpreter(BaseModel):
             max_token:int = 4000,
             language: str = "English",
             monitoring: bool = True,
+            n_prediction_proposals: int = 3,
+            n_select_sample: int = 2,
+            max_thinking_steps: int = 5,
+            success_threshold: float = 90.0,
+            evaluation_prompt: str = "",
             verbose: bool = True
         ):
         if program_key == "":
             program_key = hybridstore.main.name
         final_prompt = final_prompt if final_prompt else "The final answer in {language}.\nFinal Answer:"
-        monitoring_prompt = monitoring_prompt if monitoring_prompt else "Critisize the above process and show your work. Without additionnal information.\nCritique:"
+        monitoring_prompt = monitoring_prompt if monitoring_prompt else "Critisize the above Action and show your work. Without additionnal information.\nCritique:"
         super().__init__(
             hybridstore = hybridstore,
             llm = llm,
@@ -72,6 +97,10 @@ class GraphProgramInterpreter(BaseModel):
             max_token = max_token,
             language = language,
             monitoring = monitoring,
+            n_prediction_proposals = 3,
+            n_select_sample = 2,
+            max_thinking_steps = 5,
+            success_threshold = 90.0,
             verbose = verbose
         )
         self.tools_instructions = "You have access to the following tools:\n"
@@ -96,11 +125,48 @@ class GraphProgramInterpreter(BaseModel):
         return None
 
     def predict(self, prompt:str) -> str:
-        """Predict the next words"""
-        prompt_template = PromptTemplate.from_template(self.prompt+"\n"+prompt)
+        """Predict the next words using the context"""
+        prediction_prompt = (self.prompt+"\n"+prompt)[:self.max_token]
+        prompt_template = PromptTemplate.from_template(prediction_prompt)
         chain = LLMChain(llm=self.llm, prompt=prompt_template, verbose=False)
         prediction = chain.predict(language=self.language)
+        pos = prediction.find("Action:")
+        if pos> 0:
+            prediction = prediction[:pos]
         return prediction
+
+    def tree_of_thought(self, prompt:str) -> str:
+        """Enhance the prediction using tree of thought technique"""
+        # First we try to simply predict
+        first_prediction = self.predict(prompt)
+        eval_value = self.predict(prompt + first_prediction + EVALUATION)
+        selected = [first_prediction]
+        values = [float(eval_value.strip())]
+        # If its good enought we stop here
+        if max(values) > self.success_threshold:
+            return first_prediction
+        for n in range(0, self.max_thinking_steps):
+            proposals = []
+            values = []
+            for prediction in selected:
+                for i in range (0, self.n_prediction_proposals):
+                    refinement_prompt = prompt.replace("Action Input:", f"Action Input: {REFINEMENT}")
+                    proposal = self.predict(prompt + prediction + refinement_prompt)
+                    proposals.append(proposal)
+                    # print(f"Proposal {i}: \n{proposal}")
+                    eval_value = self.predict(prompt + prediction + EVALUATION)
+                    values.append(float(eval_value.strip()))
+                    # print(f"Proposal {i} Score: \n{eval_value}")
+            ids = range(0, len(proposals))
+            # Greedy selection method
+            selected_ids = sorted(ids, key=lambda x: values[x], reverse=True)[:self.n_select_sample]
+            selected = [proposals[select_id] for select_id in selected_ids]
+            values = [values[select_id] for select_id in selected_ids]
+            # print(f"Selected proposals: {selected}")
+            if max(values) > self.success_threshold:
+                break
+        # print(f"Final answer: {selected[0]}")
+        return selected[0]
 
     def execute_program(self, program_index:str):
         """Method to execute a program"""
@@ -173,14 +239,14 @@ class GraphProgramInterpreter(BaseModel):
         tool_name = node.properties["tool"]
         tool_params_prompt = node.properties["params"]
         tool_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_params_prompt}"
-        if tool_name != "Predict":
+        if tool_name == "Predict":
+            tool_input = tool_params_prompt
+            observation = self.tree_of_thought(tool_prompt)
+            final_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_input}\n{observation}"
+        else:
             tool_input = self.predict(tool_prompt)
             observation = self.execute_tool(tool_name, tool_input)
             final_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_input}\nAction Observation: {observation}"
-        else:
-            tool_input = tool_prompt
-            observation = self.predict(tool_prompt)
-            final_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\n\nAction Input: {tool_input}\n{observation}"
         self.update(final_prompt)
 
     def call_program(self, node:Node):

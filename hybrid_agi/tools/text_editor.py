@@ -16,6 +16,7 @@ def _parse_output(output:str):
     output = output.strip()
     if not output.endswith("\n```"):
         output = output + "\n```"
+    output = output.replace("\n\n```", "\n```")
     pattern = r"^(?P<filename>[a-zA-Z0-9_.-]+)\n```(?P<lang>[a-zA-Z]+)\n(?P<content>.*?)\n```$"
     match = re.match(pattern, output, re.DOTALL)
     if match:

@@ -36,7 +36,6 @@ from hybrid_agi.tools.text_editor import (
 from hybrid_agi.tools.ui.ask_user import UIAskUserTool
 from hybrid_agi.tools.ui.speak import UISpeakTool
 from hybrid_agi.tools.ui.upload import UIUploadTool
-from hybrid_agi.tools.tree_of_thought import TreeOfThoughtTool
 
 from hybrid_agi.agents.interpreters.program_interpreter import GraphProgramInterpreter
 
@@ -125,7 +124,6 @@ def load():
         commands = commands
     )
 
-    tree_of_thought = TreeOfThoughtTool()
     ask_user = UIAskUserTool()
     speak = UISpeakTool()
 
@@ -154,11 +152,6 @@ def load():
     )
 
     tools = [
-        Tool(
-            name=tree_of_thought.name,
-            func=tree_of_thought.run,
-            description=tree_of_thought.description
-        ),
         Tool(
             name=ask_user.name,
             func=ask_user.run,

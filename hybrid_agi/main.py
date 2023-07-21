@@ -35,7 +35,6 @@ from hybrid_agi.tools.text_editor import (
 from hybrid_agi.tools.ask_user import AskUserTool
 from hybrid_agi.tools.speak import SpeakTool
 from hybrid_agi.tools.upload import UploadTool
-from hybrid_agi.tools.tree_of_thought import TreeOfThoughtTool
 
 from hybrid_agi.agents.interpreters.program_interpreter import GraphProgramInterpreter
 
@@ -126,7 +125,6 @@ def main():
         commands = commands
     )
 
-    tree_of_thought = TreeOfThoughtTool()
     ask_user = AskUserTool()
     speak = SpeakTool()
 
@@ -155,11 +153,6 @@ def main():
     )
 
     tools = [
-        Tool(
-            name=tree_of_thought.name,
-            func=tree_of_thought.run,
-            description=tree_of_thought.description
-        ),
         Tool(
             name=ask_user.name,
             func=ask_user.run,
