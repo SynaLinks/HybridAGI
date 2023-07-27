@@ -9,13 +9,15 @@ from langchain.tools import Tool
 
 from hybrid_agi.config import Config
 
-from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
-from hybrid_agi.filesystem.filesystem import VirtualFileSystem
-from hybrid_agi.filesystem.shell import VirtualShell
-from hybrid_agi.filesystem.text_editor import VirtualTextEditor
-from hybrid_agi.indexes.filesystem import VirtualFileSystemIndexWrapper
+from symbolinks import (
+    RedisGraphHybridStore,
+    VirtualFileSystem,
+    VirtualShell,
+    VirtualTextEditor,
+    VirtualFileSystemIndexWrapper
+)
 
-from hybrid_agi.filesystem.commands import (
+from symbolinks.filesystem.commands import (
     ChangeDirectory,
     ListDirectory,
     MakeDirectory,
@@ -24,21 +26,19 @@ from hybrid_agi.filesystem.commands import (
     Remove
 )
 
-from hybrid_agi.tools.virtual_shell import VirtualShellTool
-
-from hybrid_agi.tools.text_editor import (
+from symbolinks.tools import (
+    VirtualShellTool,
     WriteFileTool,
-    UpdateFileTool,
-    ReadFileTool
+    ReadFileTool,
+    UploadTool
 )
 
 from hybrid_agi.tools.ask_user import AskUserTool
 from hybrid_agi.tools.speak import SpeakTool
-from hybrid_agi.tools.upload import UploadTool
 
-from hybrid_agi.agents.interpreters.program_interpreter import GraphProgramInterpreter
+from hybrid_agi.agents.interpreters.graph_program_interpreter import GraphProgramInterpreter
 
-from hybrid_agi.prompt import HYBRID_AGI_SELF_DESCRIPTION
+from hybrid_agi.prompt import HYBRID_AGI_BOARD_TEMPLATE
 
 cfg = Config()
 
@@ -96,7 +96,6 @@ def main():
 
     virtual_text_editor = VirtualTextEditor(
         hybridstore = hybridstore,
-        llm = llm,
         chunk_size = cfg.chunk_size,
         chunk_overlap = cfg.chunk_overlap,
         verbose = cfg.debug_mode
@@ -135,11 +134,6 @@ def main():
         text_editor=virtual_text_editor
     )
 
-    update_file = UpdateFileTool(
-        filesystem=virtual_filesystem,
-        text_editor=virtual_text_editor
-    )
-
     read_file = ReadFileTool(
         filesystem=virtual_filesystem,
         text_editor=virtual_text_editor
@@ -169,11 +163,6 @@ def main():
             description=write_file.description
         ),
         Tool(
-            name=update_file.name,
-            func=update_file.run,
-            description=update_file.description
-        ),
-        Tool(
             name=read_file.name,
             func=read_file.run,
             description=read_file.description
@@ -190,15 +179,13 @@ def main():
         )
     ]
 
-    instructions = HYBRID_AGI_SELF_DESCRIPTION
-
     interpreter = GraphProgramInterpreter(
         hybridstore,
         llm,
-        prompt = instructions,
+        prompt = HYBRID_AGI_BOARD_TEMPLATE,
         tools = tools,
         language = cfg.user_language,
-        max_iteration = cfg.max_iteration,
+        max_iterations = cfg.max_iterations,
         monitoring = cfg.monitoring,
         verbose = cfg.debug_mode
     )

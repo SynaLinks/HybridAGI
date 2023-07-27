@@ -15,7 +15,7 @@ class Config():
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
-        self.max_iteration = int(os.getenv("MAX_ITERATION", "50"))
+        self.max_iterations = int(os.getenv("MAX_ITERATIONS", "100"))
         self.monitoring = os.getenv("MONITORING", "False") == "True"
 
         self.chunk_size = int(os.getenv("CHUNK_SIZE", 1000))

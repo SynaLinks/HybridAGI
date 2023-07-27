@@ -6,12 +6,15 @@ from colorama import Fore, Style
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 
+from symbolinks import (
+    RedisGraphHybridStore,
+    CypherGraphLoader,
+    VirtualFileSystem,
+    VirtualTextEditor,
+    VirtualFileSystemIndexWrapper
+)
+
 from hybrid_agi.config import Config
-from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
-from hybrid_agi.graph_loaders.cypher_loader import CypherGraphLoader
-from hybrid_agi.filesystem.filesystem import VirtualFileSystem
-from hybrid_agi.filesystem.text_editor import VirtualTextEditor
-from hybrid_agi.indexes.filesystem import VirtualFileSystemIndexWrapper
 
 BANNER =\
 f"""{Fore.BLUE}
@@ -53,7 +56,6 @@ def main():
 
     text_editor = VirtualTextEditor(
         hybridstore = hybridstore,
-        llm = llm,
         chunk_size = cfg.chunk_size,
         chunk_overlap = cfg.chunk_overlap,
         verbose = cfg.debug_mode

@@ -10,50 +10,28 @@ from collections import OrderedDict
 from langchain.chains.llm import LLMChain
 from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
-from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
+from symbolinks import RedisGraphHybridStore
 from langchain.prompts.prompt import PromptTemplate
-
-EVALUATION = \
-"""
-Evaluation Purpose: Evaluate the relevance of the answer to refine it if needed
-Evaluation Question: 
-You are an expert in evaluating the relevance of answers
-Please evaluate the chances of success of this response by a float between 0.0 and 100.0
-Remove any additionnal comment
-Evaluation Answer (MUST be between 0.0 and 100.0):"""
-
-REFINEMENT = \
-"""
-You are an very smart expert in improving things.
-If things can be improved, please incorporate the improvements.
-"""
 
 class GraphProgramInterpreter(BaseModel):
     """LLM based interpreter for graph programs"""
     hybridstore: RedisGraphHybridStore
     llm: BaseLanguageModel
-    program_key: str
+    program_key: str = ""
+    objective: str = ""
+    program_trace: str = ""
     prompt: str = ""
-    default_prompt: str = ""
-    final_prompt: str = ""
     monitoring_prompt: str = ""
-    prompt_deque: Iterable = deque()
     program_stack: Iterable = deque()
-    max_iteration: int = 50
-    max_decision_attemps: int = 5
-    max_token: int = 4000
     allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
     language: str = "English"
+    max_iterations: int = 100
+    max_prompt_tokens: int = 4000
     tools_instructions: str = ""
-    monitoring: bool = True
-    n_prediction_proposals: int = 2
-    n_select_sample: int = 2
-    max_thinking_steps: int = 5
-    success_threshold: float = 80.0
-    evaluation_prompt: str = ""
+    monitoring: bool = False
     verbose: bool = True
-
+    
     class Config:
         """Configuration for this pydantic object."""
         extra = Extra.forbid
@@ -66,52 +44,83 @@ class GraphProgramInterpreter(BaseModel):
             program_key:str = "",
             prompt:str = "",
             monitoring_prompt:str = "",
-            final_prompt:str = "",
             tools:List[Tool] = [],
-            max_iteration: int = 50,
-            max_decision_attemps: int = 5,
-            max_token:int = 4000,
+            max_prompt_tokens:int = 4000,
+            max_iterations:int = 100,
             language: str = "English",
-            monitoring: bool = True,
-            n_prediction_proposals: int = 3,
-            n_select_sample: int = 2,
-            max_thinking_steps: int = 5,
-            success_threshold: float = 90.0,
-            evaluation_prompt: str = "",
+            monitoring: bool = False,
             verbose: bool = True
         ):
         if program_key == "":
             program_key = hybridstore.main.name
-        final_prompt = final_prompt if final_prompt else "The final answer in {language}.\nFinal Answer:"
-        monitoring_prompt = monitoring_prompt if monitoring_prompt else "Critisize the above Action and show your work. Without additionnal information.\nCritique:"
+        monitoring_prompt = monitoring_prompt if monitoring_prompt else "Critisize the above Action Input and show your work. Without additionnal information.\nCritique:"
         super().__init__(
             hybridstore = hybridstore,
             llm = llm,
             program_key = program_key,
             prompt = prompt,
             monitoring_prompt = monitoring_prompt,
-            final_prompt = final_prompt,
-            default_prompt = prompt,
-            max_iteration = max_iteration,
-            max_decision_attemps = max_decision_attemps,
-            max_token = max_token,
+            max_prompt_tokens = max_prompt_tokens,
             language = language,
             monitoring = monitoring,
-            n_prediction_proposals = 3,
-            n_select_sample = 2,
-            max_thinking_steps = 5,
-            success_threshold = 90.0,
             verbose = verbose
         )
+
+        update_objective_tool = Tool(
+            name="UpdateObjective",
+            description=\
+    """
+    Usefull to update your long-term objective
+    The Input should be the new objective
+    """,
+            func=self.update_objective
+        )
+
+        read_tools_instructions = Tool(
+            name = "ReadToolsInstructions",
+            description = \
+    """
+    Usefull to read the tools instructions
+    No Input needed
+    """,
+            func=self.read_tools_instructions
+        )
+
+        tools.append(update_objective_tool)
+        tools.append(read_tools_instructions)
+
         self.tools_instructions = "You have access to the following tools:\n"
         for tool in tools:
             self.tools_instructions += f"\n{tool.name}:{tool.description}"
             self.allowed_tools.append(tool.name)
             self.tools_map[tool.name] = tool
-        self.prompt += "\n" +self.tools_instructions
+        self.clear()
+
+    def update_objective(self, objective:str):
+        self.objective = objective
+        return "Objective sucessfully updated"
+
+    def read_tools_instructions(self):
+        return self.tools_instructions
+
+    def get_program_trace(self, prompt:str):
+        program_trace = (self.program_trace+"\n"+prompt).format(
+            language=self.language
+        )
+        temp = self.prompt.format(
+            objective=self.objective,
+            program_trace=program_trace,
+            language=self.language
+        )
+        num_tok = self.llm.get_num_tokens(temp)
+        if num_tok > self.max_prompt_tokens:
+            program_trace = self.program_trace[num_tok-self.max_prompt_tokens:]+prompt
+        else:
+            program_trace = self.program_trace+prompt
+        return program_trace
 
     def get_current_program(self) -> Optional[Graph]:
-        """Method to retreive the current plan from the stack"""
+        """Method to retreive the current program from the stack"""
         if len(self.program_stack) > 0:
             return self.program_stack[len(self.program_stack)-1]
         return None
@@ -125,48 +134,17 @@ class GraphProgramInterpreter(BaseModel):
         return None
 
     def predict(self, prompt:str) -> str:
-        """Predict the next words using the context"""
-        prediction_prompt = (self.prompt+"\n"+prompt)[:self.max_token]
-        prompt_template = PromptTemplate.from_template(prediction_prompt)
-        chain = LLMChain(llm=self.llm, prompt=prompt_template, verbose=False)
-        prediction = chain.predict(language=self.language)
-        pos = prediction.find("Action:")
-        if pos> 0:
-            prediction = prediction[:pos]
+        """Predict the next words using the program context"""
+        template = self.prompt.format(
+            objective=self.objective,
+            program_trace=self.get_program_trace(prompt),
+        )
+        prompt = PromptTemplate.from_template(template)
+        chain = LLMChain(llm=self.llm, prompt=prompt, verbose=True)
+        prediction = chain.predict(
+            language=self.language
+        )
         return prediction
-
-    def tree_of_thought(self, prompt:str) -> str:
-        """Enhance the prediction using tree of thought technique"""
-        # First we try to simply predict
-        first_prediction = self.predict(prompt)
-        eval_value = self.predict(prompt + first_prediction + EVALUATION)
-        selected = [first_prediction]
-        values = [float(eval_value.strip())]
-        # If its good enought we stop here
-        if max(values) > self.success_threshold:
-            return first_prediction
-        for n in range(0, self.max_thinking_steps):
-            proposals = []
-            values = []
-            for prediction in selected:
-                for i in range (0, self.n_prediction_proposals):
-                    refinement_prompt = prompt.replace("Action Input:", f"Action Input: {REFINEMENT}")
-                    proposal = self.predict(prompt + prediction + refinement_prompt)
-                    proposals.append(proposal)
-                    # print(f"Proposal {i}: \n{proposal}")
-                    eval_value = self.predict(prompt + prediction + EVALUATION)
-                    values.append(float(eval_value.strip()))
-                    # print(f"Proposal {i} Score: \n{eval_value}")
-            ids = range(0, len(proposals))
-            # Greedy selection method
-            selected_ids = sorted(ids, key=lambda x: values[x], reverse=True)[:self.n_select_sample]
-            selected = [proposals[select_id] for select_id in selected_ids]
-            values = [values[select_id] for select_id in selected_ids]
-            # print(f"Selected proposals: {selected}")
-            if max(values) > self.success_threshold:
-                break
-        # print(f"Final answer: {selected[0]}")
-        return selected[0]
 
     def execute_program(self, program_index:str):
         """Method to execute a program"""
@@ -201,7 +179,7 @@ class GraphProgramInterpreter(BaseModel):
                 raise RuntimeError("Program failed after reaching a non-terminated path. Please verify your programs using RedisInsight.")
             current_node = next_node
             iteration += 1
-            if iteration > self.max_iteration:
+            if iteration > self.max_iterations:
                 raise RuntimeError("Program failed after reaching max iteration")
         self.program_stack.pop()
 
@@ -237,11 +215,13 @@ class GraphProgramInterpreter(BaseModel):
         """Method to use a tool"""
         purpose = node.properties["name"]
         tool_name = node.properties["tool"]
+        if tool_name != "Predict":
+            self.validate_tool(tool_name)
         tool_params_prompt = node.properties["params"]
         tool_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_params_prompt}"
         if tool_name == "Predict":
             tool_input = tool_params_prompt
-            observation = self.tree_of_thought(tool_prompt)
+            observation = self.predict(tool_prompt)
             final_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_input}\n{observation}"
         else:
             tool_input = self.predict(tool_prompt)
@@ -257,48 +237,34 @@ class GraphProgramInterpreter(BaseModel):
         self.execute_program(program)
         self.update(f"End SubProgram: {program}")
 
-    def execute_tool(self, name:str, query:str):
-        """Method to run the given tool"""
+    def validate_tool(self, name):
         if name not in self.allowed_tools:
             raise ValueError(f"Tool '{name}' not allowed. Please use another one.")
         if name not in self.tools_map:
             raise ValueError(f"Tool '{name}' not registered. Please use another one.")
+
+    def execute_tool(self, name:str, query:str):
+        """Method to run the given tool"""
         try:
             return self.tools_map[name].run(query)
         except Exception as err:
             return str(err)
 
     def update(self, prompt:str):
-        """Method to update the program prompt"""
-        if self.verbose:
-            if prompt.startswith("Action"):
-                print(f"{Fore.MAGENTA}{prompt}{Style.RESET_ALL}")
-            elif prompt.startswith("Decision"):
-                print(f"{Fore.BLUE}{prompt}{Style.RESET_ALL}")
-            elif prompt.startswith("Critique"):
-                print(f"{Fore.RED}{prompt}{Style.RESET_ALL}")
-            else:
-                print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
-        while self.llm.get_num_tokens(self.prompt + "\n" + prompt) > self.max_token:
-            self.clear()
-            self.prompt += "\n".join(self.prompt_deque.pop())
-        self.prompt += "\n" + prompt
-        self.prompt_deque.appendleft(prompt)
+        """Method to update the program trace"""
+        self.program_trace + "\n" + prompt
 
     def monitor(self):
         """Method to monitor the process"""
         critique = self.predict(self.monitoring_prompt)
-        self.update(f"Critique: {critique}")
+        self.update(f"Monitoring: {critique}")
 
     def clear(self):
-        """Method to clear the prompt"""
-        self.prompt = self.default_prompt + "\n" + self.tools_instructions
+        """Method to clear the program trace"""
+        self.program_trace = ""
 
     def run(self, objective:str):
         """Method to run the agent"""
-        self.clear()
-        self.prompt += "\n"+f"The Objective is from the perspective of the User.\nObjective: {objective}"
-        print(f"{Fore.GREEN}{self.prompt}{Style.RESET_ALL}")
+        self.objective = objective
         self.execute_program(self.program_key)
-        result = self.predict(self.final_prompt)
-        return result
+        return "Program Sucessfully Executed"

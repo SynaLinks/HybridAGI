@@ -7,11 +7,12 @@ from langchain.chat_models import ChatOpenAI
 
 from hybrid_agi.config import Config
 
-from hybrid_agi.hybridstores.redisgraph import RedisGraphHybridStore
-from hybrid_agi.filesystem.filesystem import VirtualFileSystem
-
-from hybrid_agi.filesystem.text_editor import VirtualTextEditor
-from hybrid_agi.indexes.filesystem import VirtualFileSystemIndexWrapper
+from symbolinks import (
+    RedisGraphHybridStore,
+    VirtualFileSystem,
+    VirtualTextEditor,
+    VirtualFileSystemIndexWrapper
+)
 
 BANNER =\
 f"""{Fore.BLUE}
@@ -53,7 +54,6 @@ def main():
 
     virtual_text_editor = VirtualTextEditor(
         hybridstore = hybridstore,
-        llm = llm,
         chunk_size = cfg.chunk_size,
         chunk_overlap = cfg.chunk_overlap,
         verbose = cfg.debug_mode

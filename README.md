@@ -1,9 +1,16 @@
 # Hybrid AGI: Unleash the Power of Combined Vector and Graph Databases
 ## The New AGI Operating System
 
+HybridAGI is a **Programmable LLM Based Autonomous Agent**, build around 3 main concepts:
+1. *The hybrid vector/graph database* which store both structured and unstructured data
+2. *The meta knowledge graph* implementing a tailored filesystem for AI allowing the system to safely query information in a unix-like fashion
+3. *The graph based prompt programming* allowing the system to follow logical and powerfull programs in the form of cypher files
+
 ![logo](img/synalinks_logo.png)
 
 *Welcome to the HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of vector and graph databases, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
+
+
 
 ## ✨ Key Features
 
