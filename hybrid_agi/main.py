@@ -36,21 +36,13 @@ from symbolinks.tools import (
 from hybrid_agi.tools.ask_user import AskUserTool
 from hybrid_agi.tools.speak import SpeakTool
 
-from hybrid_agi.agents.interpreters.graph_program_interpreter import GraphProgramInterpreter
+from hybrid_agi.agents.graph_program_interpreter import GraphProgramInterpreter
 
 from hybrid_agi.prompt import HYBRID_AGI_BOARD_TEMPLATE
 
 cfg = Config()
 
-BANNER = \
-f"""{Fore.BLUE}
-o  o o   o o--o  o--o  o-O-o o-o         O   o-o  o-O-o 
-|  |  \ /  |   | |   |   |   |  \       / \ o       |   
-O--O   O   O--o  O-Oo    |   |   O     o---o|  -o   |   
-|  |   |   |   | |  \    |   |  /      |   |o   |   |   
-o  o   o   o--o  o   o o-O-o o-o       o   o o-o  o-O-o
-    {Fore.GREEN}Unleash the Power of Combined Vector and Graph Databases{Style.RESET_ALL}
-"""
+from hybrid_agi.banner import BANNER
 
 def main():
     print(BANNER)

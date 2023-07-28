@@ -6,6 +6,8 @@ from colorama import Fore, Style
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 
+from hybrid_agi.config import Config
+
 from symbolinks import (
     RedisGraphHybridStore,
     CypherGraphLoader,
@@ -14,17 +16,7 @@ from symbolinks import (
     VirtualFileSystemIndexWrapper
 )
 
-from hybrid_agi.config import Config
-
-BANNER =\
-f"""{Fore.BLUE}
-o  o o   o o--o  o--o  o-O-o o-o         O   o-o  o-O-o 
-|  |  \ /  |   | |   |   |   |  \       / \ o       |   
-O--O   O   O--o  O-Oo    |   |   O     o---o|  -o   |   
-|  |   |   |   | |  \    |   |  /      |   |o   |   |   
-o  o   o   o--o  o   o o-O-o o-o       o   o o-o  o-O-o
-    {Fore.GREEN}Unleash the Power of Combined Vector and Graph Databases{Style.RESET_ALL}
-"""
+from hybrid_agi.banner import BANNER
 
 def main():
     print(BANNER)

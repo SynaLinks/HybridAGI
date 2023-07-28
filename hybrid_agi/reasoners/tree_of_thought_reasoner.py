@@ -8,16 +8,8 @@ class TreeOfThoughtReasoner(BaseModel):
     n_prediction_proposals: int = 2
     n_select_sample: int = 2
     max_thinking_steps: int = 5
-    success_threshold: float = 80.0
+    success_threshold: float = 90.0
     verbose: bool = False
-    naive_mode: bool = False
-
-    def naive_predict(self, prompt:str, **kwargs) -> str:
-        """Method to predict the next words"""
-        prompt_template = PromptTemplate.from_template(prompt)
-        chain = LLMChain(llm=self.llm, prompt=prompt_template, verbose=self.verbose)
-        prediction = chain.predict(**kwargs)
-        return prediction
 
     def predict(self, prompt: str, **kwargs) -> str:
         """Method to predict the next words using Tree Of Thought technique"""
@@ -61,41 +53,11 @@ class TreeOfThoughtReasoner(BaseModel):
         return selected[0]
 
     def decide(self, context: str, question: str, options: List[str]) -> str:
-        """Method to decide using Tree Of Thought Prompting technique"""
-        chain = LLMChain(llm=self.llm, prompt=DECISION_PROMPT, verbose=False)
-        choice = " or ".join(options)
-        attemps = 0
-        while attemps < self.max_decision_attemps:
-            result = chain.predict(context=context, question=question, choice=choice)
-            decision = result.strip()[-1]
-            if decision in options:
-                break
-            attemps += 1
-        if decision not in options:
-            raise ValueError(
-                f"Failed to decide after {attemps-1} attemps."+
-                " Please verify your prompts."
-            )
-        return decision
+        return self.predict_decision(context, question, options,
+            decision_prompt = TREE_OF_THOUGHT_PROMPTING_DECISION_PROMPT
+        )
 
     def evaluate(self, context: str) -> float:
-        """Method to evaluate using Tree Of Thought Prompting technique"""
-        chain = LLMChain(llm=self.llm, prompt=EVALUATION_PROMPT, verbose=False)
-        choice = " or ".join(options)
-        attemps = 0
-        score = None
-        while attemps < self.max_decision_attemps:
-            result = chain.predict(context=context)
-            evaluation = result.strip()[-1]
-            try:
-                score = float(evaluation)
-                break
-            except:
-                pass
-            attemps += 1
-        if score is None:
-            raise ValueError(
-                f"Failed to evaluate after {attemps-1} attemps."+
-                " Please verify your prompts."
-            )
-        return score
+        return self.predict_evaluation(context,
+            evaluation_prompt = TREE_OF_THOUGHT_PROMPTING_EVALUATION_PROMPT
+        )

@@ -11,9 +11,10 @@ from langchain.chains.llm import LLMChain
 from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
 from symbolinks import RedisGraphHybridStore
-from langchain.prompts.prompt import PromptTemplate
 
-class GraphProgramInterpreter(BaseModel):
+from hybrid_agi.reasoners.zero_shot_reasoner import ZeroShotReasoner
+
+class GraphProgramInterpreter(ZeroShotReasoner):
     """LLM based interpreter for graph programs"""
     hybridstore: RedisGraphHybridStore
     llm: BaseLanguageModel
@@ -53,7 +54,10 @@ class GraphProgramInterpreter(BaseModel):
         ):
         if program_key == "":
             program_key = hybridstore.main.name
-        monitoring_prompt = monitoring_prompt if monitoring_prompt else "Critisize the above Action Input and show your work. Without additionnal information.\nCritique:"
+        if not monitoring_prompt:
+            monitoring_prompt = \
+        "Critisize the above Action Input and show your work."+\
+        " Without additionnal information.\nCritique:"
         super().__init__(
             hybridstore = hybridstore,
             llm = llm,
@@ -124,33 +128,40 @@ class GraphProgramInterpreter(BaseModel):
         if len(self.program_stack) > 0:
             return self.program_stack[len(self.program_stack)-1]
         return None
+    
+    def call_subprogram(self, node:Node):
+        """Method to call a sub-program"""
+        purpose = node.properties["name"]
+        program = node.properties["program"]
+        self.update(f"Start Sub-Program: {program}\nSub-Program Purpose: {purpose}")
+        self.execute_program(program)
+        self.update(f"End SubProgram: {program}")
 
     def get_next(self, node:Node) -> Optional[Node]:
         """Method to get the next node"""
         name = node.properties["name"]
-        result = self.get_current_program().query('MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n')
+        result = self.get_current_program().query(
+            'MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n'
+        )
         if len(result.result_set) > 0:
             return result.result_set[0][0]
         return None
 
-    def predict(self, prompt:str) -> str:
+    def predict(self, prompt:str, **kwargs) -> str:
         """Predict the next words using the program context"""
         template = self.prompt.format(
             objective=self.objective,
             program_trace=self.get_program_trace(prompt),
         )
-        prompt = PromptTemplate.from_template(template)
-        chain = LLMChain(llm=self.llm, prompt=prompt, verbose=True)
-        prediction = chain.predict(
-            language=self.language
-        )
-        return prediction
+        return super().predict(template, language=self.language, **kwargs)
 
     def execute_program(self, program_index:str):
         """Method to execute a program"""
         program = Graph(program_index, self.hybridstore.client)
         self.program_stack.append(program)
-        result = self.get_current_program().query('MATCH (n:Control {name:"Start"}) RETURN n')
+        result = self.get_current_program().query(
+            'MATCH (n:Control {name:"Start"}) RETURN n'
+        )
         if len(result.result_set) == 0:
             raise ValueError("No entry point in the program")
         if len(result.result_set) > 1:
@@ -161,7 +172,7 @@ class GraphProgramInterpreter(BaseModel):
         iteration = 0
         while True:
             if current_node.label == "Program":
-                self.call_program(current_node)
+                self.call_subprogram(current_node)
                 next_node = self.get_next(current_node)
             elif current_node.label == "Action":
                 self.use_tool(current_node)
@@ -174,9 +185,15 @@ class GraphProgramInterpreter(BaseModel):
                 if current_node.properties["name"] == "End":
                     break
             else:
-                raise RuntimeError("Invalid label for node. Please verify your programs using RedisInsight.")
+                raise RuntimeError(
+                    "Invalid label for node."+
+                    " Please verify your programs using RedisInsight."
+                )
             if next_node is None:
-                raise RuntimeError("Program failed after reaching a non-terminated path. Please verify your programs using RedisInsight.")
+                raise RuntimeError(
+                    "Program failed after reaching a non-terminated path."+
+                    " Please verify your programs using RedisInsight."
+                )
             current_node = next_node
             iteration += 1
             if iteration > self.max_iterations:
@@ -188,26 +205,32 @@ class GraphProgramInterpreter(BaseModel):
         # get possible output options
         purpose = node.properties["name"]
         question = node.properties["question"]
-        prompt = f"Decision: {question}.\nDecision Purpose: {purpose}.\n"
-        outcomes = []
-        result = self.get_current_program().query('MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)')
+        
+        options = []
+        result = self.get_current_program().query(
+            'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)'
+        )
         for record in result.result_set:
-            outcomes.append(record[0])
-        choice = " or ".join(outcomes)
-        prompt += f"Decision Answer (must be {choice}): "
-        decision = ""
-        attemps = 0
-        while True:
-            decision = self.predict(prompt).strip()
-            decision = decision.upper()
-            attemps += 1
-            if decision in outcomes:
-                break
-            if attemps > self.max_decision_attemps:
-                raise ValueError(f"Failed to decide after {attemps-1} attemps (Last Decision: '{decision}' should be {choice}). Please verify your programs.")
-        prompt += decision
-        self.update(prompt)
-        result = self.get_current_program().query('MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
+            options.append(record[0])
+        choice = " or ".join(options)
+        prompt = \
+f"""
+Decision: {question}.
+Decision Purpose: {purpose}.
+Decision Answer (must be {choice}):"""
+        if self.verbose:
+            print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
+        decision = self.predict_decision(
+            self.get_program_trace(prompt),
+            question,
+            options
+        )
+        if self.verbose:
+            print(f"{Fore.YELLOW}\n{decision}{Style.RESET_ALL}")
+        self.update(prompt+decision)
+        result = self.get_current_program().query(
+            'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n'
+        )
         next_node = result.result_set[0][0]
         return next_node
 
@@ -218,24 +241,42 @@ class GraphProgramInterpreter(BaseModel):
         if tool_name != "Predict":
             self.validate_tool(tool_name)
         tool_params_prompt = node.properties["params"]
-        tool_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_params_prompt}"
+        tool_prompt = \
+f"""
+Action: {tool_name}
+Action Purpose: {purpose}
+Action Input: {tool_params_prompt}
+"""
+        if self.verbose:
+            print(f"{Fore.GREEN}{tool_prompt.format(language=self.language)}{Style.RESET_ALL}")
         if tool_name == "Predict":
             tool_input = tool_params_prompt
             observation = self.predict(tool_prompt)
-            final_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_input}\n{observation}"
+            final_prompt = \
+f"""
+Action: {tool_name}
+Action Purpose: {purpose}
+Action Input: {tool_input}
+{observation}
+"""
+            if self.verbose:
+                print(f"{Fore.YELLOW}{observation}{Style.RESET_ALL}")
         else:
             tool_input = self.predict(tool_prompt)
             observation = self.execute_tool(tool_name, tool_input)
-            final_prompt = f"Action: {tool_name}\nAction Purpose: {purpose}\nAction Input: {tool_input}\nAction Observation: {observation}"
+            final_prompt = \
+f"""
+Action: {tool_name}
+Action Purpose: {purpose}
+Action Input: {tool_input}
+Action Observation: {observation}
+"""
+            if self.verbose:
+                print(
+                    f"{Fore.GREEN}Action Observation: "+
+                    f"{Fore.BLUE}{observation}{Style.RESET_ALL}"
+                )
         self.update(final_prompt)
-
-    def call_program(self, node:Node):
-        """Method to use a sub-program"""
-        purpose = node.properties["name"]
-        program = node.properties["program"]
-        self.update(f"Start SubProgram: {program}\nSubProgram Purpose: {purpose}")
-        self.execute_program(program)
-        self.update(f"End SubProgram: {program}")
 
     def validate_tool(self, name):
         if name not in self.allowed_tools:
@@ -266,5 +307,13 @@ class GraphProgramInterpreter(BaseModel):
     def run(self, objective:str):
         """Method to run the agent"""
         self.objective = objective
+        self.clear()
+        formated_prompt = self.prompt.format(
+            language=self.language,
+            objective=self.objective,
+            program_trace=self.program_trace
+        )
+        formated_prompt = formated_prompt.replace("Objective:", f"Objective:{Fore.BLUE}")
+        print(f"{Fore.GREEN}{formated_prompt}{Style.RESET_ALL}")
         self.execute_program(self.program_key)
         return "Program Sucessfully Executed"

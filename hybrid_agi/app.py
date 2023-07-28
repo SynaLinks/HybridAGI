@@ -38,7 +38,7 @@ from hybrid_agi.tools.ui.ask_user import UIAskUserTool
 from hybrid_agi.tools.ui.speak import UISpeakTool
 from hybrid_agi.tools.ui.upload import UIUploadTool
 
-from hybrid_agi.agents.interpreters.graph_program_interpreter import GraphProgramInterpreter
+from hybrid_agi.agents.graph_program_interpreter import GraphProgramInterpreter
 
 from hybrid_agi.prompt import HYBRID_AGI_BOARD_TEMPLATE
 
