@@ -1,5 +1,5 @@
 import abc
-from typing import List
+from typing import List, Any
 from pydantic import BaseModel
 from langchain.chains.llm import LLMChain
 from langchain.prompts.prompt import PromptTemplate
@@ -13,7 +13,7 @@ class BaseReasoner(BaseModel):
     max_decision_attemps: int = 5
 
     @abc.abstractmethod
-    def predict(self, context: str, instructions: str, **kwargs) -> str:
+    def predict(self, context: str, prompt: str, **kwargs) -> str:
         pass
 
     @abc.abstractmethod
@@ -35,7 +35,8 @@ class BaseReasoner(BaseModel):
             context: str,
             question: str,
             options: List[str],
-            decision_prompt: PromptTemplate = None
+            decision_prompt: PromptTemplate = None,
+            **kwargs : Any
         ) -> str:
         """Method to decide using a LLM"""
         if decision_prompt is None:
@@ -44,16 +45,21 @@ class BaseReasoner(BaseModel):
         choice = " or ".join(options)
         attemps = 0
         while attemps < self.max_decision_attemps:
-            result = chain.predict(context=context, question=question, choice=choice)
-            decision = result.split()[-1]
+            result = chain.predict(
+                context=context,
+                question=question,
+                choice=choice,
+                **kwargs)
+            decision = result.split()[-1].upper()
+            decision = decision.strip(".")
             if decision in options:
                 break
             attemps += 1
         if decision not in options:
             raise ValueError(
-                f"Failed to decide after {attemps-1} attemps."+
+                f"Failed to decide after {attemps} attemps."+
                 f" Got {decision} should be {choice},"+
-                " please verify your prompts."
+                " please verify your prompts or programs."
             )
         return decision
 
@@ -61,17 +67,18 @@ class BaseReasoner(BaseModel):
             self,
             context: str,
             evaluation_prompt: PromptTemplate = None,
+            **kwargs : Any
         ) -> float:
         """Method to evaluate using a LLM"""
         if evaluation_prompt is None:
             evaluation_prompt = ZERO_SHOT_PROMPTING_EVALUATION_PROMPT
         chain = LLMChain(llm=self.llm, prompt=evaluation_prompt, verbose=False)
-        choice = " or ".join(options)
         attemps = 0
         score = None
         while attemps < self.max_decision_attemps:
-            result = chain.predict(context=context)
+            result = chain.predict(context=context, **kwargs)
             evaluation = result.split()[-1]
+            evaluation = evaluation.strip(".")
             try:
                 score = float(evaluation)
                 break
@@ -80,8 +87,8 @@ class BaseReasoner(BaseModel):
             attemps += 1
         if score is None:
             raise ValueError(
-                f"Failed to evaluate after {attemps-1} attemps."+
-                f" Got {score}, should be a float between 0.0 and 100.0,"+
-                " please verify your prompts."
+                f"Failed to evaluate after {attemps} attemps."+
+                f" Got {evaluation}, should be a float between 0.0 and 100.0,"+
+                " please verify your prompts or programs."
             )
         return score

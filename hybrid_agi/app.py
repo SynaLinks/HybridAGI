@@ -59,16 +59,11 @@ def start():
             model_name=cfg.fast_llm_model
         )
     template = """
-    You are Hybrid AGI, please greet the user in {language}.
+    You are Hybrid AGI, please greet the user.
     At the end, ask about what they want to do.
     Output:"""
-    prompt = PromptTemplate(
-        input_variables=["language"],
-        template = template
-    )
-    message = LLMChain(llm=llm, prompt=prompt).predict(
-        language = cfg.user_language
-    )
+    prompt = PromptTemplate.from_template(template)
+    message = LLMChain(llm=llm, prompt=prompt).predict()
     cl.Message(
         content = message
     ).send()
@@ -186,7 +181,6 @@ def load():
         llm,
         prompt = instructions,
         tools = tools,
-        language = cfg.user_language,
         max_iterations = cfg.max_iterations,
         monitoring = cfg.monitoring,
         verbose = cfg.debug_mode

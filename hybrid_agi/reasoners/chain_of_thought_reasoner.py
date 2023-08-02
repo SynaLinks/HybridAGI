@@ -1,12 +1,19 @@
 """The chain of thought reasoner. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import List
+from pydantic import BaseModel
 from langchain.base_language import BaseLanguageModel
+from hybrid_agi.reasoners.base import BaseReasoner
 
-class ChainOfThoughtReasoner(BaseModel):
+from hybrid_agi.reasoners.prompt import (
+    TREE_OF_THOUGHT_PROMPTING_DECISION_PROMPT,
+    TREE_OF_THOUGHT_PROMPTING_EVALUATION_PROMPT
+)
+
+class ChainOfThoughtReasoner(BaseReasoner):
     llm: BaseLanguageModel
     max_thinking_steps: int = 5
-    success_threshold: float = 90.0
+    success_threshold: float = 80.0
     verbose: bool = False
 
     def predict(self, prompt: str, **kwargs) -> str:

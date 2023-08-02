@@ -12,9 +12,9 @@ from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
 from symbolinks import RedisGraphHybridStore
 
-from hybrid_agi.reasoners.zero_shot_reasoner import ZeroShotReasoner
+from hybrid_agi.reasoners.tree_of_thought_reasoner import TreeOfThoughtReasoner
 
-class GraphProgramInterpreter(ZeroShotReasoner):
+class GraphProgramInterpreter(TreeOfThoughtReasoner):
     """LLM based interpreter for graph programs"""
     hybridstore: RedisGraphHybridStore
     llm: BaseLanguageModel
@@ -26,7 +26,6 @@ class GraphProgramInterpreter(ZeroShotReasoner):
     program_stack: Iterable = deque()
     allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
-    language: str = "English"
     max_iterations: int = 100
     max_prompt_tokens: int = 4000
     tools_instructions: str = ""
@@ -48,7 +47,6 @@ class GraphProgramInterpreter(ZeroShotReasoner):
             tools:List[Tool] = [],
             max_prompt_tokens:int = 4000,
             max_iterations:int = 100,
-            language: str = "English",
             monitoring: bool = False,
             verbose: bool = True
         ):
@@ -65,7 +63,6 @@ class GraphProgramInterpreter(ZeroShotReasoner):
             prompt = prompt,
             monitoring_prompt = monitoring_prompt,
             max_prompt_tokens = max_prompt_tokens,
-            language = language,
             monitoring = monitoring,
             verbose = verbose
         )
@@ -107,20 +104,12 @@ class GraphProgramInterpreter(ZeroShotReasoner):
     def read_tools_instructions(self):
         return self.tools_instructions
 
-    def get_program_trace(self, prompt:str):
-        program_trace = (self.program_trace+"\n"+prompt).format(
-            language=self.language
-        )
-        temp = self.prompt.format(
-            objective=self.objective,
-            program_trace=program_trace,
-            language=self.language
-        )
-        num_tok = self.llm.get_num_tokens(temp)
-        if num_tok > self.max_prompt_tokens:
-            program_trace = self.program_trace[num_tok-self.max_prompt_tokens:]+prompt
+    def get_program_trace(self, max_tokens:int):
+        num_tok = self.llm.get_num_tokens(self.program_trace)
+        if num_tok > max_tokens:
+            program_trace = self.program_trace[num_tok-max_tokens:] #ugly bk char != tok
         else:
-            program_trace = self.program_trace+prompt
+            program_trace = self.program_trace
         return program_trace
 
     def get_current_program(self) -> Optional[Graph]:
@@ -133,6 +122,8 @@ class GraphProgramInterpreter(ZeroShotReasoner):
         """Method to call a sub-program"""
         purpose = node.properties["name"]
         program = node.properties["program"]
+        print(f"{Fore.MAGENTA}Start Sub-Program: {program}\n"+\
+        f"Sub-Program Purpose: {purpose}{Style.RESET_ALL}")
         self.update(f"Start Sub-Program: {program}\nSub-Program Purpose: {purpose}")
         self.execute_program(program)
         self.update(f"End SubProgram: {program}")
@@ -149,11 +140,12 @@ class GraphProgramInterpreter(ZeroShotReasoner):
 
     def predict(self, prompt:str, **kwargs) -> str:
         """Predict the next words using the program context"""
+        trace_size = self.max_prompt_tokens-len(prompt)
         template = self.prompt.format(
             objective=self.objective,
-            program_trace=self.get_program_trace(prompt),
+            program_trace=self.get_program_trace(trace_size)+prompt,
         )
-        return super().predict(template, language=self.language, **kwargs)
+        return super().predict(template, **kwargs)
 
     def execute_program(self, program_index:str):
         """Method to execute a program"""
@@ -221,13 +213,12 @@ Decision Answer (must be {choice}):"""
         if self.verbose:
             print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
         decision = self.predict_decision(
-            self.get_program_trace(prompt),
+            self.get_program_trace(self.max_prompt_tokens),
             question,
             options
         )
         if self.verbose:
             print(f"{Fore.YELLOW}\n{decision}{Style.RESET_ALL}")
-        self.update(prompt+decision)
         result = self.get_current_program().query(
             'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n'
         )
@@ -248,7 +239,7 @@ Action Purpose: {purpose}
 Action Input: {tool_params_prompt}
 """
         if self.verbose:
-            print(f"{Fore.GREEN}{tool_prompt.format(language=self.language)}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}{tool_prompt}{Style.RESET_ALL}")
         if tool_name == "Predict":
             tool_input = tool_params_prompt
             observation = self.predict(tool_prompt)
@@ -260,7 +251,9 @@ Action Input: {tool_input}
 {observation}
 """
             if self.verbose:
-                print(f"{Fore.YELLOW}{observation}{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}{tool_input}"+\
+                f"\n{observation}{Style.RESET_ALL}"
+            )
         else:
             tool_input = self.predict(tool_prompt)
             observation = self.execute_tool(tool_name, tool_input)
@@ -273,7 +266,8 @@ Action Observation: {observation}
 """
             if self.verbose:
                 print(
-                    f"{Fore.GREEN}Action Observation: "+
+                    f"{Fore.BLUE}{tool_input}"+
+                    f"\n{Fore.GREEN}Action Observation: "+
                     f"{Fore.BLUE}{observation}{Style.RESET_ALL}"
                 )
         self.update(final_prompt)
@@ -309,7 +303,6 @@ Action Observation: {observation}
         self.objective = objective
         self.clear()
         formated_prompt = self.prompt.format(
-            language=self.language,
             objective=self.objective,
             program_trace=self.program_trace
         )

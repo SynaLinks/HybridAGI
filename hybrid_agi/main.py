@@ -60,16 +60,11 @@ def main():
         )
     
     template = """
-    You are Hybrid AGI, please greet the user in {language}.
+    You are Hybrid AGI, please greet the user.
     At the end, ask about what they want to do.
     Output:"""
-    prompt = PromptTemplate(
-        input_variables=["language"],
-        template = template
-    )
-    message = LLMChain(llm=llm, prompt=prompt).predict(
-        language = cfg.user_language
-    )
+    prompt = PromptTemplate.from_template(template)
+    message = LLMChain(llm=llm, prompt=prompt).predict()
     print(f"{Fore.YELLOW}[*] {message}{Style.RESET_ALL}")
     objective = input("> ")
 
@@ -176,7 +171,6 @@ def main():
         llm,
         prompt = HYBRID_AGI_BOARD_TEMPLATE,
         tools = tools,
-        language = cfg.user_language,
         max_iterations = cfg.max_iterations,
         monitoring = cfg.monitoring,
         verbose = cfg.debug_mode

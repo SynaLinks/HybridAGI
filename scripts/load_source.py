@@ -3,7 +3,6 @@
 import argparse
 from colorama import Fore, Style
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
 
 from hybrid_agi.config import Config
 
@@ -26,12 +25,6 @@ def main():
     cfg = Config()
 
     embedding = OpenAIEmbeddings()
-
-    llm = None
-    if cfg.private_mode is True:
-        llm = ChatOpenAI(temperature=cfg.temperature, model_name=cfg.fast_llm_model, openai_api_base=cfg.openai_base_path)
-    else:
-        llm = ChatOpenAI(temperature=cfg.temperature, model_name=cfg.fast_llm_model)
 
     hybridstore = RedisGraphHybridStore(
         redis_url = cfg.redis_url,
