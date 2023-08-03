@@ -20,14 +20,14 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
     llm: BaseLanguageModel
     program_key: str = ""
     objective: str = ""
-    program_trace: str = ""
+    program_trace: List[str] = []
     prompt: str = ""
     monitoring_prompt: str = ""
     program_stack: Iterable = deque()
     allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
     max_iterations: int = 100
-    max_prompt_tokens: int = 4000
+    max_nb_steps_trace: int = 10
     tools_instructions: str = ""
     monitoring: bool = False
     verbose: bool = True
@@ -45,7 +45,7 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
             prompt:str = "",
             monitoring_prompt:str = "",
             tools:List[Tool] = [],
-            max_prompt_tokens:int = 4000,
+            max_nb_steps_trace:int = 5,
             max_iterations:int = 100,
             monitoring: bool = False,
             verbose: bool = True
@@ -62,7 +62,7 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
             program_key = program_key,
             prompt = prompt,
             monitoring_prompt = monitoring_prompt,
-            max_prompt_tokens = max_prompt_tokens,
+            max_nb_steps_trace = max_nb_steps_trace,
             monitoring = monitoring,
             verbose = verbose
         )
@@ -104,13 +104,12 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
     def read_tools_instructions(self):
         return self.tools_instructions
 
-    def get_program_trace(self, max_tokens:int):
-        num_tok = self.llm.get_num_tokens(self.program_trace)
-        if num_tok > max_tokens:
-            program_trace = self.program_trace[num_tok-max_tokens:] #ugly bk char != tok
+    def get_program_trace(self):
+        if len(self.program_trace) > self.max_nb_steps_trace:
+            program_trace = self.program_trace[self.max_nb_steps_trace:]
         else:
             program_trace = self.program_trace
-        return program_trace
+        return "\n".join(program_trace)
 
     def get_current_program(self) -> Optional[Graph]:
         """Method to retreive the current program from the stack"""
@@ -126,7 +125,7 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
         f"Sub-Program Purpose: {purpose}{Style.RESET_ALL}")
         self.update(f"Start Sub-Program: {program}\nSub-Program Purpose: {purpose}")
         self.execute_program(program)
-        self.update(f"End SubProgram: {program}")
+        # self.update(f"End SubProgram: {program}")
 
     def get_next(self, node:Node) -> Optional[Node]:
         """Method to get the next node"""
@@ -140,10 +139,9 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
 
     def predict(self, prompt:str, **kwargs) -> str:
         """Predict the next words using the program context"""
-        trace_size = self.max_prompt_tokens-len(prompt)
         template = self.prompt.format(
             objective=self.objective,
-            program_trace=self.get_program_trace(trace_size)+prompt,
+            program_trace=self.get_program_trace()+prompt,
         )
         return super().predict(template, **kwargs)
 
@@ -155,9 +153,13 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
             'MATCH (n:Control {name:"Start"}) RETURN n'
         )
         if len(result.result_set) == 0:
-            raise ValueError("No entry point in the program")
+            raise ValueError("No entry point in the program,"+
+                " please make sure you loaded the program library."
+            )
         if len(result.result_set) > 1:
-            raise ValueError("Multiple entry point in the program")
+            raise ValueError("Multiple entry point in the program,"+
+                " correct your programs"
+            )
         starting_node = result.result_set[0][0]
         current_node = self.get_next(starting_node)
         next_node = None
@@ -212,8 +214,12 @@ Decision Purpose: {purpose}.
 Decision Answer (must be {choice}):"""
         if self.verbose:
             print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
+        formated_prompt = self.prompt.format(
+            objective=self.objective,
+            program_trace=self.get_program_trace()
+        )
         decision = self.predict_decision(
-            self.get_program_trace(self.max_prompt_tokens),
+            formated_prompt,
             question,
             options
         )
@@ -233,40 +239,33 @@ Decision Answer (must be {choice}):"""
             self.validate_tool(tool_name)
         tool_params_prompt = node.properties["params"]
         tool_prompt = \
-f"""
-Action: {tool_name}
+f"""Action: {tool_name}
 Action Purpose: {purpose}
-Action Input: {tool_params_prompt}
-"""
-        if self.verbose:
-            print(f"{Fore.GREEN}{tool_prompt}{Style.RESET_ALL}")
+Action Input: 
+Answer without additionnal information. {tool_params_prompt}"""
         if tool_name == "Predict":
             tool_input = tool_params_prompt
             observation = self.predict(tool_prompt)
             final_prompt = \
-f"""
-Action: {tool_name}
+f"""Action: {tool_name}
 Action Purpose: {purpose}
-Action Input: {tool_input}
-{observation}
-"""
+Action Input: {tool_input}{observation}"""
             if self.verbose:
                 print(f"{Fore.YELLOW}{tool_input}"+\
                 f"\n{observation}{Style.RESET_ALL}"
             )
         else:
             tool_input = self.predict(tool_prompt)
+            if self.verbose:
+                print(f"{Fore.BLUE}{tool_input}{Style.RESET_ALL}")
             observation = self.execute_tool(tool_name, tool_input)
             final_prompt = \
-f"""
-Action: {tool_name}
+f"""Action: {tool_name}
 Action Purpose: {purpose}
 Action Input: {tool_input}
-Action Observation: {observation}
-"""
+Action Observation: {observation}"""
             if self.verbose:
                 print(
-                    f"{Fore.BLUE}{tool_input}"+
                     f"\n{Fore.GREEN}Action Observation: "+
                     f"{Fore.BLUE}{observation}{Style.RESET_ALL}"
                 )
@@ -287,7 +286,7 @@ Action Observation: {observation}
 
     def update(self, prompt:str):
         """Method to update the program trace"""
-        self.program_trace + "\n" + prompt
+        self.program_trace.append(prompt)
 
     def monitor(self):
         """Method to monitor the process"""
@@ -296,7 +295,7 @@ Action Observation: {observation}
 
     def clear(self):
         """Method to clear the program trace"""
-        self.program_trace = ""
+        self.program_trace = []
 
     def run(self, objective:str):
         """Method to run the agent"""
@@ -304,7 +303,7 @@ Action Observation: {observation}
         self.clear()
         formated_prompt = self.prompt.format(
             objective=self.objective,
-            program_trace=self.program_trace
+            program_trace=self.get_program_trace()
         )
         formated_prompt = formated_prompt.replace("Objective:", f"Objective:{Fore.BLUE}")
         print(f"{Fore.GREEN}{formated_prompt}{Style.RESET_ALL}")

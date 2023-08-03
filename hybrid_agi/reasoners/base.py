@@ -26,7 +26,7 @@ class BaseReasoner(BaseModel):
 
     def naive_predict(self, prompt_template: str, **kwargs) -> str:
         prompt = PromptTemplate.from_template(prompt_template)
-        chain = LLMChain(llm=self.llm, prompt=prompt, verbose=False)
+        chain = LLMChain(llm=self.llm, prompt=prompt, verbose=True)
         prediction = chain.predict(**kwargs)
         return prediction
     
@@ -41,7 +41,8 @@ class BaseReasoner(BaseModel):
         """Method to decide using a LLM"""
         if decision_prompt is None:
             decision_prompt = ZERO_SHOT_PROMPTING_DECISION_PROMPT
-        chain = LLMChain(llm=self.llm, prompt=decision_prompt, verbose=False)
+        chain = LLMChain(llm=self.llm, prompt=decision_prompt, verbose=True)
+        
         choice = " or ".join(options)
         attemps = 0
         while attemps < self.max_decision_attemps:
@@ -50,6 +51,7 @@ class BaseReasoner(BaseModel):
                 question=question,
                 choice=choice,
                 **kwargs)
+            print(result)
             decision = result.split()[-1].upper()
             decision = decision.strip(".")
             if decision in options:
@@ -72,13 +74,17 @@ class BaseReasoner(BaseModel):
         """Method to evaluate using a LLM"""
         if evaluation_prompt is None:
             evaluation_prompt = ZERO_SHOT_PROMPTING_EVALUATION_PROMPT
-        chain = LLMChain(llm=self.llm, prompt=evaluation_prompt, verbose=False)
+        chain = LLMChain(llm=self.llm, prompt=evaluation_prompt, verbose=True)
         attemps = 0
         score = None
         while attemps < self.max_decision_attemps:
             result = chain.predict(context=context, **kwargs)
-            evaluation = result.split()[-1]
-            evaluation = evaluation.strip(".")
+            print(result)
+            if len(result.split()) > 0:
+                evaluation = result.split()[-1]
+                evaluation = evaluation.strip(".")
+            else:
+                evaluation = None
             try:
                 score = float(evaluation)
                 break

@@ -71,20 +71,22 @@ ZERO_SHOT_PROMPTING_EVALUATION_TEMPLATE = \
 """
 {context}
 
-You MUST finish your Answer by a float between 0.0 and 100.0 representing
-the correctness and chances of success of the above response (0.0 means impossible).
-The question is what are the chances of success of the above response?
+You MUST Answer by a float between 0.0 and 1.0 representing
+the correctness of the last response (0.0 means incorrect).
+Try your best, if you don't known imagine one possible float.
+Question: What is the correctness of the last response?
 Answer:"""
 
 CHAIN_OF_THOUGHT_PROMPTING_EVALUATION_TEMPLATE = \
 """
 {context}
 
-You MUST finish your Answer by a float between 0.0 and 100.0 representing
-the correctness and chances of success of the above response (0.0 means impossible or none).
-Question: What are the chances of the above response?
-Answer: \
-Let's think this out in a step by step way to be sure we have the right answer."""
+You MUST Answer by a float between 0.0 and 1.0 representing
+the correctness of the last response (0.0 means incorrect).
+Try your best, if you don't known imagine one possible float.
+Question: What is the correctness of the last response?
+Let's think this out in a step by step way to be sure we have the right answer.
+Answer:"""
 
 TREE_OF_THOUGHT_PROMPTING_EVALUATION_TEMPLATE = \
 """
@@ -94,9 +96,10 @@ Imagine three different experts are evaluating the above response.
 All experts will write down 1 step of their thinking, then share it with the group.
 Then all experts will go on to the next step, etc.
 If any expert realises they're wrong at any point then they leave.
-You MUST finish your Answer by a float between 0.0 and 100.0 representing
-the correctness and chances of success of the above response (0.0 means impossible or none).
-Question: What are the chances of the above response?
+You MUST Answer by a float between 0.0 and 1.0 representing
+the correctness of the last response (0.0 means incorrect).
+Try your best, if you don't known imagine one possible float.
+Question: What is the correctness of the last response?
 Answer:"""
 
 ZERO_SHOT_PROMPTING_EVALUATION_PROMPT = PromptTemplate(

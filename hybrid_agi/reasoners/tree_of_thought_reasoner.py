@@ -17,8 +17,8 @@ class TreeOfThoughtReasoner(BaseReasoner):
     n_prediction_proposals: int = 2
     n_select_sample: int = 2
     max_thinking_steps: int = 5
-    success_threshold: float = 80.0
-    pruning_threshold: float = 20.0
+    success_threshold: float = 0.8
+    pruning_threshold: float = 0.2
     verbose: bool = False
 
     def predict(self, prompt: str, **kwargs) -> str:
@@ -36,13 +36,11 @@ class TreeOfThoughtReasoner(BaseReasoner):
             proposals_scores = []
             for prediction in selected_proposals:
                 for i in range (0, self.n_prediction_proposals):
-                    proposal = self.naive_predict(
-                        prompt+"\n"+prediction+"\n"+prompt
-                    )
+                    proposal = self.naive_predict(prompt, **kwargs)
                     score = self.evaluate(
-                        prompt.format(**kwargs)+"\n"+prediction
+                        prompt.format(**kwargs)+prediction
                     )
-                    if score > self.success_threshold:
+                    if score >= self.success_threshold:
                         return proposal
                     if score > self.pruning_threshold:
                         proposals.append(proposal)
@@ -55,7 +53,7 @@ class TreeOfThoughtReasoner(BaseReasoner):
             selected_proposals = [proposals[select_id] for select_id in selected_ids]
             selected_proposals_scores = \
             [proposals_scores[select_id] for select_id in selected_ids]
-        return selected[0]
+        return selected_proposals[0]
 
     def decide(self, context: str, question: str, options: List[str]) -> str:
         return self.predict_decision(context, question, options,

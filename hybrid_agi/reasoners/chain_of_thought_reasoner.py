@@ -13,17 +13,17 @@ from hybrid_agi.reasoners.prompt import (
 class ChainOfThoughtReasoner(BaseReasoner):
     llm: BaseLanguageModel
     max_thinking_steps: int = 5
-    success_threshold: float = 80.0
+    success_threshold: float = 0.8
     verbose: bool = False
 
     def predict(self, prompt: str, **kwargs) -> str:
         selected_proposal = ""
         selected_proposal_score = 0.0
         for i in range(0, self.max_thinking_steps):
-            if not selected_proposal:
-                prediction = self.naive_predict(prompt, **kwargs)
-            else:
-                prediction = self.naive_predict(prompt+selected_proposal+prompt, **kwargs)
+            # if not selected_proposal:
+            #     prediction = self.naive_predict(prompt, **kwargs)
+            # else:
+            prediction = self.naive_predict(prompt, **kwargs)
             score = self.evaluate(prompt.format(**kwargs) + "\n" + prediction)
             if score > self.success_threshold:
                 break
