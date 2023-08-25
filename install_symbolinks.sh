@@ -9,7 +9,8 @@ if [ ! -d "SymboLinks" ]; then
 else
   cd SymboLinks
   git pull
-  cd ..
 fi
+
+cd ..
 
 cd HybridAGI

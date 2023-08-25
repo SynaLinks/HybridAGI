@@ -1,5 +1,5 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
-
+import redis
 from colorama import Fore, Style
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains.llm import LLMChain
@@ -42,10 +42,20 @@ from hybrid_agi.prompt import HYBRID_AGI_BOARD_TEMPLATE
 
 cfg = Config()
 
+
+
 from hybrid_agi.banner import BANNER
 
 def main():
     print(BANNER)
+    try:
+        r = redis.Redis(
+            host="localhost"
+        )
+        r.ping()
+    except:
+        print(f"{Fore.RED}[!] Please make sure that Redis is up and running.{Style.RESET_ALL}")
+        return
     llm = None
     if cfg.private_mode is True:
         llm = ChatOpenAI(

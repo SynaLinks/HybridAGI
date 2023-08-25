@@ -27,6 +27,7 @@ To get started with HybridAGI, follow these steps:
 1. Clone the repository to your local machine:
    ```
    git clone https://github.com/SynaLinks/HybridAGI
+   cd HybridAGI
    ```
 
 2. Install the required dependencies by running the following command:
@@ -75,22 +76,17 @@ To set up the database, follow these steps:
 
 To launch HybridAGI, follow these steps:
 
-1. Load the source code of HybridAGI if you wish to use it to upgrade itself:
+1. Load the source code of HybridAGI (optional only if you wish to use it to upgrade itself):
    ```
    python3 load_source.py // Use the --clear option to reset the hybridstore
    ```
 
-2. Load the programs into the database:
+2. Load the programs into the database (mandatory):
    ```
    python3 load_programs.py // Use the --clear option to reset the hybridstore
    ```
 
-3. Once the database is set up, launch the AGI with the following command:
-   ```
-   chainlit run app.py -w
-   ```
-
-   For a command-line interface without GUI, you can launch the AGI with:
+3. Once the database is set up, you can launch the AGI with:
    ```
    python3 main.py
    ```
@@ -103,7 +99,6 @@ Hybrid AGI is made possible by the following open-source tools:
 - Redis software stack
 - OpenAI API
 - LocalAI
-- ChainLit
 
 ## Get Involved
 

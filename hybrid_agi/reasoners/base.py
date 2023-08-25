@@ -94,7 +94,7 @@ class BaseReasoner(BaseModel):
         if score is None:
             raise ValueError(
                 f"Failed to evaluate after {attemps} attemps."+
-                f" Got {evaluation}, should be a float between 0.0 and 100.0,"+
+                f" Got {evaluation}, should be a float between 0.0 and 1.0,"+
                 " please verify your prompts or programs."
             )
         return score

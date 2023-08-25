@@ -7,7 +7,8 @@ if [ ! -d "HybridAGI-library" ]; then
 else
   cd HybridAGI-library
   git pull
-  cd ..
 fi
+
+cd ..
 
 cd HybridAGI
