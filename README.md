@@ -60,7 +60,7 @@ To set up the database, follow these steps:
 
 1. Launch Redis by executing the following command:
    ```
-   docker run -p 6379:6379 -it --rm redis/redis-stack-server:latest
+   docker run -p 6379:6379 -it --rm redis/redis-stack-server:6.2.0
    ```
 
 2. Launch RedisInsight by executing the following command:

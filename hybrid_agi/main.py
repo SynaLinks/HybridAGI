@@ -49,13 +49,10 @@ from hybrid_agi.banner import BANNER
 def main():
     print(BANNER)
     try:
-        r = redis.Redis(
-            host="localhost"
-        )
+        r = redis.Redis()
         r.ping()
     except:
-        print(f"{Fore.RED}[!] Please make sure that Redis is up and running.{Style.RESET_ALL}")
-        return
+        print(f"{Fore.RED}[!] Please make sure that Redis is up and running before starting.{Style.RESET_ALL}")
     llm = None
     if cfg.private_mode is True:
         llm = ChatOpenAI(
@@ -85,10 +82,7 @@ def main():
         index_name = cfg.memory_index,
         embedding_function = embedding.embed_query
     )
-
-    if cfg.wipe_redis_on_start:
-        hybridstore.clear()
-
+    
     virtual_filesystem = VirtualFileSystem(hybridstore)
 
     virtual_text_editor = VirtualTextEditor(
@@ -97,14 +91,6 @@ def main():
         chunk_overlap = cfg.chunk_overlap,
         verbose = cfg.debug_mode
     )
-
-    if cfg.wipe_redis_on_start:
-        index = VirtualFileSystemIndexWrapper(
-            hybridstore = hybridstore,
-            filesystem = virtual_filesystem,
-            text_editor = virtual_text_editor
-        )
-        index.add_folders(["../HybridAGI"], folder_names=["/home/user/HybridAGI"])
 
     commands = [
         ChangeDirectory(hybridstore=hybridstore),

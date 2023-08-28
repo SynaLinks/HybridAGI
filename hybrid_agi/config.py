@@ -28,7 +28,6 @@ class Config():
         )
         
         self.redis_url = os.getenv("REDIS_URL", "redis://username:password@localhost:6379")
-        self.wipe_redis_on_start = os.getenv("WIPE_REDIS_ON_START", "False") == "True"
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")
 
         self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
