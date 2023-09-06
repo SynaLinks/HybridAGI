@@ -36,13 +36,11 @@ from symbolinks.tools import (
 from hybrid_agi.tools.ask_user import AskUserTool
 from hybrid_agi.tools.speak import SpeakTool
 
-from hybrid_agi.agents.graph_program_interpreter import GraphProgramInterpreter
+from hybrid_agi.interpreter.graph_program_interpreter import GraphProgramInterpreter
 
 from hybrid_agi.prompt import HYBRID_AGI_BOARD_TEMPLATE
 
 cfg = Config()
-
-
 
 from hybrid_agi.banner import BANNER
 
@@ -66,13 +64,8 @@ def main():
             model_name=cfg.fast_llm_model
         )
     
-    template = """
-    You are Hybrid AGI, please greet the user.
-    At the end, ask about what they want to do.
-    Output:"""
-    prompt = PromptTemplate.from_template(template)
-    message = LLMChain(llm=llm, prompt=prompt).predict()
-    print(f"{Fore.YELLOW}[*] {message}{Style.RESET_ALL}")
+    message = "Please, write your objective then press [Enter]"
+    print(f"{Fore.GREEN}[*] {message}{Style.RESET_ALL}")
     objective = input("> ")
 
     embedding = OpenAIEmbeddings()
@@ -169,7 +162,8 @@ def main():
         tools = tools,
         max_iterations = cfg.max_iterations,
         monitoring = cfg.monitoring,
-        verbose = cfg.debug_mode
+        verbose = cfg.verbose,
+        debug = cfg.debug_mode
     )
     result = interpreter.run(objective)
     print(f"{Fore.YELLOW}[*] {result}{Style.RESET_ALL}")

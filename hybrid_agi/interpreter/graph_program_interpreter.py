@@ -11,27 +11,25 @@ from langchain.chains.llm import LLMChain
 from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
 from symbolinks import RedisGraphHybridStore
+from langchain.schema import BaseMemory
 
-from hybrid_agi.reasoners.tree_of_thought_reasoner import TreeOfThoughtReasoner
+from hybrid_agi.interpreter.program_trace_memory import ProgramTraceMemory
+from hybrid_agi.interpreter.base import BaseGraphProgramInterpreter
 
-class GraphProgramInterpreter(TreeOfThoughtReasoner):
+class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     """LLM based interpreter for graph programs"""
     hybridstore: RedisGraphHybridStore
     llm: BaseLanguageModel
+    memory: ProgramTraceMemory = ProgramTraceMemory()
     program_key: str = ""
-    objective: str = ""
-    program_trace: List[str] = []
     prompt: str = ""
-    monitoring_prompt: str = ""
     program_stack: Iterable = deque()
-    allowed_tools: List[str] = []
-    tools_map: OrderedDict[str, Tool] = {}
     max_iterations: int = 100
-    max_nb_steps_trace: int = 10
+    max_tokens: int = 3000
     tools_instructions: str = ""
-    monitoring: bool = False
     verbose: bool = True
-    
+    debug: bool = False
+
     class Config:
         """Configuration for this pydantic object."""
         extra = Extra.forbid
@@ -45,27 +43,15 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
             prompt:str = "",
             monitoring_prompt:str = "",
             tools:List[Tool] = [],
-            max_nb_steps_trace:int = 5,
+            max_tokens = 4000,
+            max_decision_attemps:int = 5,
             max_iterations:int = 100,
             monitoring: bool = False,
-            verbose: bool = True
+            verbose: bool = True,
+            debug: bool = False,
         ):
         if program_key == "":
             program_key = hybridstore.main.name
-        if not monitoring_prompt:
-            monitoring_prompt = \
-        "Critisize the above Action Input and show your work."+\
-        " Without additionnal information.\nCritique:"
-        super().__init__(
-            hybridstore = hybridstore,
-            llm = llm,
-            program_key = program_key,
-            prompt = prompt,
-            monitoring_prompt = monitoring_prompt,
-            max_nb_steps_trace = max_nb_steps_trace,
-            monitoring = monitoring,
-            verbose = verbose
-        )
 
         update_objective_tool = Tool(
             name="UpdateObjective",
@@ -90,42 +76,50 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
         tools.append(update_objective_tool)
         tools.append(read_tools_instructions)
 
-        self.tools_instructions = "You have access to the following tools:\n"
+        allowed_tools = []
+        tools_map = {}
+        tools_instructions = "You have access to the following tools:\n"
         for tool in tools:
-            self.tools_instructions += f"\n{tool.name}:{tool.description}"
-            self.allowed_tools.append(tool.name)
-            self.tools_map[tool.name] = tool
-        self.clear()
+            tools_instructions += f"\n{tool.name}:{tool.description}"
+            allowed_tools.append(tool.name)
+            tools_map[tool.name] = tool
+
+        super().__init__(
+            llm = llm,
+            hybridstore = hybridstore,
+            program_key = program_key,
+            prompt = prompt,
+            allowed_tools = allowed_tools,
+            tools_map = tools_map,
+            max_tokens = max_tokens,
+            max_decision_attemps = max_decision_attemps,
+            max_iterations = max_iterations,
+            tools_instructions = tools_instructions,
+            verbose = verbose,
+            debug = debug
+        )
 
     def update_objective(self, objective:str):
-        self.objective = objective
+        self.memory.update_objective(objective)
         return "Objective sucessfully updated"
 
     def read_tools_instructions(self):
         return self.tools_instructions
-
-    def get_program_trace(self):
-        if len(self.program_trace) > self.max_nb_steps_trace:
-            program_trace = self.program_trace[self.max_nb_steps_trace:]
-        else:
-            program_trace = self.program_trace
-        return "\n".join(program_trace)
 
     def get_current_program(self) -> Optional[Graph]:
         """Method to retreive the current program from the stack"""
         if len(self.program_stack) > 0:
             return self.program_stack[len(self.program_stack)-1]
         return None
-    
+
     def call_subprogram(self, node:Node):
         """Method to call a sub-program"""
         purpose = node.properties["name"]
-        program = node.properties["program"]
-        print(f"{Fore.MAGENTA}Start Sub-Program: {program}\n"+\
-        f"Sub-Program Purpose: {purpose}{Style.RESET_ALL}")
-        self.update(f"Start Sub-Program: {program}\nSub-Program Purpose: {purpose}")
-        self.execute_program(program)
-        # self.update(f"End SubProgram: {program}")
+        program_name = node.properties["program"]
+        program_key = self.hybridstore.program_key+":"+program_name
+        self.memory.update_trace(f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}")
+        self.execute_program(program_key)
+        self.memory.update_trace(f"End SubProgram: {program_name}")
 
     def get_next(self, node:Node) -> Optional[Node]:
         """Method to get the next node"""
@@ -137,14 +131,6 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
             return result.result_set[0][0]
         return None
 
-    def predict(self, prompt:str, **kwargs) -> str:
-        """Predict the next words using the program context"""
-        template = self.prompt.format(
-            objective=self.objective,
-            program_trace=self.get_program_trace()+prompt,
-        )
-        return super().predict(template, **kwargs)
-
     def execute_program(self, program_index:str):
         """Method to execute a program"""
         program = Graph(program_index, self.hybridstore.client)
@@ -154,7 +140,7 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
         )
         if len(result.result_set) == 0:
             raise ValueError("No entry point in the program,"+
-                " please make sure you loaded the program library."
+                " please make sure you loaded the programs."
             )
         if len(result.result_set) > 1:
             raise ValueError("Multiple entry point in the program,"+
@@ -171,8 +157,6 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
             elif current_node.label == "Action":
                 self.use_tool(current_node)
                 next_node = self.get_next(current_node)
-                if self.monitoring:
-                    self.monitor()
             elif current_node.label == "Decision":
                 next_node = self.decide_next(current_node)
             elif current_node.label == "Control":
@@ -196,35 +180,35 @@ class GraphProgramInterpreter(TreeOfThoughtReasoner):
 
     def decide_next(self, node:Node) -> Node:
         """Method to make a decision"""
-        # get possible output options
         purpose = node.properties["name"]
         question = node.properties["question"]
-        
+
         options = []
         result = self.get_current_program().query(
             'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)'
         )
         for record in result.result_set:
             options.append(record[0])
-        choice = " or ".join(options)
-        prompt = \
-f"""
-Decision: {question}.
-Decision Purpose: {purpose}.
-Decision Answer (must be {choice}):"""
-        if self.verbose:
-            print(f"{Fore.GREEN}{prompt}{Style.RESET_ALL}")
-        formated_prompt = self.prompt.format(
-            objective=self.objective,
-            program_trace=self.get_program_trace()
+
+        context = self.prompt.format(
+            program_trace=self.memory.get_trace(self.max_tokens)
         )
-        decision = self.predict_decision(
-            formated_prompt,
+
+        decision = self.perform_decision(
+            context,
+            purpose,
             question,
             options
         )
+
         if self.verbose:
-            print(f"{Fore.YELLOW}\n{decision}{Style.RESET_ALL}")
+            decision_template = \
+            f"Decision Purpose: {purpose}" + \
+            f"\nDecision: {question}" + \
+            f"\nDecision Answer: {decision}"
+            print(
+                f"{Fore.GREEN}{decision_template}{Style.RESET_ALL}")
+
         result = self.get_current_program().query(
             'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n'
         )
@@ -235,77 +219,23 @@ Decision Answer (must be {choice}):"""
         """Method to use a tool"""
         purpose = node.properties["name"]
         tool_name = node.properties["tool"]
-        if tool_name != "Predict":
-            self.validate_tool(tool_name)
-        tool_params_prompt = node.properties["params"]
-        tool_prompt = \
-f"""Action: {tool_name}
-Action Purpose: {purpose}
-Action Input: 
-Answer without additionnal information. {tool_params_prompt}"""
-        if tool_name == "Predict":
-            tool_input = tool_params_prompt
-            observation = self.predict(tool_prompt)
-            final_prompt = \
-f"""Action: {tool_name}
-Action Purpose: {purpose}
-Action Input: {tool_input}{observation}"""
-            if self.verbose:
-                print(f"{Fore.YELLOW}{tool_input}"+\
-                f"\n{observation}{Style.RESET_ALL}"
-            )
-        else:
-            tool_input = self.predict(tool_prompt)
-            if self.verbose:
-                print(f"{Fore.BLUE}{tool_input}{Style.RESET_ALL}")
-            observation = self.execute_tool(tool_name, tool_input)
-            final_prompt = \
-f"""Action: {tool_name}
-Action Purpose: {purpose}
-Action Input: {tool_input}
-Action Observation: {observation}"""
-            if self.verbose:
-                print(
-                    f"\n{Fore.GREEN}Action Observation: "+
-                    f"{Fore.BLUE}{observation}{Style.RESET_ALL}"
-                )
-        self.update(final_prompt)
+        tool_input_prompt = node.properties["params"]
 
-    def validate_tool(self, name):
-        if name not in self.allowed_tools:
-            raise ValueError(f"Tool '{name}' not allowed. Please use another one.")
-        if name not in self.tools_map:
-            raise ValueError(f"Tool '{name}' not registered. Please use another one.")
-
-    def execute_tool(self, name:str, query:str):
-        """Method to run the given tool"""
-        try:
-            return self.tools_map[name].run(query)
-        except Exception as err:
-            return str(err)
-
-    def update(self, prompt:str):
-        """Method to update the program trace"""
-        self.program_trace.append(prompt)
-
-    def monitor(self):
-        """Method to monitor the process"""
-        critique = self.predict(self.monitoring_prompt)
-        self.update(f"Monitoring: {critique}")
-
-    def clear(self):
-        """Method to clear the program trace"""
-        self.program_trace = []
+        context = self.prompt.format(
+            program_trace=self.memory.get_trace(self.max_tokens)
+        )
+        action = self.perform_action(
+            context,
+            purpose,
+            tool_name,
+            tool_input_prompt
+        )
+        if self.verbose:
+            print(f"{Fore.MAGENTA}{action}{Style.RESET_ALL}")
+        self.memory.update_trace(action)
 
     def run(self, objective:str):
         """Method to run the agent"""
-        self.objective = objective
-        self.clear()
-        formated_prompt = self.prompt.format(
-            objective=self.objective,
-            program_trace=self.get_program_trace()
-        )
-        formated_prompt = formated_prompt.replace("Objective:", f"Objective:{Fore.BLUE}")
-        print(f"{Fore.GREEN}{formated_prompt}{Style.RESET_ALL}")
+        self.memory.update_objective(objective)
         self.execute_program(self.program_key)
         return "Program Sucessfully Executed"

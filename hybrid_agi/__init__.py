@@ -1,4 +1,4 @@
-from hybrid_agi.agents.graph_program_interpreter import GraphProgramInterpreter
+from hybrid_agi.interpreter.graph_program_interpreter import GraphProgramInterpreter
 
 __all__ = [
     "GraphProgramInterpreter"

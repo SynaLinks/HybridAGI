@@ -10,6 +10,7 @@ load_dotenv(verbose=True)
 class Config():
     """Initialize the Config class"""
     def __init__(self):
+        self.verbose = os.getenv("VERBOSE", "True") == "True"
         self.debug_mode = os.getenv("DEBUG_MODE", "True") == "True"
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
