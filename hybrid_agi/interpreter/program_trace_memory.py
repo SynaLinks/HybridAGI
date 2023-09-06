@@ -21,9 +21,9 @@ Objective: {objective}
         while True:
             if trace_starting_index > 0:
                 print(trace_starting_index)
-                program_trace = "".join(self.program_trace[trace_starting_index:])
+                program_trace = "\n".join(self.program_trace[trace_starting_index:])
             else:
-                program_trace = "".join(self.program_trace)
+                program_trace = "\n".join(self.program_trace)
 
             memory = self.memory_template.format(
                 objective = self.objective,

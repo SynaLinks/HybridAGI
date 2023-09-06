@@ -1,4 +1,5 @@
 archives/datasets/*.txt
+archives/*.zip
 .zip
 htmlcov/
 .env

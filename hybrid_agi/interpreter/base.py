@@ -5,6 +5,9 @@ from langchain.prompts.prompt import PromptTemplate
 from langchain.base_language import BaseLanguageModel
 from langchain.tools import Tool
 
+from langchain.schema import BaseOutputParser
+from hybrid_agi.parsers.interpreter_output_parser import InterpreterOutputParser
+
 DECISION_TEMPLATE = \
 """{context}
 Decision Purpose: {purpose}
@@ -39,6 +42,8 @@ class BaseGraphProgramInterpreter(BaseModel):
     verbose: bool = True
     debug: bool = False
 
+    output_parser: BaseOutputParser = InterpreterOutputParser()
+
     def predict_tool_input(self, context: str, purpose: str, tool:str, prompt: str) -> str:
         chain = LLMChain(llm=self.llm, prompt=TOOL_INPUT_PROMPT, verbose=self.debug)
         prediction = chain.predict(
@@ -47,6 +52,7 @@ class BaseGraphProgramInterpreter(BaseModel):
             tool = tool,
             prompt = prompt
         )
+        prediction = self.output_parser.parse(prediction)
         if self.debug:
             print(prediction)
         return prediction
@@ -71,7 +77,7 @@ class BaseGraphProgramInterpreter(BaseModel):
                     tool = tool,
                     prompt = prompt + tool_input
             )
-        return action
+        return action.strip()
 
     def perform_decision(
             self,
@@ -92,6 +98,7 @@ class BaseGraphProgramInterpreter(BaseModel):
                 choice=" or ".join(options))
             if self.debug:
                 print(result)
+            result = self.output_parser.parse(result)
             decision = result.split()[-1].upper()
             decision = decision.strip(".")
             if decision in options:
