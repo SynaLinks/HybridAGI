@@ -3,6 +3,7 @@
 from collections import deque
 from typing import Iterable, List, Dict, Any
 from pydantic import BaseModel
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 import tiktoken
 
 class ProgramTraceMemory(BaseModel):
@@ -19,13 +20,14 @@ Objective: {objective}
 
     def get_trace(self, max_tokens: int) -> str:
         """Load the memory variables"""
-        trace_starting_index = 0
-        while True:
-            if trace_starting_index > 0:
-                print(trace_starting_index)
-                program_trace = "\n".join(self.program_trace[trace_starting_index:])
-            else:
-                program_trace = "\n".join(self.program_trace)
+        text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+            chunk_size=100, chunk_overlap=0
+        )
+        program_trace = "\n".join(self.program_trace)
+        texts = text_splitter.split_text(program_trace)
+        result = ""
+        for i in range(0, len(texts)):
+            program_trace = "\n".join(texts[len(texts)-i:])
 
             memory = self.memory_template.format(
                 objective = self.objective,
@@ -34,13 +36,11 @@ Objective: {objective}
 
             encoding = tiktoken.get_encoding("cl100k_base")
             num_tokens = len(encoding.encode(memory))
-            if num_tokens > max_tokens:
-                trace_starting_index += 1
+            if num_tokens < max_tokens:
+                result = memory
             else:
-                if trace_starting_index > 0:
-                    self.program_trace = self.program_trace[trace_starting_index:]
                 break
-        return memory
+        return result
 
     def update_trace(self, prompt):
         self.program_trace.append(prompt)

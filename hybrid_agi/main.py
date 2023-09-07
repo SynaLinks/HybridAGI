@@ -89,6 +89,7 @@ def main():
 
     virtual_text_editor = VirtualTextEditor(
         hybridstore = hybridstore,
+        downloads_directory = cfg.downloads_directory,
         chunk_size = cfg.chunk_size,
         chunk_overlap = cfg.chunk_overlap,
         verbose = cfg.debug_mode
@@ -132,8 +133,7 @@ def main():
     upload = UploadTool(
         hybridstore = hybridstore,
         filesystem = virtual_filesystem,
-        text_editor = virtual_text_editor,
-        downloads_directory = cfg.downloads_directory
+        text_editor = virtual_text_editor
     )
 
     tools = [

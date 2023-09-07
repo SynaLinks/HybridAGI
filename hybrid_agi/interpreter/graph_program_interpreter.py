@@ -25,6 +25,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     program_index: str = ""
     program_stack: Iterable = deque()
     max_decision_attemp:int = 5
+    current_iteration:int = 0
     max_iteration: int = 50
     smart_llm_max_token = 4000
     fast_llm_max_token = 4000
@@ -105,7 +106,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.memory.update_objective(objective)
         return "Objective sucessfully updated"
 
-    def read_tools_instructions(self):
+    def read_tools_instructions(self, input:str):
         return self.tools_instructions
 
     def get_current_program(self) -> Optional[Graph]:
@@ -177,8 +178,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                     " Please verify your programs using RedisInsight."
                 )
             current_node = next_node
-            iteration += 1
-            if iteration > self.max_iteration:
+            self.current_iteration += 1
+            if self.current_iteration > self.max_iteration:
                 raise RuntimeError("Program failed after reaching max iteration")
         self.program_stack.pop()
 
