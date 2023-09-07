@@ -1,4 +1,5 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import redis
 from colorama import Fore, Style
 from langchain.prompts.prompt import PromptTemplate
@@ -29,6 +30,7 @@ from symbolinks.filesystem.commands import (
 from symbolinks.tools import (
     VirtualShellTool,
     WriteFileTool,
+    AppendFileTool,
     ReadFileTool,
     UploadTool
 )
@@ -37,8 +39,6 @@ from hybrid_agi.tools.ask_user import AskUserTool
 from hybrid_agi.tools.speak import SpeakTool
 
 from hybrid_agi.interpreter.graph_program_interpreter import GraphProgramInterpreter
-
-from hybrid_agi.prompt import HYBRID_AGI_BOARD_TEMPLATE
 
 cfg = Config()
 
@@ -53,13 +53,22 @@ def main():
         print(f"{Fore.RED}[!] Please make sure that Redis is up and running before starting.{Style.RESET_ALL}")
     llm = None
     if cfg.private_mode is True:
-        llm = ChatOpenAI(
+        smart_llm = ChatOpenAI(
+            temperature=cfg.temperature,
+            model_name=cfg.fast_llm_model,
+            openai_api_base=cfg.openai_base_path
+        )
+        fast_llm = ChatOpenAI(
             temperature=cfg.temperature,
             model_name=cfg.fast_llm_model,
             openai_api_base=cfg.openai_base_path
         )
     else:
-        llm = ChatOpenAI(
+        smart_llm = ChatOpenAI(
+            temperature=cfg.temperature,
+            model_name=cfg.smart_llm_model
+        )
+        fast_llm = ChatOpenAI(
             temperature=cfg.temperature,
             model_name=cfg.fast_llm_model
         )
@@ -110,6 +119,11 @@ def main():
         text_editor=virtual_text_editor
     )
 
+    append_file = AppendFileTool(
+        filesystem=virtual_filesystem,
+        text_editor=virtual_text_editor
+    )
+
     read_file = ReadFileTool(
         filesystem=virtual_filesystem,
         text_editor=virtual_text_editor
@@ -139,6 +153,11 @@ def main():
             description=write_file.description
         ),
         Tool(
+            name=append_file.name,
+            func=append_file.run,
+            description=append_file.description
+        ),
+        Tool(
             name=read_file.name,
             func=read_file.run,
             description=read_file.description
@@ -157,11 +176,13 @@ def main():
 
     interpreter = GraphProgramInterpreter(
         hybridstore,
-        llm,
-        prompt = HYBRID_AGI_BOARD_TEMPLATE,
+        smart_llm,
+        fast_llm,
         tools = tools,
-        max_iterations = cfg.max_iterations,
-        monitoring = cfg.monitoring,
+        smart_llm_max_token = cfg.smart_llm_max_token,
+        fast_llm_max_token = cfg.fast_llm_max_token,
+        max_decision_attemp = cfg.max_decision_attemp,
+        max_iteration = cfg.max_iteration,
         verbose = cfg.verbose,
         debug = cfg.debug_mode
     )

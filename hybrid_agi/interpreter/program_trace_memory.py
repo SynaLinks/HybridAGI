@@ -1,3 +1,5 @@
+"""The program trace memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 from collections import deque
 from typing import Iterable, List, Dict, Any
 from pydantic import BaseModel

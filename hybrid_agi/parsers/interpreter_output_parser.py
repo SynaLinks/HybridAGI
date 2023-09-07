@@ -1,4 +1,5 @@
-"""The Interpreter output parser. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The interpreter output parser. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import re
 from langchain.schema import BaseOutputParser
 

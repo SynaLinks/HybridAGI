@@ -4,7 +4,7 @@ from collections import deque
 from typing import List, Optional, Iterable
 from pydantic import BaseModel, Extra
 from colorama import Fore, Style
-from redisgraph import Node, Graph 
+from redisgraph import Node, Graph
 from collections import OrderedDict
 
 from langchain.chains.llm import LLMChain
@@ -19,14 +19,16 @@ from hybrid_agi.interpreter.base import BaseGraphProgramInterpreter
 class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     """LLM based interpreter for graph programs"""
     hybridstore: RedisGraphHybridStore
-    llm: BaseLanguageModel
+    smart_llm: BaseLanguageModel
+    fast_llm: BaseLanguageModel
     memory: ProgramTraceMemory = ProgramTraceMemory()
-    program_key: str = ""
-    prompt: str = ""
+    program_index: str = ""
     program_stack: Iterable = deque()
-    max_iterations: int = 100
-    max_tokens: int = 3000
-    tools_instructions: str = ""
+    max_decision_attemp:int = 5
+    max_iteration: int = 50
+    smart_llm_max_token = 4000
+    fast_llm_max_token = 4000
+    tools_instruction: str = ""
     verbose: bool = True
     debug: bool = False
 
@@ -38,20 +40,19 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     def __init__(
             self,
             hybridstore: RedisGraphHybridStore,
-            llm: BaseLanguageModel,
-            program_key:str = "",
-            prompt:str = "",
-            monitoring_prompt:str = "",
+            smart_llm: BaseLanguageModel,
+            fast_llm: BaseLanguageModel,
+            program_index:str = "",
             tools:List[Tool] = [],
-            max_tokens = 4000,
-            max_decision_attemps:int = 5,
-            max_iterations:int = 100,
-            monitoring: bool = False,
+            smart_llm_max_token = 4000,
+            fast_llm_max_token = 4000,
+            max_decision_attemp:int = 5,
+            max_iteration:int = 50,
             verbose: bool = True,
             debug: bool = False,
         ):
-        if program_key == "":
-            program_key = hybridstore.main.name
+        if program_index == "":
+            program_index = hybridstore.main.name
 
         update_objective_tool = Tool(
             name="UpdateObjective",
@@ -78,23 +79,24 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
 
         allowed_tools = []
         tools_map = {}
-        tools_instructions = "You have access to the following tools:\n"
+        tools_instruction = "You have access to the following tools:\n"
         for tool in tools:
-            tools_instructions += f"\n{tool.name}:{tool.description}"
+            tools_instruction += f"\n{tool.name}:{tool.description}"
             allowed_tools.append(tool.name)
             tools_map[tool.name] = tool
 
         super().__init__(
-            llm = llm,
             hybridstore = hybridstore,
-            program_key = program_key,
-            prompt = prompt,
+            smart_llm = smart_llm,
+            fast_llm = fast_llm,
+            program_index = program_index,
             allowed_tools = allowed_tools,
             tools_map = tools_map,
-            max_tokens = max_tokens,
-            max_decision_attemps = max_decision_attemps,
-            max_iterations = max_iterations,
-            tools_instructions = tools_instructions,
+            smart_llm_max_token = smart_llm_max_token,
+            fast_llm_max_token = fast_llm_max_token,
+            max_decision_attemp = max_decision_attemp,
+            max_iteration = max_iteration,
+            tools_instruction = tools_instruction,
             verbose = verbose,
             debug = debug
         )
@@ -116,9 +118,11 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Method to call a sub-program"""
         purpose = node.properties["name"]
         program_name = node.properties["program"]
-        program_key = self.hybridstore.program_key+":"+program_name
-        self.memory.update_trace(f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}")
-        self.execute_program(program_key)
+        program_index = self.hybridstore.program_key+":"+program_name
+        self.memory.update_trace(
+            f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}"
+        )
+        self.execute_program(program_index)
         self.memory.update_trace(f"End SubProgram: {program_name}")
 
     def get_next(self, node:Node) -> Optional[Node]:
@@ -174,7 +178,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                 )
             current_node = next_node
             iteration += 1
-            if iteration > self.max_iterations:
+            if iteration > self.max_iteration:
                 raise RuntimeError("Program failed after reaching max iteration")
         self.program_stack.pop()
 
@@ -190,9 +194,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         for record in result.result_set:
             options.append(record[0])
 
-        context = self.prompt.format(
-            program_trace=self.memory.get_trace(self.max_tokens)
-        )
+        context = self.memory.get_trace(self.fast_llm_max_token)
 
         decision = self.perform_decision(
             context,
@@ -221,9 +223,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         tool_name = node.properties["tool"]
         tool_input_prompt = node.properties["params"]
 
-        context = self.prompt.format(
-            program_trace=self.memory.get_trace(self.max_tokens)
-        )
+        context = self.memory.get_trace(self.smart_llm_max_token)
+
         action = self.perform_action(
             context,
             purpose,
@@ -237,5 +238,5 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     def run(self, objective:str):
         """Method to run the agent"""
         self.memory.update_objective(objective)
-        self.execute_program(self.program_key)
+        self.execute_program(self.program_index)
         return "Program Sucessfully Executed"

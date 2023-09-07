@@ -1,4 +1,4 @@
-"""The script to add the programs into the hybridstore. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The program loader. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import os
 import argparse
@@ -21,7 +21,12 @@ def main():
     print(BANNER)
 
     parser = argparse.ArgumentParser(description='Load HybridAGI programs.')
-    parser.add_argument('-c', '--clear', action='store_true', help="Clear the hybridstore if enabled")
+    parser.add_argument(
+        '-c',
+        '--clear',
+        action='store_true',
+        help="Clear the hybridstore if enabled"
+    )
     args = parser.parse_args()
 
     cfg = Config()
@@ -55,7 +60,10 @@ def main():
 
     graph_loader = CypherGraphLoader(client=hybridstore.client)
 
-    print(f"{Fore.GREEN}[*] Loading my programs... this may take a while.{Style.RESET_ALL}")
+    print(
+        f"{Fore.GREEN}[*] Loading my programs... " +
+        f"this may take a while.{Style.RESET_ALL}"
+    )
 
     programs_folder = cfg.library_directory
     for dirpath, dirnames, filenames in os.walk(programs_folder):
@@ -64,15 +72,26 @@ def main():
                 program_name = filename.replace(".cypher", "")
                 program_index = f"{hybridstore.program_key}:{program_name}"
                 try:
-                    print(f"{Fore.GREEN}[*] Adding program '{Fore.YELLOW}{program_name}{Fore.GREEN}'...{Style.RESET_ALL}")
+                    print(
+                        f"{Fore.GREEN}[*] Adding program '{Fore.YELLOW}{program_name}"+
+                        f"{Fore.GREEN}'...{Style.RESET_ALL}"
+                    )
                     graph_loader.load(os.path.join(dirpath, filename), program_index)
                 except Exception as err:
-                    print(f"{Fore.RED}[!] Error occured with '{Fore.YELLOW}{filename}{Fore.RED}': {str(err)}{Style.RESET_ALL}")
+                    print(f"{Fore.RED}[!] Error occured with '{Fore.YELLOW}{filename}"+
+                        f"{Fore.RED}': {str(err)}{Style.RESET_ALL}"
+                    )
     print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 
-    print(f"{Fore.GREEN}[*] Adding my programs source into the hybridstore... this may take a while.{Style.RESET_ALL}")
+    print(
+        f"{Fore.GREEN}[*] Adding my programs source into the hybridstore... "+
+        f"this may take a while.{Style.RESET_ALL}"
+    )
 
-    index.add_folders([cfg.library_directory], folder_names=["/home/user/Workspace/MyGraphPrograms"])
+    index.add_folders(
+        [cfg.library_directory],
+        folder_names=["/home/user/Workspace/MyGraphPrograms"]
+    )
 
     print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 

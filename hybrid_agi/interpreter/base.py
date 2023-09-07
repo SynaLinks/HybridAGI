@@ -1,3 +1,5 @@
+"""The base program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 from typing import OrderedDict, List
 from pydantic import BaseModel
 from langchain.chains.llm import LLMChain
@@ -11,7 +13,8 @@ from hybrid_agi.parsers.interpreter_output_parser import InterpreterOutputParser
 DECISION_TEMPLATE = \
 """{context}
 Decision Purpose: {purpose}
-Decision: {question} Let's think this out in a step by step way to sure to have the right answer.
+Decision: {question} \
+Let's think this out in a step by step way to be sure we have the right answer.
 Decision Answer (must finish with {choice}):"""
 
 DECISION_PROMPT = PromptTemplate(
@@ -31,21 +34,33 @@ TOOL_INPUT_PROMPT = PromptTemplate(
 )
 
 class BaseGraphProgramInterpreter(BaseModel):
-    """ """
-    llm: BaseLanguageModel
+    """Base class for program interpreter"""
+    smart_llm: BaseLanguageModel
+    fast_llm: BaseLanguageModel
 
     allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
 
-    max_decision_attemps: int = 5
+    max_decision_attemp: int = 5
 
     verbose: bool = True
     debug: bool = False
 
     output_parser: BaseOutputParser = InterpreterOutputParser()
 
-    def predict_tool_input(self, context: str, purpose: str, tool:str, prompt: str) -> str:
-        chain = LLMChain(llm=self.llm, prompt=TOOL_INPUT_PROMPT, verbose=self.debug)
+    def predict_tool_input(
+            self,
+            context: str,
+            purpose: str,
+            tool:str,
+            prompt: str
+        ) -> str:
+        """Method to predict the tool's input parameters"""
+        chain = LLMChain(
+            llm=self.smart_llm,
+            prompt=TOOL_INPUT_PROMPT,
+            verbose=self.debug
+        )
         prediction = chain.predict(
             context = context,
             purpose = purpose,
@@ -57,7 +72,14 @@ class BaseGraphProgramInterpreter(BaseModel):
             print(prediction)
         return prediction
 
-    def perform_action(self, context: str, purpose: str, tool:str, prompt: str):
+    def perform_action(
+            self,
+            context: str,
+            purpose: str,
+            tool:str,
+            prompt: str
+        ) -> str:
+        """Method to perform an action"""
         tool_input = self.predict_tool_input(context, purpose, tool, prompt)
         action_template = \
         "Action Purpose: {purpose}\nAction: {tool}\nAction Input: {prompt}"""
@@ -67,15 +89,15 @@ class BaseGraphProgramInterpreter(BaseModel):
             observation = self.execute_tool(tool, tool_input)
 
             action = action_template.format(
-                    purpose = purpose,
-                    tool = tool,
-                    prompt = tool_input + f"\nAction Observation: {observation}"
+                purpose = purpose,
+                tool = tool,
+                prompt = tool_input + f"\nAction Observation: {observation}"
             )
         else:
             action = action_template.format(
-                    purpose = purpose,
-                    tool = tool,
-                    prompt = prompt + tool_input
+                purpose = purpose,
+                tool = tool,
+                prompt = prompt + tool_input
             )
         return action.strip()
 
@@ -86,11 +108,11 @@ class BaseGraphProgramInterpreter(BaseModel):
             question: str,
             options: List[str]
         ) -> str:
-        """Method to decide using a LLM"""
-        chain = LLMChain(llm=self.llm, prompt=DECISION_PROMPT, verbose=self.debug)
+        """Method to perform a decision"""
+        chain = LLMChain(llm=self.fast_llm, prompt=DECISION_PROMPT, verbose=self.debug)
         choice = " or ".join(options)
         attemps = 0
-        while attemps < self.max_decision_attemps:
+        while attemps < self.max_decision_attemp:
             result = chain.predict(
                 context=context,
                 purpose=purpose,
@@ -113,6 +135,7 @@ class BaseGraphProgramInterpreter(BaseModel):
         return decision
 
     def validate_tool(self, name):
+        """Method to validate the given tool"""
         if name not in self.allowed_tools:
             raise ValueError(f"Tool '{name}' not allowed. Please use another one.")
         if name not in self.tools_map:

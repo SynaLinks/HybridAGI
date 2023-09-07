@@ -1,3 +1,5 @@
+"""Hybrid AGI banner. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 from colorama import Fore, Style
 
 BANNER =\

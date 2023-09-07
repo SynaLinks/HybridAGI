@@ -1,4 +1,4 @@
-"""The class that store the system configuration. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The config store. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import os
 from dotenv import load_dotenv
@@ -16,8 +16,8 @@ class Config():
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
-        self.max_iterations = int(os.getenv("MAX_ITERATIONS", "100"))
-        self.monitoring = os.getenv("MONITORING", "False") == "True"
+        self.max_decision_attemp = int(os.getenv("MAX_DECISION_ATTEMP", "5"))
+        self.max_iteration = int(os.getenv("MAX_ITERATION", "50"))
 
         self.chunk_size = int(os.getenv("CHUNK_SIZE", 1000))
         self.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", 0))
@@ -33,8 +33,10 @@ class Config():
 
         self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
         self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4")
+
         self.fast_llm_max_token = os.getenv("FAST_LLM_MAX_TOKEN", "4000")
         self.smart_llm_max_token = os.getenv("SMART_LLM_MAX_TOKEN", "8000")
+
         self.openai_base_path = os.environ.get('OPENAI_API_BASE', 'http://localhost:8080/v1')
 
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "archives")

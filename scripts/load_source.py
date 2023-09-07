@@ -1,4 +1,4 @@
-"""The script to add HybridAGI source code into the hybridstore. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The source loader. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import argparse
 from colorama import Fore, Style
@@ -19,7 +19,12 @@ def main():
     print(BANNER)
 
     parser = argparse.ArgumentParser(description='Load HybridAGI source code.')
-    parser.add_argument('-c', '--clear', action='store_true', help="Clear the hybridstore if enabled")
+    parser.add_argument(
+        '-c',
+        '--clear',
+        action='store_true',
+        help="Clear the hybridstore if enabled"
+    )
     args = parser.parse_args()
 
     cfg = Config()
@@ -44,14 +49,23 @@ def main():
         verbose = cfg.debug_mode
     )
 
-    print(f"{Fore.GREEN}[*] Adding my own source code into the hybridstore... this may take a while.{Style.RESET_ALL}")
+    print(
+        f"{Fore.GREEN}[*] Adding my own source code into the hybridstore..." +
+        f" this may take a while.{Style.RESET_ALL}"
+    )
     index = VirtualFileSystemIndexWrapper(
         hybridstore = hybridstore,
         filesystem = virtual_filesystem,
         text_editor = virtual_text_editor,
         verbose = cfg.debug_mode
     )
-    index.add_folders(["../HybridAGI", cfg.library_directory], folder_names=["/home/user/Workspace/HybridAGI", "/home/user/Workspace/MyGraphPrograms"])
+    index.add_folders(
+        ["../HybridAGI", cfg.library_directory],
+        folder_names=[
+            "/home/user/Workspace/HybridAGI",
+            "/home/user/Workspace/MyGraphPrograms"
+        ]
+    )
     print(f"{Fore.YELLOW}[*] Done.{Style.RESET_ALL}")
 
 if __name__ == "__main__":
