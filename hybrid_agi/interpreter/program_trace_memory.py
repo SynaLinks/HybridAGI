@@ -2,26 +2,27 @@
 
 from collections import deque
 from typing import Iterable, List, Dict, Any
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import tiktoken
 
 class ProgramTraceMemory(BaseModel):
     objective: str = ""
     program_trace: Iterable = deque()
-    memory_template = \
+    chunk_size: int = 200
+    memory_template: str = \
 """
 The Objective is from the perspective of the User
 Objective: {objective}
-{program_trace}
-"""
+{program_trace}"""
     def clear(self):
         self.program_trace = deque()
 
     def get_trace(self, max_tokens: int) -> str:
         """Load the memory variables"""
         text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=100, chunk_overlap=0
+            chunk_size=self.chunk_size,
+            chunk_overlap=0
         )
         program_trace = "\n".join(self.program_trace)
         texts = text_splitter.split_text(program_trace)

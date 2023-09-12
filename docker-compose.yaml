@@ -1,0 +1,20 @@
+version: '3'
+services:
+  hybrid-agi:
+    image: hybrid-agi:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hybrid-agi
+    env_file: .env
+    stdin_open: true
+    tty: true
+    depends_on:
+      - redis
+    volumes:
+      - ./archives:/HybridAGI/archives
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis
+    ports:
+      - "6379:6379"

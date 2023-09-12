@@ -1,0 +1,18 @@
+# Exclude log files
+*.log
+
+# Exclude zip files
+*.zip
+
+# Exclude the env files
+.env
+
+# Exclude byte-compiled files
+__pycache__/
+
+# Exclude build related files
+build/
+
+# Exclude any .git directory and its contents
+.git/
+.github/

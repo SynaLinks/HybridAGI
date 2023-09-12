@@ -2,7 +2,7 @@
 
 from collections import deque
 from typing import List, Optional, Iterable
-from pydantic import BaseModel, Extra
+from pydantic.v1 import BaseModel, Extra
 from colorama import Fore, Style
 from redisgraph import Node, Graph
 from collections import OrderedDict
@@ -24,20 +24,15 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     memory: ProgramTraceMemory = ProgramTraceMemory()
     program_index: str = ""
     program_stack: Iterable = deque()
-    max_decision_attemp:int = 5
+    max_decision_attemp: int = 5
     current_iteration:int = 0
     max_iteration: int = 50
-    smart_llm_max_token = 4000
-    fast_llm_max_token = 4000
+    smart_llm_max_token: int = 4000
+    fast_llm_max_token: int = 4000
     tools_instruction: str = ""
     verbose: bool = True
     debug: bool = False
-
-    class Config:
-        """Configuration for this pydantic object."""
-        extra = Extra.forbid
-        arbitrary_types_allowed = True
-
+    
     def __init__(
             self,
             hybridstore: RedisGraphHybridStore,
@@ -45,8 +40,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             fast_llm: BaseLanguageModel,
             program_index:str = "",
             tools:List[Tool] = [],
-            smart_llm_max_token = 4000,
-            fast_llm_max_token = 4000,
+            smart_llm_max_token: int = 4000,
+            fast_llm_max_token: int = 4000,
             max_decision_attemp:int = 5,
             max_iteration:int = 50,
             verbose: bool = True,
@@ -90,14 +85,13 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             hybridstore = hybridstore,
             smart_llm = smart_llm,
             fast_llm = fast_llm,
+            smart_llm_max_token = smart_llm_max_token,
+            fast_llm_max_token = fast_llm_max_token,
             program_index = program_index,
             allowed_tools = allowed_tools,
             tools_map = tools_map,
-            smart_llm_max_token = smart_llm_max_token,
-            fast_llm_max_token = fast_llm_max_token,
             max_decision_attemp = max_decision_attemp,
             max_iteration = max_iteration,
-            tools_instruction = tools_instruction,
             verbose = verbose,
             debug = debug
         )
@@ -144,12 +138,12 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             'MATCH (n:Control {name:"Start"}) RETURN n'
         )
         if len(result.result_set) == 0:
-            raise ValueError("No entry point in the program,"+
+            raise RuntimeError("No entry point detected,"+
                 " please make sure you loaded the programs."
             )
         if len(result.result_set) > 1:
-            raise ValueError("Multiple entry point in the program,"+
-                " correct your programs"
+            raise RuntimeError("Multiple entry point detected,"+
+                " please correct your programs."
             )
         starting_node = result.result_set[0][0]
         current_node = self.get_next(starting_node)

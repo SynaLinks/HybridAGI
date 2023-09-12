@@ -1,7 +1,10 @@
 redis>=4.5.2
 redisgraph
-langchain>=0.0.2
+langchain==0.0.285
 openai
-chainlit
+pydantic
+python-dotenv
 coverage
+colorama
 tiktoken
+symbolinks@git+https://github.com/SynaLinks/SymboLinks

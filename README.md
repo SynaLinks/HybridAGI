@@ -1,5 +1,5 @@
-# Hybrid AGI
-## Unleash the Power of Neuro-Symbolic AGI
+# Hybrid AGI: Unleash the Power of Neuro-Symbolic AGI
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
 *Welcome to HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of large language models (LLM) and symbolic artificial intelligence, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
 
@@ -18,76 +18,14 @@ HybridAGI is a **Programmable LLM Based Autonomous Agent**, build around 3 main 
 
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community.
 
-## 🎉 Installation
+## 🎉 Quick Start (using docker)!
 
-To get started with HybridAGI, follow these steps:
-
-1. Clone the repository to your local machine:
-   ```
-   git clone https://github.com/SynaLinks/HybridAGI
-   cd HybridAGI
-   ```
-
-2. Install the required dependencies by running the following command:
-   ```
-   pip3 install -r requirements.txt
-   ```
-
-3. Install SymboLinks, the hybrid vector and graph database using this script:
-   ```
-   ./install_symbolinks.sh
-   ```
-
-4. Install the programs library by executing the provided script:
-   ```
-   ./install_library.sh
-   ```
-
-5. If you want to use the private mode, which uses a local model instead of OpenAI's models, run:
-   ```
-   ./install_local.sh
-   ```
-
-   For more information on setting up the local model, refer to the [LocalAI documentation](https://github.com/go-skynet/LocalAI).
-
-6. Update the `.env.template` file with your details and preferences, and rename it to `.env`.
-
-## 🗃️ Setting up the Database
-
-To set up the database, follow these steps:
-
-1. Launch Redis by executing the following command:
-   ```
-   docker run -p 6379:6379 -it --rm redis/redis-stack-server:6.2.0
-   ```
-
-2. Launch RedisInsight by executing the following command:
-   ```
-   docker run -v redisinsight:/db -p 8001:8001 redislabs/redisinsight:latest
-   ```
-
-3. Open your browser and navigate to [http://localhost:8001](http://localhost:8001).
-
-4. In RedisInsight, use the IP address of your Docker container and the port number `6379` to connect to the Redis server.
-
-## 🚀 Launch Hybrid AGI
-
-To launch HybridAGI, follow these steps:
-
-1. Load the source code of HybridAGI (optional, only if you wish to use it to upgrade itself):
-   ```
-   python3 load_source.py // Use the --clear option to reset the hybridstore
-   ```
-
-2. Load the programs into the database (mandatory):
-   ```
-   python3 load_programs.py // Use the --clear option to reset the hybridstore
-   ```
-
-3. Once the database is set up, you can launch the AGI with:
-   ```
-   python3 main.py
-   ```
+To start just use the following commands:
+```
+git clone https://github.com/SynaLinks/HybridAGI
+cd HybridAGI
+docker-compose run --rm hybrid-agi
+```
 
 ## Credits
 

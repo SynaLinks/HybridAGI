@@ -6,7 +6,6 @@ import logging
 
 load_dotenv(verbose=True)
 
-
 class Config():
     """Initialize the Config class"""
     def __init__(self):
@@ -28,7 +27,7 @@ class Config():
             " (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
         )
         
-        self.redis_url = os.getenv("REDIS_URL", "redis://username:password@localhost:6379")
+        self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")
 
         self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")

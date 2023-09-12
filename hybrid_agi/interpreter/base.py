@@ -1,7 +1,7 @@
 """The base program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import OrderedDict, List
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 from langchain.chains.llm import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from langchain.base_language import BaseLanguageModel
@@ -13,8 +13,7 @@ from hybrid_agi.parsers.interpreter_output_parser import InterpreterOutputParser
 DECISION_TEMPLATE = \
 """{context}
 Decision Purpose: {purpose}
-Decision: {question} \
-Let's think this out in a step by step way to be sure we have the right answer.
+Decision: {question} Let's think this out in a step by step way to be sure we have the right answer.
 Decision Answer (must finish with {choice}):"""
 
 DECISION_PROMPT = PromptTemplate(
@@ -47,6 +46,10 @@ class BaseGraphProgramInterpreter(BaseModel):
     debug: bool = False
 
     output_parser: BaseOutputParser = InterpreterOutputParser()
+
+    class Config:
+        """Configuration for this pydantic object."""
+        arbitrary_types_allowed = True
 
     def predict_tool_input(
             self,
@@ -114,10 +117,10 @@ class BaseGraphProgramInterpreter(BaseModel):
         attemps = 0
         while attemps < self.max_decision_attemp:
             result = chain.predict(
-                context=context,
-                purpose=purpose,
-                question=question,
-                choice=" or ".join(options))
+                context = context,
+                purpose = purpose,
+                question = question,
+                choice = " or ".join(options))
             if self.debug:
                 print(result)
             result = self.output_parser.parse(result)

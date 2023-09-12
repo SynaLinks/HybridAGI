@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hybrid_agi"
+version = "0.0.1"
+authors = [
+    {name = "SynaLinks", email = "author@email.com"},
+]
+description = "Hybrid AGI - Programmable Autonomous LLM based Agent"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "License :: OSI Approved :: GPL License",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools]
+packages = ["hybrid_agi"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
