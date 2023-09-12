@@ -18,7 +18,7 @@ HybridAGI is a **Programmable LLM Based Autonomous Agent**, build around 3 main 
 
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community.
 
-## 🎉 Quick Start (using docker)!
+## 🎉 Quick Start
 
 To start just use the following commands:
 ```
@@ -26,6 +26,8 @@ git clone https://github.com/SynaLinks/HybridAGI
 cd HybridAGI
 docker-compose run --rm hybrid-agi
 ```
+
+To inspect the hybridstore, open your browser to [localhost:8001](https://localhost:8001) and connect to your database using `redis` hostname and port `6379`.
 
 ## Credits
 
