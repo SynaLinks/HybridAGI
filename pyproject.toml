@@ -18,8 +18,8 @@ classifiers = [
 ]
 dynamic = ["dependencies"]
 
-[tool.setuptools]
-packages = ["hybrid_agi"]
+[tool.setuptools.packages.find]
+exclude = ["archives*"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
