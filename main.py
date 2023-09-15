@@ -1,10 +1,7 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import os
-import redis
 from colorama import Fore, Style
-from langchain.prompts.prompt import PromptTemplate
-from langchain.chains.llm import LLMChain
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import Tool

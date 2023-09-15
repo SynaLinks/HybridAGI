@@ -10,6 +10,9 @@
 # Exclude byte-compiled files
 __pycache__/
 
+# Exclude virtual env files
+venv/
+
 # Exclude build related files
 build/
 
