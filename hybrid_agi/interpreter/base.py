@@ -1,6 +1,6 @@
 """The base program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
-from typing import OrderedDict, List
+from typing import OrderedDict, List, Optional, Callable
 from pydantic.v1 import BaseModel
 from langchain.chains.llm import LLMChain
 from langchain.prompts.prompt import PromptTemplate
@@ -13,7 +13,8 @@ from hybrid_agi.parsers.interpreter_output_parser import InterpreterOutputParser
 DECISION_TEMPLATE = \
 """{context}
 Decision Purpose: {purpose}
-Decision: {question} Let's think this out in a step by step way to be sure we have the right answer.
+Decision: {question} \
+Let's think this out in a step by step way to be sure we have the right answer.
 Decision Answer (must finish with {choice}):"""
 
 DECISION_PROMPT = PromptTemplate(
@@ -46,6 +47,32 @@ class BaseGraphProgramInterpreter(BaseModel):
     debug: bool = False
 
     output_parser: BaseOutputParser = InterpreterOutputParser()
+
+    pre_decision_callback: Optional[
+        Callable[
+            [str, str, str, List[str]],
+            None
+        ]
+    ] = None
+    post_decision_callback: Optional[
+        Callable[
+            [str, str, str, List[str], str],
+            None
+        ]
+    ] = None
+
+    pre_action_callback: Optional[
+        Callable[
+            [str, str, str, str],
+            None
+        ]
+    ] = None
+    post_action_callback: Optional[
+        Callable[
+            [str, str, str, str],
+            None
+        ]
+    ] = None
 
     class Config:
         """Configuration for this pydantic object."""
@@ -83,6 +110,8 @@ class BaseGraphProgramInterpreter(BaseModel):
             prompt: str
         ) -> str:
         """Method to perform an action"""
+        if self.pre_action_callback is not None:
+            self.pre_action_callback(context, purpose, tool, prompt)
         tool_input = self.predict_tool_input(context, purpose, tool, prompt)
         action_template = \
         "Action Purpose: {purpose}\nAction: {tool}\nAction Input: {prompt}"""
@@ -102,7 +131,10 @@ class BaseGraphProgramInterpreter(BaseModel):
                 tool = tool,
                 prompt = prompt + tool_input
             )
-        return action.strip()
+        action = action.strip()
+        if self.post_action_callback is not None:
+            self.post_action_callback(context, purpose, tool, prompt, action)
+        return action
 
     def perform_decision(
             self,
@@ -112,6 +144,8 @@ class BaseGraphProgramInterpreter(BaseModel):
             options: List[str]
         ) -> str:
         """Method to perform a decision"""
+        if self.pre_decision_callback is not None:
+            self.pre_decision_callback(context, purpose, question, options)
         chain = LLMChain(llm=self.fast_llm, prompt=DECISION_PROMPT, verbose=self.debug)
         choice = " or ".join(options)
         attemps = 0
@@ -135,6 +169,8 @@ class BaseGraphProgramInterpreter(BaseModel):
                 f" Got {result} should be {choice},"+
                 " please verify your prompts or programs."
             )
+        if self.post_decision_callback is not None:
+            self.post_decision_callback(context, purpose, question, options, decision)
         return decision
 
     def validate_tool(self, name):

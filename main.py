@@ -227,7 +227,7 @@ def load_folder():
     print(f"{Fore.GREEN}[*] Which folder do you want to load?{Style.RESET_ALL}")
     folder_path = input("> ")
     folder_name = os.path.basename(os.path.abspath(folder_path))
-    print(f"{Fore.GREEN}[*] Are you sure you want to load the folder named '{folder_name}'? [y/N]{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}[*] Are you sure about loading the folder named '{folder_name}'? [y/N]{Style.RESET_ALL}")
     while True:
         decision = input("> ").upper().strip()
         if decision == "Y" or decision == "YES":

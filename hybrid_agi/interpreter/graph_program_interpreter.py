@@ -1,7 +1,7 @@
 """The graph program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from collections import deque
-from typing import List, Optional, Iterable
+from typing import List, Optional, Iterable, Callable
 from pydantic.v1 import BaseModel, Extra
 from colorama import Fore, Style
 from redisgraph import Node, Graph
@@ -46,6 +46,22 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             max_iteration:int = 50,
             verbose: bool = True,
             debug: bool = False,
+            pre_decision_callback: Optional[Callable[
+                [str, str, str, List[str]],
+                None
+            ]] = None,
+            post_decision_callback: Optional[Callable[
+                [str, str, str, List[str], str],
+                None
+            ]] = None,
+            pre_action_callback: Optional[Callable[
+                [str, str, str, str],
+                None
+            ]] = None,
+            post_action_callback: Optional[Callable[
+                [str, str, str, str, str],
+                None
+            ]] = None,
         ):
         if program_index == "":
             program_index = hybridstore.main.name
@@ -93,7 +109,11 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             max_decision_attemp = max_decision_attemp,
             max_iteration = max_iteration,
             verbose = verbose,
-            debug = debug
+            debug = debug,
+            pre_decision_callback = pre_decision_callback,
+            post_decision_callback = post_decision_callback,
+            pre_action_callback = pre_action_callback,
+            post_action_callback = post_action_callback
         )
 
     def update_objective(self, objective:str):
