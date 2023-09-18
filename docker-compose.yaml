@@ -1,11 +1,11 @@
 version: '3'
 services:
-  hybrid-agi:
-    image: hybrid-agi:0.0.1
+  hybrid-agi-cli:
+    image: hybrid-agi-cli:0.0.1
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hybrid-agi
+    container_name: hybrid-agi-cli
     env_file: .env
     depends_on:
       - redis

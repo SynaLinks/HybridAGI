@@ -24,6 +24,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     memory: ProgramTraceMemory = ProgramTraceMemory()
     program_index: str = ""
     program_stack: Iterable = deque()
+    current_node_stack: Iterable = deque()
     max_decision_attemp: int = 5
     current_iteration:int = 0
     max_iteration: int = 50
@@ -116,45 +117,9 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             post_action_callback = post_action_callback
         )
 
-    def update_objective(self, objective:str):
-        self.memory.update_objective(objective)
-        return "Objective sucessfully updated"
-
-    def read_tools_instructions(self, input:str):
-        return self.tools_instructions
-
-    def get_current_program(self) -> Optional[Graph]:
-        """Method to retreive the current program from the stack"""
-        if len(self.program_stack) > 0:
-            return self.program_stack[len(self.program_stack)-1]
-        return None
-
-    def call_subprogram(self, node:Node):
-        """Method to call a sub-program"""
-        purpose = node.properties["name"]
-        program_name = node.properties["program"]
-        program_index = self.hybridstore.program_key+":"+program_name
-        self.memory.update_trace(
-            f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}"
-        )
-        self.execute_program(program_index)
-        self.memory.update_trace(f"End SubProgram: {program_name}")
-
-    def get_next(self, node:Node) -> Optional[Node]:
-        """Method to get the next node"""
-        name = node.properties["name"]
-        result = self.get_current_program().query(
-            'MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n'
-        )
-        if len(result.result_set) > 0:
-            return result.result_set[0][0]
-        return None
-
-    def execute_program(self, program_index:str):
-        """Method to execute a program"""
+    def get_starting_node(self, program_index):
         program = Graph(program_index, self.hybridstore.client)
-        self.program_stack.append(program)
-        result = self.get_current_program().query(
+        result = program.query(
             'MATCH (n:Control {name:"Start"}) RETURN n'
         )
         if len(result.result_set) == 0:
@@ -166,36 +131,64 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                 " please correct your programs."
             )
         starting_node = result.result_set[0][0]
-        current_node = self.get_next(starting_node)
-        next_node = None
-        iteration = 0
-        while True:
-            if current_node.label == "Program":
-                self.call_subprogram(current_node)
-                next_node = self.get_next(current_node)
-            elif current_node.label == "Action":
-                self.use_tool(current_node)
-                next_node = self.get_next(current_node)
-            elif current_node.label == "Decision":
-                next_node = self.decide_next(current_node)
-            elif current_node.label == "Control":
-                if current_node.properties["name"] == "End":
-                    break
-            else:
-                raise RuntimeError(
-                    "Invalid label for node."+
-                    " Please verify your programs using RedisInsight."
-                )
-            if next_node is None:
-                raise RuntimeError(
-                    "Program failed after reaching a non-terminated path."+
-                    " Please verify your programs using RedisInsight."
-                )
-            current_node = next_node
-            self.current_iteration += 1
-            if self.current_iteration > self.max_iteration:
-                raise RuntimeError("Program failed after reaching max iteration")
-        self.program_stack.pop()
+        return starting_node
+
+    def update_objective(self, objective:str):
+        self.memory.update_objective(objective)
+        return "Objective sucessfully updated"
+
+    def read_tools_instructions(self, input:str):
+        return self.tools_instructions
+
+    def get_current_program(self) -> Optional[Graph]:
+        """Method to retreive the current program from the stack"""
+        if len(self.program_stack) > 0:
+            return self.program_stack[-1]
+        return None
+
+    def get_current_node(self) -> Optional[Node]:
+        if len(self.current_node_stack) > 0:
+            return self.current_node_stack[-1]
+        return None
+    
+    def set_current_node(self, node):
+        if len(self.current_node_stack) > 0:
+            self.current_node_stack[-1] = node
+
+    def call_program(self, node: Node):
+        """Method to call a program"""
+        purpose = node.properties["name"]
+        program_name = node.properties["program"]
+        program_index = self.hybridstore.program_key+":"+program_name
+        self.memory.update_trace(
+            f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}"
+        )
+        program = Graph(program_index, self.hybridstore.client)
+        self.program_stack.append(program)
+        starting_node = self.get_starting_node(program_index)
+        self.current_node_stack.append(self.get_next(starting_node))
+        return self.get_current_node()
+
+    def end_current_program(self):
+        """Method to end the current program"""
+        ending_program = self.program_stack.pop()
+        self.current_node_stack.pop()
+        if ending_program is not None:
+            ending_program_name = \
+            ending_program.name.replace(self.hybridstore.program_key+":", "")
+            print(f"Ending program: {ending_program_name}")
+            self.memory.update_trace(f"End Sub-Program: {ending_program_name}")
+        return self.get_next(self.get_current_node())
+
+    def get_next(self, node:Node) -> Optional[Node]:
+        """Method to get the next node"""
+        name = node.properties["name"]
+        result = self.get_current_program().query(
+            'MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n'
+        )
+        if len(result.result_set) > 0:
+            return result.result_set[0][0]
+        return None
 
     def decide_next(self, node:Node) -> Node:
         """Method to make a decision"""
@@ -239,7 +232,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         tool_input_prompt = node.properties["params"]
 
         context = self.memory.get_trace(self.smart_llm_max_token)
-
+        
         action = self.perform_action(
             context,
             purpose,
@@ -249,9 +242,54 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if self.verbose:
             print(f"{Fore.MAGENTA}{action}{Style.RESET_ALL}")
         self.memory.update_trace(action)
+        return self.get_next(self.get_current_node())
 
-    def run(self, objective:str):
+    def run_step(self) -> Optional[Node]:
+        """Run a single step of the program"""
+        current_node = self.get_current_node()
+        next_node = None
+        node_name = current_node.properties["name"]
+        self.current_iteration += 1
+        if self.current_iteration > self.max_iteration:
+            raise RuntimeError("Program failed after reaching max iteration")
+        if current_node.label == "Program":
+            next_node = self.call_program(current_node)
+        elif current_node.label == "Action":
+            next_node = self.use_tool(current_node)
+        elif current_node.label == "Decision":
+            next_node = self.decide_next(current_node)
+        elif current_node.label == "Control":
+            if current_node.properties["name"] == "End":
+                next_node = self.end_current_program()
+            else:
+                raise RuntimeError(
+                    "Invalid name for control node."+
+                    " Please verify your programs using RedisInsight."
+                )
+        else:
+            raise RuntimeError(
+                "Invalid label for node."+
+                " Please verify your programs using RedisInsight."
+            )
+        self.set_current_node(next_node)
+        return next_node
+
+    def finished(self):
+        """Check if the run is finished"""
+        return self.get_current_node() is None
+
+    def start(self, objective: str):
+        """Start the agent"""
+        self.update_objective(objective)
+        self.current_iteration = 0
+        program = Graph(self.program_index, self.hybridstore.client)
+        self.program_stack.append(program)
+        starting_node = self.get_starting_node(self.program_index)
+        self.current_node_stack.append(self.get_next(starting_node))
+    
+    def run(self, objective: str):
         """Method to run the agent"""
-        self.memory.update_objective(objective)
-        self.execute_program(self.program_index)
+        self.start(objective)
+        while not self.finished():
+            self.run_step()
         return "Program Sucessfully Executed"

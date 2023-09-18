@@ -9,10 +9,9 @@ import tiktoken
 class ProgramTraceMemory(BaseModel):
     objective: str = ""
     program_trace: Iterable = deque()
-    chunk_size: int = 200
+    chunk_size: int = 300
     memory_template: str = \
-"""
-The Objective is from the perspective of the User
+"""The Objective is from the perspective of the User
 Objective: {objective}
 {program_trace}"""
     def clear(self):
@@ -27,21 +26,31 @@ Objective: {objective}
         program_trace = "\n".join(self.program_trace)
         texts = text_splitter.split_text(program_trace)
         result = ""
-        for i in range(0, len(texts)):
-            program_trace = "\n".join(texts[len(texts)-i:])
-
+        
+        if len(texts) == 1:
             memory = self.memory_template.format(
                 objective = self.objective,
-                program_trace=program_trace
+                program_trace = texts[0]
             )
+            return memory
+        else:
+            for i in range(0, len(texts)):
+                program_trace = "\n".join(texts[len(texts)-i:])
 
-            encoding = tiktoken.get_encoding("cl100k_base")
-            num_tokens = len(encoding.encode(memory))
-            if num_tokens < max_tokens:
-                result = memory
-            else:
-                break
-        return result
+                memory = self.memory_template.format(
+                    objective = self.objective,
+                    program_trace = program_trace
+                )
+                print(i)
+                print(memory)
+
+                encoding = tiktoken.get_encoding("cl100k_base")
+                num_tokens = len(encoding.encode(memory))
+                if num_tokens < max_tokens:
+                    result = memory
+                else:
+                    break
+            return result
 
     def update_trace(self, prompt):
         self.program_trace.append(prompt)
