@@ -176,7 +176,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if ending_program is not None:
             ending_program_name = \
             ending_program.name.replace(self.hybridstore.program_key+":", "")
-            print(f"Ending program: {ending_program_name}")
             self.memory.update_trace(f"End Sub-Program: {ending_program_name}")
         return self.get_next(self.get_current_node())
 
@@ -282,6 +281,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Start the agent"""
         self.update_objective(objective)
         self.current_iteration = 0
+        self.memory.clear()
         program = Graph(self.program_index, self.hybridstore.client)
         self.program_stack.append(program)
         starting_node = self.get_starting_node(self.program_index)

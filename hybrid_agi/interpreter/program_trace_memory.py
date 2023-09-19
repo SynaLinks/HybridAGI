@@ -14,6 +14,7 @@ class ProgramTraceMemory(BaseModel):
 """The Objective is from the perspective of the User
 Objective: {objective}
 {program_trace}"""
+
     def clear(self):
         self.program_trace = deque()
 
@@ -41,8 +42,6 @@ Objective: {objective}
                     objective = self.objective,
                     program_trace = program_trace
                 )
-                print(i)
-                print(memory)
 
                 encoding = tiktoken.get_encoding("cl100k_base")
                 num_tokens = len(encoding.encode(memory))

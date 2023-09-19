@@ -9,7 +9,7 @@ class InterpreterOutputParser(BaseOutputParser):
     """
     def parse(self, output: str) -> str:
         """Fix and validate the output"""
-        output = output.replace("\n```\n```","```")
+        output = output.replace("\n```\n```","```").strip()
         match = re.search(r"\nAction|\nDecision|\nStart|\nEnd", output)
         if match:
             return output[:match.start()]

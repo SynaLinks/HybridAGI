@@ -8,7 +8,14 @@
 .env
 
 # Exclude byte-compiled files
-__pycache__/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Exclude pip related files
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Exclude virtual env files
 venv/
@@ -19,3 +26,9 @@ build/
 # Exclude any .git directory and its contents
 .git/
 .github/
+
+# Exclude coverage related
+coverage.xml
+*.cover
+.coverage
+.coverage.*
