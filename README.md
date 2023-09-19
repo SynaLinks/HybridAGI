@@ -1,4 +1,5 @@
 # Hybrid AGI: Unleash the Power of Neuro-Symbolic AGI
+![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
 *Welcome to HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of large language models (LLM) and symbolic artificial intelligence, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
