@@ -2,16 +2,12 @@
 
 from collections import deque
 from typing import List, Optional, Iterable, Callable
-from pydantic.v1 import BaseModel, Extra
 from colorama import Fore, Style
 from redisgraph import Node, Graph
-from collections import OrderedDict
 
-from langchain.chains.llm import LLMChain
 from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
 from symbolinks import RedisGraphHybridStore
-from langchain.schema import BaseMemory
 
 from hybrid_agi.interpreter.program_trace_memory import ProgramTraceMemory
 from hybrid_agi.interpreter.base import BaseGraphProgramInterpreter
@@ -247,7 +243,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Run a single step of the program"""
         current_node = self.get_current_node()
         next_node = None
-        node_name = current_node.properties["name"]
         self.current_iteration += 1
         if self.current_iteration > self.max_iteration:
             raise RuntimeError("Program failed after reaching max iteration")
