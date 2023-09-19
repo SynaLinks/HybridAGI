@@ -11,10 +11,10 @@ Welcome! We appreciate your interest in contributing to our open-source project.
    - [Bug Reports](#bug-reports)
    - [Feature Requests](#feature-requests)
    - [Pull Requests](#pull-requests)
-3. [Development Setup](#development-setup)
+<!-- 3. [Development Setup](#development-setup)
 4. [Coding Guidelines](#coding-guidelines)
 5. [Testing](#testing)
-6. [Documentation](#documentation)
+6. [Documentation](#documentation) -->
 7. [Community](#community)
 8. [License](#license)
 
