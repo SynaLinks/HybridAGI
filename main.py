@@ -37,7 +37,7 @@ from symbolinks.tools import (
 from hybrid_agi.tools.ask_user import AskUserTool
 from hybrid_agi.tools.speak import SpeakTool
 
-from hybrid_agi.interpreter.graph_program_interpreter import GraphProgramInterpreter
+from hybrid_agi import GraphProgramInterpreter
 
 cfg = Config()
 
@@ -227,7 +227,10 @@ def load_folder():
     print(f"{Fore.GREEN}[*] Which folder do you want to load?{Style.RESET_ALL}")
     folder_path = input("> ")
     folder_name = os.path.basename(os.path.abspath(folder_path))
-    print(f"{Fore.GREEN}[*] Are you sure about loading the folder named '{folder_name}'? [y/N]{Style.RESET_ALL}")
+    print(
+        f"{Fore.GREEN}[*] Are you sure about loading the folder named " \
+        + "'{folder_name}'? [y/N]{Style.RESET_ALL}"
+    )
     while True:
         decision = input("> ").upper().strip()
         if decision == "Y" or decision == "YES":
@@ -260,10 +263,14 @@ def load_programs():
                 program_index = f"{hybridstore.program_key}:{program_name}"
                 try:
                     print(
-                        f"{Fore.GREEN}[*] Adding program '{Fore.YELLOW}{program_name}"+
-                        f"{Fore.GREEN}'...{Style.RESET_ALL}"
+                        f"{Fore.GREEN}[*] Adding program '{Fore.YELLOW}" \
+                        + f"{program_name}{Fore.GREEN}'...{Style.RESET_ALL}"
                     )
-                    graph_loader.load(os.path.join(dirpath, filename), program_index, clear=True)
+                    graph_loader.load(
+                        os.path.join(dirpath, filename),
+                        program_index,
+                        clear=True
+                    )
                 except Exception as err:
                     print(f"{Fore.RED}[!] Error occured with '{Fore.YELLOW}{filename}"+
                         f"{Fore.RED}': {str(err)}{Style.RESET_ALL}"

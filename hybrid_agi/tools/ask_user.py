@@ -22,7 +22,7 @@ class AskUserTool(BaseTool):
         ) -> str:
         """Use the tool."""
         print(f"{Fore.YELLOW}[*] "+query+f"{Style.RESET_ALL}")
-        response = input(f"> ")
+        response = input("> ")
         if response:
             return "The User responded with: "+response
         else:

@@ -24,7 +24,7 @@ To start just use the following commands:
 ```
 git clone https://github.com/SynaLinks/HybridAGI
 cd HybridAGI
-docker-compose run --rm hybrid-agi
+docker-compose run --rm hybrid-agi-cli
 ```
 
 To inspect the hybridstore, open your browser to [localhost:8001](https://localhost:8001) and connect to your database using `redis` hostname and port `6379`.
