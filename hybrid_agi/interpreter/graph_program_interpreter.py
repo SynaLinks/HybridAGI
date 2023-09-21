@@ -173,7 +173,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             ending_program_name = \
             ending_program.name.replace(self.hybridstore.program_key+":", "")
             self.memory.update_trace(f"End Sub-Program: {ending_program_name}")
-            return self.get_next(self.get_current_node())
+            if self.get_current_node() is not None:
+                return self.get_next(self.get_current_node())
         return None
 
     def get_next(self, node:Node) -> Optional[Node]:
@@ -266,7 +267,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                 "Invalid label for node."+
                 " Please verify your programs using RedisInsight."
             )
-        self.set_current_node(next_node)
+        if next_node is not None:
+            self.set_current_node(next_node)
         return next_node
 
     def finished(self):
