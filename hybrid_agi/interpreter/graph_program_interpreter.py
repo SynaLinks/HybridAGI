@@ -173,7 +173,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             ending_program_name = \
             ending_program.name.replace(self.hybridstore.program_key+":", "")
             self.memory.update_trace(f"End Sub-Program: {ending_program_name}")
-        return self.get_next(self.get_current_node())
+            return self.get_next(self.get_current_node())
+        return None
 
     def get_next(self, node:Node) -> Optional[Node]:
         """Method to get the next node"""
