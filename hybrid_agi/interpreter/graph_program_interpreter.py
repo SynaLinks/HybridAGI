@@ -290,4 +290,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.start(objective)
         while not self.finished():
             self.run_step()
+        if self.verbose:
+            print(f"{Fore.GREEN}[!] Program Sucessfully Executed{Style.RESETALL}")
         return "Program Sucessfully Executed"
