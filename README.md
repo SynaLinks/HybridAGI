@@ -1,19 +1,23 @@
-# Hybrid AGI: Unleash the Power of Neuro-Symbolic AGI
+# HybridAGI: The Programmable Neuro-Symbolic AGI
 ![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
-*Welcome to HybridAGI repository, a cutting-edge, free, and open-source software that revolutionizes artificial general intelligence (AGI) systems. By combining the strengths of large language models (LLM) and symbolic artificial intelligence, HybridAGI empowers users like you to collaborate with an intelligent system that goes beyond traditional AI capabilities.*
+## We've released our Streamlit App! [Check this out!](https://github.com/SynaLinks/HybridAGI-app)
 
-HybridAGI is a **Programmable LLM Based Autonomous Agent**, build around 3 main concepts:
+HybridAGI represents the future of hybrid architectures that combine the strengths of both machine learning models and explicit programming. This approach aims to bridge the gap between the impressive language generation abilities of Large Language Models (LLM) and the need for logical reasoning and decision-making capabilities. By integrating advanced machine learning models with explicit programming, HybridAGI systems excel in language generation, logical reasoning, and decision-making tasks.
+
+HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you program its behavior using a **graph-based prompt programming** approach. This state-of-the-art feature allows the AGI to efficiently use any tool while controlling the long-term behavior of the agent.
+
+HybridAGI is build around 3 main concepts:
 1. *The hybrid vector/graph database* used as knowledge base, filesystem and program memory
 2. *The meta knowledge graph* implementing a tailored filesystem for AI allowing the system to safely query information in a unix-like fashion
-3. *The graph based prompt programming* allowing the system to follow logical and powerfull programs in the form of cypher files
+3. *The graph-based prompt programming* allowing the system to follow logical and powerfull programs in the form of cypher files
 
 ## ✨ Key Features
 
 - **Efficient Storage:** [SymboLinks](https://github.com/SynaLinks/SymboLinks) is an hybrid vector and graph database used as knowledge base, filesystem and program memory. This database enables the AGI system to work safely within its own memory in a unix-like fashion.
 
-- **Graph-Based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-library)!
+- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-library)!
 
 - **Graph Program Interpreter:** We introduce a [revolutionary agent](hybrid_agi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision making and graphs to determine actions based on a program. By reducing ambiguity, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
 
@@ -37,7 +41,6 @@ Hybrid AGI is made possible by the following open-source tools:
 - LangChain framework
 - Redis software stack
 - OpenAI API
-- LocalAI
 
 ## Get Involved
 

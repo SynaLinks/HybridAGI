@@ -186,7 +186,7 @@ o  o o   o o--o  o--o  o-O-o o-o         O   o-o  o-O-o
 O--O   O   O--o  O-Oo    |   |   O     o---o|  -o   |   
 |  |   |   |   | |  \    |   |  /      |   |o   |   |   
 o  o   o   o--o  o   o o-O-o o-o       o   o o-o  o-O-o
-    {Fore.GREEN}Unleash the Power of Neuro-Symbolic AGI{Style.RESET_ALL}
+    {Fore.GREEN}The Programmable Neuro-Symbolic AGI{Style.RESET_ALL}
 """
 
 MENU = \

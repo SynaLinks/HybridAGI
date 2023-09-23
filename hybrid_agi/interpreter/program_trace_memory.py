@@ -27,14 +27,23 @@ Objective: {objective}
         program_trace = "\n".join(self.program_trace)
         texts = text_splitter.split_text(program_trace)
         result = ""
-        
-        if len(texts) == 1:
+        if len(texts) == 0:
+            memory = self.memory_template.format(
+                objective = self.objective,
+                program_trace = ""
+            )
+            return memory
+        elif len(texts) == 1:
             memory = self.memory_template.format(
                 objective = self.objective,
                 program_trace = texts[0]
             )
             return memory
         else:
+            result = self.memory_template.format(
+                objective = self.objective,
+                program_trace = ""
+            )
             for i in range(0, len(texts)):
                 program_trace = "\n".join(texts[len(texts)-i:])
 
