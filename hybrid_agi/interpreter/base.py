@@ -126,14 +126,16 @@ class BaseGraphProgramInterpreter(BaseModel):
                 prompt = tool_input + f"\nAction Observation: {observation}"
             )
         else:
+            observation = tool_input
+            tool_input = prompt
             action = action_template.format(
                 purpose = purpose,
                 tool = tool,
-                prompt = prompt + tool_input
+                prompt = tool_input + observation
             )
         action = action.strip()
         if self.post_action_callback is not None:
-            self.post_action_callback(context, purpose, tool, prompt, action)
+            self.post_action_callback(context, purpose, tool, tool_input, observation)
         return action
 
     def perform_decision(
