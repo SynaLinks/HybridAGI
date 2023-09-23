@@ -112,7 +112,10 @@ class BaseGraphProgramInterpreter(BaseModel):
         """Method to perform an action"""
         if self.pre_action_callback is not None:
             self.pre_action_callback(context, purpose, tool, prompt)
-        tool_input = self.predict_tool_input(context, purpose, tool, prompt)
+        if prompt:
+            tool_input = self.predict_tool_input(context, purpose, tool, prompt)
+        else:
+            tool_input = ""
         action_template = \
         "Action Purpose: {purpose}\nAction: {tool}\nAction Input: {prompt}"""
 
