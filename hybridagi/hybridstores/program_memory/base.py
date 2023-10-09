@@ -79,7 +79,9 @@ class BaseProgramMemory(BaseHybridStore):
     def add_programs(
             self,
             names: List[str],
-            programs: List[str]):
+            programs: List[str],
+            use_cache: bool = True):
+        """Method to add programs"""
         indexes = []
         dependencies = {}
         assert(len(programs) == len(names))
@@ -88,21 +90,25 @@ class BaseProgramMemory(BaseHybridStore):
         for idx, program in enumerate(programs):
             program_name = names[idx]
             graph_program = self.create_graph(program_name)
-            try:
+            if self.exists(program_name):
                 graph_program.delete()
-            except Exception:
-                pass
+            
             graph_program.query(program)
-            chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
-            program_description = chain.predict(program=program)
-            vector = np.array(
-                self.embedding.embed_query(text=program_description),
-                dtype=np.float32)
+            if not self.exists(program_name) or not use_cache:
+                chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
+                program_description = chain.predict(program=program)
+                vector = np.array(
+                    self.embedding.embed_query(text=program_description),
+                    dtype=np.float32)
+                params = {"program_name": program_name, "vector": list(vector)}
+                self.query('MERGE (n:Program {name:"$program_name"'+
+                        ', description:vector32f($vector)})',
+                        params = params)
+            else:
+                params = {"program_name": program_name}
+                self.query('MATCH (n:Program {name:"$program_name"})'+
+                    '-[r:DEPENDS_ON]->(m) DELETE r')
             self.set_content(program_name, program)
-            params = {"program_name": program_name, "vector": list(vector)}
-            self.query('MERGE (n:Program {name:"$program_name"'+
-                       ', description:vector32f($vector)})',
-                       params = params)
             result = graph_program.query('MATCH (n:Program) RETURN n')
             dependencies[program_name] = []
             if len(result.result_set) > 0:
