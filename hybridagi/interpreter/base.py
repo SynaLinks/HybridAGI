@@ -8,7 +8,7 @@ from langchain.base_language import BaseLanguageModel
 from langchain.tools import Tool
 
 from langchain.schema import BaseOutputParser
-from hybrid_agi.parsers.interpreter_output_parser import InterpreterOutputParser
+from ..parsers.interpreter_output_parser import InterpreterOutputParser
 
 DECISION_TEMPLATE = \
 """{context}
@@ -38,7 +38,6 @@ class BaseGraphProgramInterpreter(BaseModel):
     smart_llm: BaseLanguageModel
     fast_llm: BaseLanguageModel
 
-    allowed_tools: List[str] = []
     tools_map: OrderedDict[str, Tool] = {}
 
     max_decision_attemp: int = 5
@@ -107,15 +106,16 @@ class BaseGraphProgramInterpreter(BaseModel):
             context: str,
             purpose: str,
             tool:str,
-            prompt: str
+            prompt: str,
+            disable_inference: bool = False
         ) -> str:
         """Method to perform an action"""
         if self.pre_action_callback is not None:
             self.pre_action_callback(context, purpose, tool, prompt)
-        if prompt:
-            tool_input = self.predict_tool_input(context, purpose, tool, prompt)
+        if disable_inference:
+            tool_input = prompt
         else:
-            tool_input = ""
+            tool_input = self.predict_tool_input(context, purpose, tool, prompt)
         action_template = \
         "Action Purpose: {purpose}\nAction: {tool}\nAction Input: {prompt}"""
 
@@ -180,8 +180,6 @@ class BaseGraphProgramInterpreter(BaseModel):
 
     def validate_tool(self, name):
         """Method to validate the given tool"""
-        if name not in self.allowed_tools:
-            raise ValueError(f"Tool '{name}' not allowed. Please use another one.")
         if name not in self.tools_map:
             raise ValueError(f"Tool '{name}' not registered. Please use another one.")
 

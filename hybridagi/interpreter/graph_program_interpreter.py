@@ -3,22 +3,25 @@
 from collections import deque
 from typing import List, Optional, Iterable, Callable
 from colorama import Fore, Style
-from redisgraph import Node, Graph
+from redisgraph import Node
+from hybridagikb import Graph
 
 from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
-from symbolinks import RedisGraphHybridStore
+from ..hybridstores.program_memory.program_memory import ProgramMemory
 
-from hybrid_agi.interpreter.program_trace_memory import ProgramTraceMemory
-from hybrid_agi.interpreter.base import BaseGraphProgramInterpreter
+from .program_trace_memory import ProgramTraceMemory
+from .base import BaseGraphProgramInterpreter
+
+COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]
 
 class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     """LLM based interpreter for graph programs"""
-    hybridstore: RedisGraphHybridStore
+    program_memory: ProgramMemory
     smart_llm: BaseLanguageModel
     fast_llm: BaseLanguageModel
     memory: ProgramTraceMemory = ProgramTraceMemory()
-    program_index: str = ""
+    program_name: str = ""
     program_stack: Iterable = deque()
     current_node_stack: Iterable = deque()
     max_decision_attemp: int = 5
@@ -32,10 +35,10 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     
     def __init__(
             self,
-            hybridstore: RedisGraphHybridStore,
+            program_memory: ProgramMemory,
             smart_llm: BaseLanguageModel,
             fast_llm: BaseLanguageModel,
-            program_index:str = "",
+            program_name:str = "main",
             tools:List[Tool] = [],
             smart_llm_max_token: int = 4000,
             fast_llm_max_token: int = 4000,
@@ -60,8 +63,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                 None
             ]] = None,
         ):
-        if program_index == "":
-            program_index = hybridstore.main.name
 
         update_objective_tool = Tool(
             name="UpdateObjective",
@@ -70,38 +71,33 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     Usefull to update your long-term objective
     The Input should be the new objective
     """,
-            func=self.update_objective
+            func=self.update_objective_tool
         )
 
-        read_tools_instructions = Tool(
-            name = "ReadToolsInstructions",
-            description = \
+        revert_tool = Tool(
+            name="Revert",
+            description=\
     """
-    Usefull to read the tools instructions
-    No Input needed
+    Usefull to correct your last actions
+    The Input should be the number of steps to revert
     """,
-            func=self.read_tools_instructions
+            func=self.revert_tool
         )
 
         tools.append(update_objective_tool)
-        tools.append(read_tools_instructions)
+        tools.append(revert_tool)
 
-        allowed_tools = []
         tools_map = {}
-        tools_instruction = "You have access to the following tools:\n"
         for tool in tools:
-            tools_instruction += f"\n{tool.name}:{tool.description}"
-            allowed_tools.append(tool.name)
             tools_map[tool.name] = tool
 
         super().__init__(
-            hybridstore = hybridstore,
+            program_memory = program_memory,
             smart_llm = smart_llm,
             fast_llm = fast_llm,
             smart_llm_max_token = smart_llm_max_token,
             fast_llm_max_token = fast_llm_max_token,
-            program_index = program_index,
-            allowed_tools = allowed_tools,
+            program_name = program_name,
             tools_map = tools_map,
             max_decision_attemp = max_decision_attemp,
             max_iteration = max_iteration,
@@ -110,11 +106,10 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             pre_decision_callback = pre_decision_callback,
             post_decision_callback = post_decision_callback,
             pre_action_callback = pre_action_callback,
-            post_action_callback = post_action_callback
-        )
+            post_action_callback = post_action_callback)
 
-    def get_starting_node(self, program_index):
-        program = Graph(program_index, self.hybridstore.client)
+    def get_starting_node(self, program_name: str):
+        program = self.program_memory.create_graph(program_name)
         result = program.query(
             'MATCH (n:Control {name:"Start"}) RETURN n'
         )
@@ -129,12 +124,22 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         starting_node = result.result_set[0][0]
         return starting_node
 
-    def update_objective(self, objective:str):
+    def update_objective_tool(self, objective: str):
         self.memory.update_objective(objective)
         return "Objective sucessfully updated"
 
-    def read_tools_instructions(self, input:str):
-        return self.tools_instructions
+    def revert_tool(self, n_steps: str):
+        n = int(n_steps)
+        self.memory.revert(n)
+        return f"Successfully reverted {n} steps"
+
+    def call_program_tool(self, program_name: str):
+        starting_node = self.get_starting_node(program_name)
+        try:
+            self.call_program(starting_node)
+            return f"Successfully executed '{program_name}' program"
+        except Exception as err:
+            return f"Error occured while executing '{program_name}': {err}"
 
     def get_current_program(self) -> Optional[Graph]:
         """Method to retreive the current program from the stack"""
@@ -143,11 +148,13 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         return None
 
     def get_current_node(self) -> Optional[Node]:
+        """Method to retreive the current node from the stack"""
         if len(self.current_node_stack) > 0:
             return self.current_node_stack[-1]
         return None
     
     def set_current_node(self, node):
+        """Method to set the current node from the stack"""
         if len(self.current_node_stack) > 0:
             self.current_node_stack[-1] = node
 
@@ -155,13 +162,16 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Method to call a program"""
         purpose = node.properties["name"]
         program_name = node.properties["program"]
-        program_index = self.hybridstore.program_key+":"+program_name
         self.memory.update_trace(
             f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}"
         )
-        program = Graph(program_index, self.hybridstore.client)
+        if self.verbose:
+            print(COLORS[self.current_iteration%2])
+            print(f"Start Sub-Program: {program_name}")
+            print(f"Sub-Program Purpose: {purpose}{Style.RESET_ALL}")
+        program = self.program_memory.create_graph(program_name)
         self.program_stack.append(program)
-        starting_node = self.get_starting_node(program_index)
+        starting_node = self.get_starting_node(program_name)
         self.current_node_stack.append(self.get_next(starting_node))
         return self.get_current_node()
 
@@ -170,8 +180,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         ending_program = self.program_stack.pop()
         self.current_node_stack.pop()
         if ending_program is not None:
-            ending_program_name = \
-            ending_program.name.replace(self.hybridstore.program_key+":", "")
+            ending_program_name = ending_program.name
             self.memory.update_trace(f"End Sub-Program: {ending_program_name}")
             if self.get_current_node() is not None:
                 return self.get_next(self.get_current_node())
@@ -213,8 +222,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             f"Decision Purpose: {purpose}" + \
             f"\nDecision: {question}" + \
             f"\nDecision Answer: {decision}"
-            print(
-                f"{Fore.GREEN}{decision_template}{Style.RESET_ALL}")
+            print(COLORS[self.current_iteration%2])
+            print(f"{decision_template}{Style.RESET_ALL}")
 
         result = self.get_current_program().query(
             'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n'
@@ -228,6 +237,10 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         tool_name = node.properties["tool"]
         tool_input_prompt = node.properties["params"]
 
+        if "disable_inference" in node.properties:
+            disable = node.properties["disable_inference"]
+            disable_inference = (disable.lower() == "true")
+
         context = self.memory.get_trace(self.smart_llm_max_token)
         
         action = self.perform_action(
@@ -237,7 +250,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             tool_input_prompt
         )
         if self.verbose:
-            print(f"{Fore.MAGENTA}{action}{Style.RESET_ALL}")
+            print(COLORS[self.current_iteration%2])
+            print(f"{action}{Style.RESET_ALL}")
         self.memory.update_trace(action)
         return self.get_next(self.get_current_node())
 
@@ -277,12 +291,12 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
 
     def start(self, objective: str):
         """Start the agent"""
-        self.update_objective(objective)
+        self.memory.update_objective(objective)
         self.current_iteration = 0
         self.memory.clear()
-        program = Graph(self.program_index, self.hybridstore.client)
+        program = self.program_memory.create_graph(self.program_name)
         self.program_stack.append(program)
-        starting_node = self.get_starting_node(self.program_index)
+        starting_node = self.get_starting_node(self.program_name)
         self.current_node_stack.append(self.get_next(starting_node))
     
     def run(self, objective: str):

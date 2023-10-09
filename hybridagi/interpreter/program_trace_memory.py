@@ -65,3 +65,7 @@ Objective: {objective}
 
     def update_objective(self, objective):
         self.objective = objective
+
+    def revert(self, n: int):
+        for i in range(n):
+            self.program_trace.pop()

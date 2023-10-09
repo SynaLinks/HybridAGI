@@ -1,25 +1,36 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+allow-ambiguous-features = true
 
 [project]
-name = "hybrid_agi"
-version = "0.0.1"
+name = "hybridagi"
+version = "0.0.2"
 authors = [
-    {name = "SynaLinks", email = "author@email.com"},
+    {name = "SynaLinks", email = "author@example.com"},
 ]
-description = "Hybrid AGI - Programmable Autonomous LLM based Agent"
+description = "The Programmable Neuro-Symbolic AGI"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
-    "License :: OSI Approved :: GPL License",
+    "License :: OSI Approved :: GNU General Public License (GPL)",
     "Programming Language :: Python :: 3.9",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dynamic = ["dependencies"]
-
-[tool.setuptools.packages.find]
-exclude = ["archives*"]
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+dependencies = [
+    "redis>=4.5.2",
+    "redisgraph",
+    "langchain==0.0.305",
+    "openai",
+    "gpt4all",
+    "pydantic",
+    "python-dotenv",
+    "coverage",
+    "colorama",
+    "tqdm",
+    "tiktoken",
+    "hybridagikb@git+https://github.com/SynaLinks/HybridAGI-knowledge"
+]

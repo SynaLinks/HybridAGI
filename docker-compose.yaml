@@ -9,20 +9,20 @@ services:
     container_name: hybrid-agi-cli
     env_file: .env
     depends_on:
-      - redis
+      - falkordb
       - redis-insight
     volumes:
       - ./archives:/archives
-  redis:
-    image: redis/redis-stack-server:latest
-    container_name: redis
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: falkordb
     ports:
       - "6379:6379"
   redis-insight:
     image: redislabs/redisinsight:latest
     container_name: redis-insight
     depends_on:
-      - redis
+      - falkordb
     ports:
       - 8001:8001
 

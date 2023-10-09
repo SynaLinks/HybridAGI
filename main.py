@@ -2,172 +2,147 @@
 
 import os
 from colorama import Fore, Style
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
+
 from langchain.tools import Tool
 
 from config import Config
 
-from symbolinks import (
-    RedisGraphHybridStore,
-    VirtualFileSystem,
-    VirtualShell,
-    VirtualTextEditor,
-    VirtualFileSystemIndexWrapper,
-    CypherGraphLoader
-)
+from hybridagikb import FileSystem
 
-from symbolinks.filesystem.commands import (
-    ChangeDirectory,
-    ListDirectory,
-    MakeDirectory,
-    Move,
-    PrintWorkingDirectory,
-    Remove
-)
-
-from symbolinks.tools import (
-    VirtualShellTool,
-    WriteFileTool,
-    AppendFileTool,
+from hybridagikb.tools import (
+    ShellTool,
+    WriteFilesTool,
+    AppendFilesTool,
     ReadFileTool,
-    UploadTool
-)
+    UploadTool)
 
-from hybrid_agi.tools.ask_user import AskUserTool
-from hybrid_agi.tools.speak import SpeakTool
+from hybridagi import ProgramMemory
 
-from hybrid_agi import GraphProgramInterpreter
+from hybridagi.tools import (
+    AskUserTool,
+    SpeakTool,
+    ListProgramsTool,
+    LoadProgramsTool,
+    ProgramSearchTool)
+
+from hybridagi.tools.ask_user import AskUserTool
+from hybridagi.tools.speak import SpeakTool
+
+from hybridagi import GraphProgramInterpreter
 
 cfg = Config()
 
-if cfg.private_mode is True:
-    smart_llm = ChatOpenAI(
+if cfg.private_mode:
+    from langchain.embeddings import GPT4AllEmbeddings
+    from langchain.llms import GPT4All
+    from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+    
+    embedding = GPT4AllEmbeddings()
+    embedding_dim = 384
+
+    local_path = cfg.local_model_path
+    callbacks = [StreamingStdOutCallbackHandler()]
+
+    smart_llm = GPT4All(
+        model = local_path,
         temperature=cfg.temperature,
         model_name=cfg.fast_llm_model,
         openai_api_base=cfg.openai_base_path
     )
-    fast_llm = ChatOpenAI(
+    fast_llm = GPT4All(
+        model = local_path,
         temperature=cfg.temperature,
         model_name=cfg.fast_llm_model,
-        openai_api_base=cfg.openai_base_path
-    )
+        openai_api_base=cfg.openai_base_path)
 else:
+    from langchain.embeddings import OpenAIEmbeddings
+    from langchain.chat_models import ChatOpenAI
+    
+    embedding = OpenAIEmbeddings()
+    embedding_dim = 1536
+    
     smart_llm = ChatOpenAI(
         temperature=cfg.temperature,
-        model_name=cfg.smart_llm_model
-    )
+        model_name=cfg.smart_llm_model)
     fast_llm = ChatOpenAI(
         temperature=cfg.temperature,
-        model_name=cfg.fast_llm_model
-    )
+        model_name=cfg.fast_llm_model)
 
-embedding = OpenAIEmbeddings()
-
-hybridstore = RedisGraphHybridStore(
+filesystem = FileSystem(
     redis_url = cfg.redis_url,
     index_name = cfg.memory_index,
-    embedding = embedding
-)
+    embedding = embedding,
+    embedding_dim = embedding_dim)
+filesystem.initialize()
 
-virtual_filesystem = VirtualFileSystem(hybridstore)
-
-virtual_text_editor = VirtualTextEditor(
-    hybridstore = hybridstore,
-    downloads_directory = cfg.downloads_directory,
-    chunk_size = cfg.chunk_size,
-    chunk_overlap = cfg.chunk_overlap,
-    verbose = cfg.debug_mode
-)
-
-index = VirtualFileSystemIndexWrapper(
-    hybridstore = hybridstore,
-    filesystem = virtual_filesystem,
-    text_editor = virtual_text_editor,
-    verbose = cfg.debug_mode
-)
-
-commands = [
-    ChangeDirectory(hybridstore=hybridstore),
-    ListDirectory(hybridstore=hybridstore),
-    MakeDirectory(hybridstore=hybridstore),
-    Move(hybridstore=hybridstore),
-    PrintWorkingDirectory(hybridstore=hybridstore),
-    Remove(hybridstore=hybridstore)
-]
-
-virtual_shell = VirtualShell(
-    hybridstore = hybridstore,
-    filesystem = virtual_filesystem,
-    commands = commands
-)
+program_memory = ProgramMemory(
+    redis_url = cfg.redis_url,
+    index_name = cfg.memory_index,
+    embedding = embedding,
+    embedding_dim = embedding_dim,
+    llm = fast_llm)
+program_memory.initialize()
 
 ask_user = AskUserTool()
 speak = SpeakTool()
 
-shell_tool = VirtualShellTool(virtual_shell=virtual_shell)
+list_programs = ListProgramsTool(program_memory=program_memory)
+load_programs = LoadProgramsTool(program_memory=program_memory)
+program_search = ProgramSearchTool(program_memory=program_memory)
 
-write_file = WriteFileTool(
-    filesystem=virtual_filesystem,
-    text_editor=virtual_text_editor
-)
-
-append_file = AppendFileTool(
-    filesystem=virtual_filesystem,
-    text_editor=virtual_text_editor
-)
-
-read_file = ReadFileTool(
-    filesystem=virtual_filesystem,
-    text_editor=virtual_text_editor
-)
-
+shell_tool = ShellTool(filesystem=filesystem)
+write_files = WriteFilesTool(filesystem=filesystem)
+append_files = AppendFilesTool(filesystem=filesystem)
+read_file = ReadFileTool(filesystem=filesystem)
 upload = UploadTool(
-    hybridstore = hybridstore,
-    filesystem = virtual_filesystem,
-    text_editor = virtual_text_editor
-)
+    filesystem = filesystem,
+    downloads_directory = cfg.downloads_directory)
 
 tools = [
     Tool(
         name=ask_user.name,
         func=ask_user.run,
-        description=ask_user.description
-    ),
+        description=ask_user.description),
     Tool(
         name=speak.name,
         func=speak.run,
-        description=speak.description
-    ),
+        description=speak.description),
     Tool(
-        name=write_file.name,
-        func=write_file.run,
-        description=write_file.description
-    ),
+        name=write_files.name,
+        func=write_files.run,
+        description=write_files.description),
     Tool(
-        name=append_file.name,
-        func=append_file.run,
-        description=append_file.description
-    ),
+        name=append_files.name,
+        func=append_files.run,
+        description=append_files.description),
     Tool(
         name=read_file.name,
         func=read_file.run,
-        description=read_file.description
-    ),
+        description=read_file.description),
     Tool(
         name=upload.name,
         func=upload.run,
-        description=upload.description
-    ),
+        description=upload.description),
     Tool(
         name=shell_tool.name,
         func=shell_tool.run,
-        description=shell_tool.description
-    )
+        description=shell_tool.description),
+    Tool(
+        name=list_programs.name,
+        func=list_programs.run,
+        description=list_programs.description),
+    Tool(
+        name=load_programs.name,
+        func=load_programs.run,
+        description=load_programs.description),
+    Tool(
+        name=program_search.name,
+        func=program_search.run,
+        description=program_search.description)
 ]
 
 interpreter = GraphProgramInterpreter(
-    hybridstore = hybridstore,
+    program_memory = program_memory,
     smart_llm = smart_llm,
     fast_llm = fast_llm,
     tools = tools,
@@ -219,8 +194,9 @@ def main():
 
 def clean_database():
     print(f"{Fore.GREEN}[*] Cleaning the hybrid database...{Style.RESET_ALL}")
-    hybridstore.clear()
-    virtual_filesystem.initialize()
+    filesystem.clear()
+    filesystem.initialize()
+    program_memory.initialize()
     print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 
 def load_folder():
@@ -242,7 +218,7 @@ def load_folder():
         f"this may take a while.{Style.RESET_ALL}"
     )
     try:
-        index.add_folders(
+        filesystem.add_folders(
             [folder_path],
             folder_names=[f"/home/user/Workspace/{folder_name}"]
         )
@@ -250,31 +226,8 @@ def load_folder():
         print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
 
 def load_programs():
-    graph_loader = CypherGraphLoader(client=hybridstore.client)
-    print(
-        f"{Fore.GREEN}[*] Loading programs at '{cfg.library_directory}'... " +
-        f"this may take a while.{Style.RESET_ALL}"
-    )
-    programs_folder = cfg.library_directory
-    for dirpath, dirnames, filenames in os.walk(programs_folder):
-        for filename in filenames:
-            if filename.endswith(".cypher"):
-                program_name = filename.replace(".cypher", "")
-                program_index = f"{hybridstore.program_key}:{program_name}"
-                try:
-                    print(
-                        f"{Fore.GREEN}[*] Adding program '{Fore.YELLOW}" \
-                        + f"{program_name}{Fore.GREEN}'...{Style.RESET_ALL}"
-                    )
-                    graph_loader.load(
-                        os.path.join(dirpath, filename),
-                        program_index,
-                        clear=True
-                    )
-                except Exception as err:
-                    print(f"{Fore.RED}[!] Error occured with '{Fore.YELLOW}{filename}"+
-                        f"{Fore.RED}': {str(err)}{Style.RESET_ALL}"
-                    )
+    print(f"{Fore.GREEN}[*] Loading programs... This may take a while.{Style.RESET_ALL}")
+    program_memory.load_folders([cfg.library_directory])
     print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 
 def run_agent():
