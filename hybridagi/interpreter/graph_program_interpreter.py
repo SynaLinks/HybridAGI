@@ -251,6 +251,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         tool_name = node.properties["tool"]
         tool_input_prompt = node.properties["params"]
 
+        disable_inference = False
         if "disable_inference" in node.properties:
             disable = node.properties["disable_inference"]
             disable_inference = (disable.lower() == "true")
