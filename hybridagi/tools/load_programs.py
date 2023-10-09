@@ -1,4 +1,4 @@
-"""The write file tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The load programs tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import Optional
 from pydantic.v1 import Extra

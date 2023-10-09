@@ -42,9 +42,9 @@ The AI system can interact with its long-term memory using the following tools:
 
 It can also perform several operations on its program memory:
 
-- `ListSimilarProgram`: List the programs based on similarity search
+- `ListPrograms`: List the programs based on similarity search
 - `ProgramSearch`: Perform a similarity based search
-- `LoadProgram`: Load programs, override if existing
+- `LoadPrograms`: Load programs, override if existing
 - `CallProgram`: Call a program based on its name
 
 Or on its working memory:
