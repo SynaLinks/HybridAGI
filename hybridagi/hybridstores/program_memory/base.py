@@ -92,7 +92,6 @@ class BaseProgramMemory(BaseHybridStore):
             graph_program = self.create_graph(program_name)
             if self.exists(program_name):
                 graph_program.delete()
-            
             graph_program.query(program)
             if not self.exists(program_name) or not use_cache:
                 chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
@@ -112,8 +111,8 @@ class BaseProgramMemory(BaseHybridStore):
             result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
             dependencies[program_name] = []
             if len(result.result_set) > 0:
-                for name in result.result_set[0]:
-                    dependencies[program_name].append(name)
+                for res in result.result_set:
+                    dependencies[program_name].append(res[0])
             indexes.append(program_name)
             if self.verbose:
                 pbar.update(1)
