@@ -5,7 +5,7 @@ from colorama import Fore, Style
 
 from langchain.tools import Tool
 
-from config import Config
+from hybridagikb.config import Config
 
 from hybridagikb import FileSystem
 

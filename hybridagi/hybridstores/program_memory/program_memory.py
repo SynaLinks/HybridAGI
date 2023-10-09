@@ -42,3 +42,12 @@ class ProgramMemory(BaseProgramMemory):
                         except Exception:
                             pass
         self.add_programs(names = names, programs = programs)
+
+    def get_program_names(self):
+        program_names = []
+        result = self.query(
+            "MATCH (n:Program) RETURN n.name AS name")
+        if len(result.result_set) > 0:
+            for name in result.result_set[0]:
+                program_names.append(name)
+        return program_names

@@ -12,6 +12,10 @@ class Config():
         self.debug_mode = os.getenv("DEBUG_MODE", "True") == "True"
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
+        self.local_model_path = os.environ.get(
+            "LOCAL_MODEL_PATH",
+            "./models/ggml-gpt4all-l13b-snoozy.bin")
+
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
         self.max_decision_attemp = int(os.getenv("MAX_DECISION_ATTEMP", "5"))
@@ -34,8 +38,6 @@ class Config():
 
         self.fast_llm_max_token = os.getenv("FAST_LLM_MAX_TOKEN", "4000")
         self.smart_llm_max_token = os.getenv("SMART_LLM_MAX_TOKEN", "8000")
-
-        self.openai_base_path = os.environ.get('OPENAI_API_BASE', 'http://localhost:8080/v1')
 
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "archives")
         self.library_directory = os.getenv("LIBRARY_DIRECTORY", "")
