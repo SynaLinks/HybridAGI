@@ -30,6 +30,7 @@ dependencies = [
     "python-dotenv",
     "coverage",
     "colorama",
+    "duckduckgo-search",
     "tqdm",
     "tiktoken",
     "hybridagikb@git+https://github.com/SynaLinks/HybridAGI-knowledge"
