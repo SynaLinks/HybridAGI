@@ -1,6 +1,5 @@
 import os
-from typing import List, Dict, Any
-from .prompt import PROGRAM_DESCRIPTION_PROMPT
+from typing import List
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.language_model import BaseLanguageModel
 
@@ -40,6 +39,6 @@ class ProgramMemory(BaseProgramMemory):
                             names.append(program_name)
                             source = os.path.join(dirpath, filename)
                             programs.append(open(source, "r").read())
-                        except Exception as err:
+                        except Exception:
                             pass
         self.add_programs(names = names, programs = programs)

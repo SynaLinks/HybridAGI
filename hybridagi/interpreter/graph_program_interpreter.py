@@ -261,7 +261,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             context,
             purpose,
             tool_name,
-            tool_input_prompt
+            tool_input_prompt,
+            disable_inference = disable_inference
         )
         if self.verbose:
             print(COLORS[self.current_iteration%2])

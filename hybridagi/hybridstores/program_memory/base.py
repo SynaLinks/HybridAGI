@@ -95,7 +95,9 @@ class BaseProgramMemory(BaseHybridStore):
             graph_program.query(program)
             chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
             program_description = chain.predict(program=program)
-            vector = np.array(self.embedding.embed_query(text=program_description), dtype=np.float32)
+            vector = np.array(
+                self.embedding.embed_query(text=program_description),
+                dtype=np.float32)
             self.set_content(program_name, program)
             params = {"program_name": program_name, "vector": list(vector)}
             self.query('MERGE (n:Program {name:"$program_name"'+

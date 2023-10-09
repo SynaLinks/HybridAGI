@@ -25,9 +25,6 @@ from hybridagi.tools import (
     LoadProgramsTool,
     ProgramSearchTool)
 
-from hybridagi.tools.ask_user import AskUserTool
-from hybridagi.tools.speak import SpeakTool
-
 from hybridagi import GraphProgramInterpreter
 
 cfg = Config()
@@ -226,7 +223,8 @@ def load_folder():
         print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
 
 def load_programs():
-    print(f"{Fore.GREEN}[*] Loading programs... This may take a while.{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}[*] Loading programs...")
+    print(f"[*] This may take a while.{Style.RESET_ALL}")
     program_memory.load_folders([cfg.library_directory])
     print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 
