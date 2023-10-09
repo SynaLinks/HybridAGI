@@ -26,6 +26,8 @@ from hybridagi.tools import (
     LoadProgramsTool,
     ProgramSearchTool)
 
+from langchain.tools import DuckDuckGoSearchResults
+
 from hybridagi import GraphProgramInterpreter
 
 cfg = Config()
