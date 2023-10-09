@@ -120,9 +120,10 @@ class BaseProgramMemory(BaseHybridStore):
         if self.verbose:
             pbar.close()
         for name, dep in dependencies.items():
-            for prog in dep:
+            for prog_dep in dep:
                 self.query(
-                    'MERGE (:Program {name:"'+name+\
-                    '"})-[:DEPENDS_ON]->(:Program {name:"'+prog+'"})')
+                    'MATCH (n:Program {name:"'+name+'}),'+
+                    '(m:Program {name:"'+prog_dep+'}) '+
+                    'MERGE (n)-[:DEPENDS_ON]->(m)')
         return indexes
 
