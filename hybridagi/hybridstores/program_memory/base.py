@@ -109,11 +109,11 @@ class BaseProgramMemory(BaseHybridStore):
                 self.query('MATCH (n:Program {name:"$program_name"})'+
                     '-[r:DEPENDS_ON]->(m) DELETE r')
             self.set_content(program_name, program)
-            result = graph_program.query('MATCH (n:Program) RETURN n')
+            result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
             dependencies[program_name] = []
             if len(result.result_set) > 0:
-                for node in result.result_set[0]:
-                    dependencies[program_name].append(node.properties["program"])
+                for name in result.result_set[0]:
+                    dependencies[program_name].append(name)
             indexes.append(program_name)
             if self.verbose:
                 pbar.update(1)
