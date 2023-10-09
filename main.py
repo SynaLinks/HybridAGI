@@ -14,7 +14,8 @@ from hybridagikb.tools import (
     WriteFilesTool,
     AppendFilesTool,
     ReadFileTool,
-    UploadTool)
+    UploadTool,
+    ContentSearchTool)
 
 from hybridagi import ProgramMemory
 
@@ -94,6 +95,8 @@ read_file = ReadFileTool(filesystem=filesystem)
 upload = UploadTool(
     filesystem = filesystem,
     downloads_directory = cfg.downloads_directory)
+content_search = ContentSearchTool(filesystem=filesystem)
+internet_search = DuckDuckGoSearchResults()
 
 tools = [
     Tool(
@@ -125,6 +128,10 @@ tools = [
         func=shell_tool.run,
         description=shell_tool.description),
     Tool(
+        name=content_search.name,
+        func=content_search.run,
+        description=content_search.description),
+    Tool(
         name=list_programs.name,
         func=list_programs.run,
         description=list_programs.description),
@@ -135,7 +142,11 @@ tools = [
     Tool(
         name=program_search.name,
         func=program_search.run,
-        description=program_search.description)
+        description=program_search.description),
+    Tool(
+        name="InternetSearch",
+        func=internet_search.run,
+        description=internet_search.description)
 ]
 
 interpreter = GraphProgramInterpreter(

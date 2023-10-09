@@ -38,12 +38,12 @@ The AI system can interact with its long-term memory using the following tools:
 - `ReadFile`: Read data chunk by chunk (use multiple times to scroll)
 - `Shell`: Enable basic unix commands: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`]
 - `Upload`: Archive and upload the target folder or file to the User
-- `ContentSearch`: Perform a similarity based search
+- `ContentSearch`: Perform a similarity based search on the filesystem
 
 It can also perform several operations on its program memory:
 
 - `ListPrograms`: List the programs based on similarity search
-- `ProgramSearch`: Perform a similarity based search
+- `ProgramSearch`: Perform a similarity based search on the program memory
 - `LoadPrograms`: Load programs, override if existing
 - `CallProgram`: Call a program based on its name
 
@@ -57,6 +57,10 @@ The system can interact with the User using the following tools:
 
 - `AskUser`: Ask a question to the User
 - `Speak`: Tell something to the User
+
+And fetch external data using:
+
+- `InternetSearch`: Perform a DuckDuckGo search
 
 ## Credits
 
