@@ -146,7 +146,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
 
     def call_program_tool(self, program_name: str):
         if not self.program_memory.exists(program_name):
-            return f"Error occured while calling '{program_name}': "+
+            return f"Error occured while calling '{program_name}': "+\
                 "Not existing, please verify that you have the correct name"
         starting_node = self.get_starting_node(program_name)
         try:

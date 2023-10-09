@@ -1,7 +1,7 @@
 version: '3'
 services:
   hybrid-agi-cli:
-    image: hybrid-agi-cli:0.0.1
+    image: hybrid-agi-cli:0.0.2
     working_dir: /HybridAGI
     build:
       context: .
