@@ -84,8 +84,19 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             func=self.revert_tool
         )
 
+        call_program_tool = Tool(
+            name="Revert",
+            description=\
+    """
+    Usefull to call a subprogram dynamically
+    The Input should be the name of the program
+    """,
+            func=self.call_program_tool
+        )
+
         tools.append(update_objective_tool)
         tools.append(revert_tool)
+        tools.append(call_program_tool)
 
         tools_map = {}
         for tool in tools:
@@ -134,6 +145,9 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         return f"Successfully reverted {n} steps"
 
     def call_program_tool(self, program_name: str):
+        if not self.program_memory.exists(program_name):
+            return f"Error occured while calling '{program_name}': "+
+                "Not existing, please verify that you have the correct name"
         starting_node = self.get_starting_node(program_name)
         try:
             self.call_program(starting_node)
