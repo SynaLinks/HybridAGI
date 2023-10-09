@@ -122,7 +122,7 @@ class BaseProgramMemory(BaseHybridStore):
         for name, dep in dependencies.items():
             for prog_dep in dep:
                 self.query(
-                    'MATCH (n:Program {name:"'+name+'}),'+
+                    'MATCH (n:Program {name:"'+name+'}), '+
                     '(m:Program {name:"'+prog_dep+'}) '+
                     'MERGE (n)-[:DEPENDS_ON]->(m)')
         return indexes
