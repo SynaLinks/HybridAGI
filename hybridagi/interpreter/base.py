@@ -165,7 +165,7 @@ class BaseGraphProgramInterpreter(BaseModel):
                 context="",
                 purpose=purpose,
                 question=question,
-                prompt=choice)
+                choice=choice)
             encoding = tiktoken.get_encoding("cl100k_base")
             num_tokens = len(encoding.encode(decision_prompt))
             context = self.working_memory.get_trace(self.fast_llm_max_token-num_tokens)
