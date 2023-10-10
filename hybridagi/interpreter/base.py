@@ -6,6 +6,7 @@ from langchain.chains.llm import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from langchain.base_language import BaseLanguageModel
 from langchain.tools import Tool
+from .program_trace_memory import ProgramTraceMemory
 import tiktoken
 
 from langchain.schema import BaseOutputParser
