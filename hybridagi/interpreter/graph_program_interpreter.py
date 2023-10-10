@@ -10,7 +10,6 @@ from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 
-from .program_trace_memory import ProgramTraceMemory
 from .base import BaseGraphProgramInterpreter
 
 COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]
