@@ -45,19 +45,19 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             verbose: bool = True,
             debug: bool = False,
             pre_decision_callback: Optional[Callable[
-                [str, str, str, List[str]],
+                [str, str, List[str]],
                 None
             ]] = None,
             post_decision_callback: Optional[Callable[
-                [str, str, str, List[str], str],
+                [str, str, List[str], str],
                 None
             ]] = None,
             pre_action_callback: Optional[Callable[
-                [str, str, str, str],
+                [str, str, str],
                 None
             ]] = None,
             post_action_callback: Optional[Callable[
-                [str, str, str, str, str],
+                [str, str, str, str],
                 None
             ]] = None,
         ):
