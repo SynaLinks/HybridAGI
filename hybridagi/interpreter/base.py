@@ -9,7 +9,6 @@ from langchain.tools import Tool
 from .program_trace_memory import ProgramTraceMemory
 import tiktoken
 
-from langchain.schema import BaseOutputParser
 from ..parsers.interpreter_output_parser import InterpreterOutputParser
 
 DECISION_TEMPLATE = \
