@@ -220,8 +220,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         for record in result.result_set:
             options.append(record[0])
 
-        context = self.working_memory.get_trace(self.fast_llm_max_token)
-
         decision = self.perform_decision(
             purpose,
             question,
@@ -250,8 +248,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if "disable_inference" in node.properties:
             disable = node.properties["disable_inference"]
             disable_inference = (disable.lower() == "true")
-
-        context = self.working_memory.get_trace(self.smart_llm_max_token)
         
         action = self.perform_action(
             purpose,
