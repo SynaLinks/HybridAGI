@@ -223,7 +223,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         context = self.working_memory.get_trace(self.fast_llm_max_token)
 
         decision = self.perform_decision(
-            context,
             purpose,
             question,
             options)
@@ -255,7 +254,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         context = self.working_memory.get_trace(self.smart_llm_max_token)
         
         action = self.perform_action(
-            context,
             purpose,
             tool_name,
             tool_input_prompt,
