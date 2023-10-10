@@ -20,7 +20,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     program_memory: ProgramMemory
     smart_llm: BaseLanguageModel
     fast_llm: BaseLanguageModel
-    memory: ProgramTraceMemory = ProgramTraceMemory()
     program_name: str = ""
     program_stack: Iterable = deque()
     current_node_stack: Iterable = deque()
@@ -136,12 +135,12 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         return starting_node
 
     def update_objective_tool(self, objective: str):
-        self.memory.update_objective(objective)
+        self.working_memory.update_objective(objective)
         return "Objective sucessfully updated"
 
     def revert_tool(self, n_steps: str):
         n = int(n_steps)
-        self.memory.revert(n)
+        self.working_memory.revert(n)
         return f"Successfully reverted {n} steps"
 
     def call_program_tool(self, program_name: str):
@@ -176,7 +175,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Method to call a program"""
         purpose = node.properties["name"]
         program_name = node.properties["program"]
-        self.memory.update_trace(
+        self.working_memory.update_trace(
             f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}"
         )
         if self.verbose:
@@ -195,7 +194,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.current_node_stack.pop()
         if ending_program is not None:
             ending_program_name = ending_program.name
-            self.memory.update_trace(f"End Sub-Program: {ending_program_name}")
+            self.working_memory.update_trace(f"End Sub-Program: {ending_program_name}")
             if self.get_current_node() is not None:
                 return self.get_next(self.get_current_node())
         return None
@@ -222,14 +221,13 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         for record in result.result_set:
             options.append(record[0])
 
-        context = self.memory.get_trace(self.fast_llm_max_token)
+        context = self.working_memory.get_trace(self.fast_llm_max_token)
 
         decision = self.perform_decision(
             context,
             purpose,
             question,
-            options
-        )
+            options)
 
         if self.verbose:
             decision_template = \
@@ -240,8 +238,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             print(f"{decision_template}{Style.RESET_ALL}")
 
         result = self.get_current_program().query(
-            'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n'
-        )
+            'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
         next_node = result.result_set[0][0]
         return next_node
 
@@ -256,19 +253,19 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             disable = node.properties["disable_inference"]
             disable_inference = (disable.lower() == "true")
 
-        context = self.memory.get_trace(self.smart_llm_max_token)
+        context = self.working_memory.get_trace(self.smart_llm_max_token)
         
         action = self.perform_action(
             context,
             purpose,
             tool_name,
             tool_input_prompt,
-            disable_inference = disable_inference
-        )
+            disable_inference = disable_inference)
+        
         if self.verbose:
             print(COLORS[self.current_iteration%2])
             print(f"{action}{Style.RESET_ALL}")
-        self.memory.update_trace(action)
+        self.working_memory.update_trace(action)
         return self.get_next(self.get_current_node())
 
     def run_step(self) -> Optional[Node]:
@@ -307,9 +304,9 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
 
     def start(self, objective: str):
         """Start the agent"""
-        self.memory.update_objective(objective)
+        self.working_memory.update_objective(objective)
         self.current_iteration = 0
-        self.memory.clear()
+        self.working_memory.clear()
         program = self.program_memory.create_graph(self.program_name)
         self.program_stack.append(program)
         starting_node = self.get_starting_node(self.program_name)

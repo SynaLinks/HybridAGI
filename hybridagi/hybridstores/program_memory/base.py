@@ -104,9 +104,10 @@ class BaseProgramMemory(BaseHybridStore):
                         ', description:vector32f($vector)})',
                         params = params)
             else:
-                params = {"program_name": program_name}
-                self.query('MATCH (n:Program {name:"$program_name"})'+
-                    '-[r:DEPENDS_ON]->(m) DELETE r')
+                pass
+                # params = {"program_name": program_name}
+                # self.query('MATCH (n:Program {name:"$program_name"})'+
+                #     '-[r:DEPENDS_ON]->(m) DELETE r')
             self.set_content(program_name, program)
             result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
             dependencies[program_name] = []

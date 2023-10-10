@@ -9,20 +9,21 @@ import tiktoken
 class ProgramTraceMemory(BaseModel):
     objective: str = ""
     program_trace: Iterable = deque()
-    chunk_size: int = 300
+    chunk_size: int = 100
     memory_template: str = \
 """The Objective is from the perspective of the User
 Objective: {objective}
 {program_trace}"""
 
     def clear(self):
+        """Method to clear the program trace"""
         self.program_trace = deque()
 
     def get_trace(self, max_tokens: int) -> str:
         """Load the memory variables"""
         text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=self.chunk_size,
-            chunk_overlap=0
+            chunk_size = self.chunk_size,
+            chunk_overlap = 0
         )
         program_trace = "\n".join(self.program_trace)
         texts = text_splitter.split_text(program_trace)
@@ -61,11 +62,14 @@ Objective: {objective}
             return result
 
     def update_trace(self, prompt):
+        """Method to update the program trace"""
         self.program_trace.append(prompt)
 
     def update_objective(self, objective):
+        """Method to update the objective"""
         self.objective = objective
 
     def revert(self, n: int):
+        """Method to revert N steps of the trace"""
         for i in range(n):
             self.program_trace.pop()

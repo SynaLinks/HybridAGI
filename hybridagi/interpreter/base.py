@@ -6,6 +6,7 @@ from langchain.chains.llm import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from langchain.base_language import BaseLanguageModel
 from langchain.tools import Tool
+import tiktoken
 
 from langchain.schema import BaseOutputParser
 from ..parsers.interpreter_output_parser import InterpreterOutputParser
@@ -45,7 +46,9 @@ class BaseGraphProgramInterpreter(BaseModel):
     verbose: bool = True
     debug: bool = False
 
-    output_parser: BaseOutputParser = InterpreterOutputParser()
+    working_memory: ProgramTraceMemory = ProgramTraceMemory()
+
+    output_parser = InterpreterOutputParser()
 
     pre_decision_callback: Optional[
         Callable[
@@ -79,23 +82,29 @@ class BaseGraphProgramInterpreter(BaseModel):
 
     def predict_tool_input(
             self,
-            context: str,
             purpose: str,
             tool:str,
             prompt: str
         ) -> str:
         """Method to predict the tool's input parameters"""
+        tool_input_prompt = TOOL_INPUT_TEMPLATE.format(
+            context = "",
+            purpose = purpose,
+            tool = tool,
+            prompt = prompt)
+        encoding = tiktoken.get_encoding("cl100k_base")
+        num_tokens = len(encoding.encode(tool_input_prompt))
+        context = self.working_memory.get_trace(
+            self.smart_llm_max_token-num_tokens)
         chain = LLMChain(
             llm=self.smart_llm,
             prompt=TOOL_INPUT_PROMPT,
-            verbose=self.debug
-        )
+            verbose=self.debug)
         prediction = chain.predict(
             context = context,
             purpose = purpose,
             tool = tool,
-            prompt = prompt
-        )
+            prompt = prompt)
         prediction = self.output_parser.parse(prediction)
         if self.debug:
             print(prediction)
@@ -103,7 +112,6 @@ class BaseGraphProgramInterpreter(BaseModel):
 
     def perform_action(
             self,
-            context: str,
             purpose: str,
             tool:str,
             prompt: str,
@@ -111,11 +119,11 @@ class BaseGraphProgramInterpreter(BaseModel):
         ) -> str:
         """Method to perform an action"""
         if self.pre_action_callback is not None:
-            self.pre_action_callback(context, purpose, tool, prompt)
+            self.pre_action_callback(purpose, tool, prompt)
         if disable_inference:
             tool_input = prompt
         else:
-            tool_input = self.predict_tool_input(context, purpose, tool, prompt)
+            tool_input = self.predict_tool_input(purpose, tool, prompt)
         action_template = \
         "Action Purpose: {purpose}\nAction: {tool}\nAction Input: {prompt}"""
 
@@ -126,40 +134,45 @@ class BaseGraphProgramInterpreter(BaseModel):
             action = action_template.format(
                 purpose = purpose,
                 tool = tool,
-                prompt = tool_input + f"\nAction Observation: {observation}"
-            )
+                prompt = tool_input + f"\nAction Observation: {observation}")
         else:
             observation = tool_input
             tool_input = prompt
             action = action_template.format(
                 purpose = purpose,
                 tool = tool,
-                prompt = tool_input + observation
-            )
+                prompt = tool_input + observation)
         action = action.strip()
         if self.post_action_callback is not None:
-            self.post_action_callback(context, purpose, tool, tool_input, observation)
+            self.post_action_callback(purpose, tool, tool_input, observation)
         return action
 
     def perform_decision(
             self,
-            context: str, 
             purpose:str, 
             question: str,
             options: List[str]
         ) -> str:
         """Method to perform a decision"""
         if self.pre_decision_callback is not None:
-            self.pre_decision_callback(context, purpose, question, options)
+            self.pre_decision_callback(purpose, question, options)
         chain = LLMChain(llm=self.fast_llm, prompt=DECISION_PROMPT, verbose=self.debug)
         choice = " or ".join(options)
         attemps = 0
         while attemps < self.max_decision_attemp:
+            decision_prompt = DECISION_TEMPLATE.format(
+                context="",
+                purpose=purpose,
+                question=question,
+                prompt=choice)
+            encoding = tiktoken.get_encoding("cl100k_base")
+            num_tokens = len(encoding.encode(decision_prompt))
+            context = self.working_memory.get_trace(self.fast_llm_max_token-num_tokens)
             result = chain.predict(
                 context = context,
                 purpose = purpose,
                 question = question,
-                choice = " or ".join(options))
+                choice = choice)
             if self.debug:
                 print(result)
             result = self.output_parser.parse(result)
@@ -172,10 +185,9 @@ class BaseGraphProgramInterpreter(BaseModel):
             raise ValueError(
                 f"Failed to decide after {attemps} attemps."+
                 f" Got {result} should be {choice},"+
-                " please verify your prompts or programs."
-            )
+                " please verify your prompts or programs.")
         if self.post_decision_callback is not None:
-            self.post_decision_callback(context, purpose, question, options, decision)
+            self.post_decision_callback(purpose, question, options, decision)
         return decision
 
     def validate_tool(self, name):
