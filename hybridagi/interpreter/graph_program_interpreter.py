@@ -242,7 +242,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Method to use a tool"""
         purpose = node.properties["name"]
         tool_name = node.properties["tool"]
-        tool_input_prompt = node.properties["params"]
+        tool_input_prompt = node.properties["prompt"]
 
         disable_inference = False
         if "disable_inference" in node.properties:
