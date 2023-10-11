@@ -33,7 +33,8 @@ TOOL_INPUT_TEMPLATE = \
 """{context}
 Action Purpose: {purpose}
 Action: {tool}
-Action Input: {prompt}"""
+Action Input Prompt: {prompt}
+Action Input:"""
 
 TOOL_INPUT_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "tool", "prompt"],
