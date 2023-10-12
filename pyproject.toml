@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
     "redis>=4.5.2",
     "redisgraph",
-    "langchain==0.0.308",
+    "langchain>=0.0.308",
     "openai",
     "gpt4all",
     "pydantic",
