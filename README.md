@@ -1,8 +1,15 @@
 # HybridAGI: The Programmable Neuro-Symbolic AGI
+![Alpha](https://img.shields.io/badge/Release-Alpha-orange)
 ![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
+<center>
+<img src="hybrid-chimera.png" alt="A cute hybrid chimera" width="300"> 
+</center>
+
 ## We've released our Streamlit App! [Check this out!](https://github.com/SynaLinks/HybridAGI-app)
+
+
 
 HybridAGI represents the future of hybrid architectures that combine the strengths of both machine learning models and explicit programming. This approach aims to bridge the gap between the impressive language generation abilities of Large Language Models (LLM) and the need for logical reasoning and decision-making capabilities. By integrating advanced machine learning models with explicit programming, HybridAGI systems excel in language generation, logical reasoning, and decision-making tasks.
 
