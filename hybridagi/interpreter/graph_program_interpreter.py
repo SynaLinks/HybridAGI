@@ -83,7 +83,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         )
 
         call_program_tool = Tool(
-            name="Revert",
+            name="CallProgram",
             description=\
     """
     Usefull to call a subprogram dynamically
