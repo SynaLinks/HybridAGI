@@ -103,7 +103,7 @@ class BaseProgramMemory(BaseHybridStore):
                 lines = program.split("\n")
                 for ln in lines:
                     if ln.startswith("// @desc:"):
-                        program_description += ln.replace("// @desc:", "")
+                        program_description += ln.replace("// @desc:", "").strip()
             if not program_description:
                 chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
                 program_description = chain.predict(program=program)
