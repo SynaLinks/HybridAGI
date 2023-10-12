@@ -35,8 +35,7 @@ class LoadProgramsTool(BaseTool):
         super().__init__(
             name = name,
             description = description,
-            program_memory = program_memory
-        )
+            program_memory = program_memory)
 
     class Config:
         """Configuration for this pydantic object."""
@@ -53,7 +52,7 @@ class LoadProgramsTool(BaseTool):
             filenames,
             contents
         )
-        self.filesystem.add_programs(
+        self.program_memory.add_programs(
             filenames,
             contents)
         return f"Successfully loaded {len(filenames)} programs"
