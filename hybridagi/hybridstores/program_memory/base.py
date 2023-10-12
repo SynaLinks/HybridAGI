@@ -81,7 +81,6 @@ class BaseProgramMemory(BaseHybridStore):
             names: List[str],
             programs: List[str],
             descriptions: List[str] = [],
-            use_cache: bool = True,
             use_hardcoded_description = True):
         """Method to add programs"""
         indexes = []
@@ -106,27 +105,22 @@ class BaseProgramMemory(BaseHybridStore):
                     if l.startswith("// @desc:"):
                         program_description += l.replace("// @desc:", "")
             if not program_description:
-                if not self.exists(program_name) or not use_cache:
-                    chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
-                    program_description = chain.predict(program=program)
-                    vector = np.array(
-                        self.embedding.embed_query(text=program_description),
-                        dtype=np.float32)
-                    params = {"program_name": program_name, "vector": list(vector)}
-                    self.query('MERGE (n:Program {name:"$program_name"'+
-                            ', description:vector32f($vector)})',
-                            params = params)
-                else:
-                    pass
-                # params = {"program_name": program_name}
-                # self.query('MATCH (n:Program {name:"$program_name"})'+
-                #     '-[r:DEPENDS_ON]->(m) DELETE r')
+                chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
+                program_description = chain.predict(program=program)
+            vector = np.array(
+                self.embedding.embed_query(text=program_description),
+                dtype=np.float32)
+            params = {"program_name": program_name, "vector": list(vector)}
+            self.query('MERGE (n:Program {name:"$program_name"'+
+                    ', description:vector32f($vector)})', params = params)
+            params = {"program_name": program_name}
+            self.query('MATCH (n:Program {name:"$program_name"})'+
+                '-[r:DEPENDS_ON]->(m) DELETE r')
             self.set_content(program_name, program)
             result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
             dependencies[program_name] = []
-            if len(result.result_set) > 0:
-                for record in result.result_set:
-                    dependencies[program_name].append(record[0])
+            for record in result.result_set:
+                dependencies[program_name].append(record[0])
             indexes.append(program_name)
             if self.verbose:
                 pbar.update(1)

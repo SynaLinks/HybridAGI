@@ -18,12 +18,10 @@ Decision: {question} \
 
 Please use the following format to Answer:
 
-Step 1: first reasoning step
-Step 2: second reasoning step
-Final Step: final answer
-
-Decision Answer (must finish with {choice}): \
-Let's think this out in a step by step way to be sure we have the right answer."""
+Step 1: First reasoning step
+Step 2: Second reasoning step
+...
+Final Answer (must be {choice}):"""
 
 DECISION_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "question", "choice"],
