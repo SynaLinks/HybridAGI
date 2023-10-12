@@ -36,12 +36,11 @@ class ListProgramsTool(BaseTool):
     def list_programs(self, query: str) -> str:
         """Use the tool."""
         result = self.program_memory.similarity_search(query, k = 10)
-        
         if len(result) > 0:
             result_string = f"Found {len(result)} programs:\n"
             for name in result:
                 result_string += "- "+name+"\n"
-            return result[0]
+            return result_string
         else:
             return "Nothing found"
 
