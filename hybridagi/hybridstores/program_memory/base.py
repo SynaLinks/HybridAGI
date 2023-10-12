@@ -94,8 +94,10 @@ class BaseProgramMemory(BaseHybridStore):
         for idx, program in enumerate(programs):
             program_name = names[idx]
             graph_program = self.create_graph(program_name)
-            if self.exists(program_name):
+            try:
                 graph_program.delete()
+            except Exception:
+                pass
             graph_program.query(program)
             program_description = "" if not descriptions else descriptions[idx]
             if use_hardcoded_description:
