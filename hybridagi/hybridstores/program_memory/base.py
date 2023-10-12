@@ -101,9 +101,9 @@ class BaseProgramMemory(BaseHybridStore):
             program_description = "" if not descriptions else descriptions[idx]
             if use_hardcoded_description:
                 lines = program.split("\n")
-                for l in lines:
-                    if l.startswith("// @desc:"):
-                        program_description += l.replace("// @desc:", "")
+                for ln in lines:
+                    if ln.startswith("// @desc:"):
+                        program_description += ln.replace("// @desc:", "")
             if not program_description:
                 chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
                 program_description = chain.predict(program=program)

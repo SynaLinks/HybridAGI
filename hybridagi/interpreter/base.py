@@ -21,7 +21,7 @@ Please use the following format to Answer:
 Step 1: First reasoning step
 Step 2: Second reasoning step
 ...
-Final Answer (must be {choice}):"""
+Final Answer (must be {choice}):..."""
 
 DECISION_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "question", "choice"],
