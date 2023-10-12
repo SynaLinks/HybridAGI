@@ -147,12 +147,12 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if not self.program_memory.exists(program_name):
             return f"Error occured while calling '{program_name}': "+\
                 "Not existing, please verify that you have the correct name"
-        try:
-            starting_node = self.get_starting_node(program_name)
-            self.call_program(starting_node)
-            return f"Successfully executed '{program_name}' program"
-        except Exception as err:
-            return f"Error occured while executing '{program_name}': {err}"
+        # try:
+        starting_node = self.get_starting_node(program_name)
+        self.call_program(starting_node)
+        return f"Successfully executed '{program_name}' program"
+        # except Exception as err:
+        #     return f"Error occured while executing '{program_name}': {err}"
 
     def get_current_program(self) -> Optional[Graph]:
         """Method to retreive the current program from the stack"""
