@@ -120,12 +120,10 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     def get_starting_node(self, program_name: str):
         program = self.program_memory.create_graph(program_name)
         result = program.query(
-            'MATCH (n:Control {name:"Start"}) RETURN n'
-        )
+            'MATCH (n:Control {name:"Start"}) RETURN n')
         if len(result.result_set) == 0:
             raise RuntimeError("No entry point detected,"+
-                " please make sure you loaded the programs."
-            )
+                " please make sure you loaded the programs.")
         if len(result.result_set) > 1:
             raise RuntimeError("Multiple entry point detected,"+
                 " please correct your programs."
@@ -203,8 +201,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Method to get the next node"""
         name = node.properties["name"]
         result = self.get_current_program().query(
-            'MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n'
-        )
+            'MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n')
         if len(result.result_set) > 0:
             return result.result_set[0][0]
         return None
