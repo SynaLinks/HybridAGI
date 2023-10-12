@@ -3,9 +3,9 @@
 ![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
-<center>
+<p align="center">
 <img src="hybrid-chimera.png" alt="A cute hybrid chimera" width="300"> 
-</center>
+</p>
 
 ## We've released our Streamlit App! [Check this out!](https://github.com/SynaLinks/HybridAGI-app)
 
