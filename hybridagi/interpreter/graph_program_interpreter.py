@@ -143,11 +143,12 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         return f"Successfully reverted {n} steps"
 
     def call_program_tool(self, program_name: str):
+        program_name = program_name.strip().lower().replace(" ", "_")
         if not self.program_memory.exists(program_name):
             return f"Error occured while calling '{program_name}': "+\
                 "Not existing, please verify that you have the correct name"
-        starting_node = self.get_starting_node(program_name)
         try:
+            starting_node = self.get_starting_node(program_name)
             self.call_program(starting_node)
             return f"Successfully executed '{program_name}' program"
         except Exception as err:
