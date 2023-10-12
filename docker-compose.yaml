@@ -13,6 +13,7 @@ services:
       - redis-insight
     volumes:
       - ./archives:/archives
+      - ./documentation:/documentation
   falkordb:
     image: falkordb/falkordb:latest
     container_name: falkordb
@@ -28,3 +29,4 @@ services:
 
 volumes:
   archives:
+  documentation:
