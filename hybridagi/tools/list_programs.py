@@ -50,7 +50,7 @@ class ListProgramsTool(BaseTool):
             query:str,
             run_manager: Optional[CallbackManagerForToolRun] = None
         ) -> str:
-        return self.program_search(query)
+        return self.list_programs(query)
 
     def _arun(
             self,
