@@ -221,10 +221,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         for record in result.result_set:
             options.append(record[0])
 
-        decision = self.perform_decision(
-            purpose,
-            question,
-            options)
+        decision = self.perform_decision(purpose, question, options)
 
         if self.verbose:
             decision_template = \
@@ -259,7 +256,11 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if self.verbose:
             print(COLORS[self.current_iteration%2])
             print(f"{action}{Style.RESET_ALL}")
+
         self.working_memory.update_trace(action)
+
+        if tool_name == "CallProgram":
+            return self.get_current_node()
         return self.get_next(self.get_current_node())
 
     def run_step(self) -> Optional[Node]:
