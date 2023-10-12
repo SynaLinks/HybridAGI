@@ -284,7 +284,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                 )
         else:
             raise RuntimeError(
-                f"Invalid label for node '{current_node.properties["name"]}'."+
+                name = current_node.properties["name"]
+                f"Invalid label for node '{name}'."+
                 " Please verify your programs using RedisInsight.")
         if next_node is not None:
             self.set_current_node(next_node)
