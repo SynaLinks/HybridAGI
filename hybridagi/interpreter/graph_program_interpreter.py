@@ -69,18 +69,25 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     Usefull to update your long-term objective
     The Input should be the new objective
     """,
-            func=self.update_objective_tool
-        )
+            func=self.update_objective_tool)
 
-        revert_tool = Tool(
-            name="Revert",
+        clear_trace_tool = Tool(
+            name="ClearTrace",
+            description=\
+    """
+    Usefull to clean up the working memory
+    No Input needed (should be N/A)
+    """,
+            func=self.clear_trace_tool)
+
+        revert_trace_tool = Tool(
+            name="RevertTrace",
             description=\
     """
     Usefull to correct your last actions
     The Input should be the number of steps to revert
     """,
-            func=self.revert_tool
-        )
+            func=self.revert_trace_tool)
 
         call_program_tool = Tool(
             name="CallProgram",
@@ -93,8 +100,9 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         )
 
         tools.append(update_objective_tool)
-        tools.append(revert_tool)
+        tools.append(revert_trace_tool)
         tools.append(call_program_tool)
+        tools.append(clear_trace_tool)
 
         tools_map = {}
         for tool in tools:
@@ -135,10 +143,14 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.working_memory.update_objective(objective)
         return "Objective sucessfully updated"
 
-    def revert_tool(self, n_steps: str):
+    def revert_trace_tool(self, n_steps: str):
         n = int(n_steps)
         self.working_memory.revert(n)
         return f"Successfully reverted {n} steps"
+
+    def clear_trace_tool(self, _):
+        self.working_memory.clear()
+        return "Working memory cleaned sucessfully"
 
     def call_program_tool(self, program_name: str):
         program_name = program_name.strip().lower().replace(" ", "_")

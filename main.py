@@ -5,7 +5,7 @@ from colorama import Fore, Style
 
 from langchain.tools import Tool
 
-from hybridagikb.config import Config
+from hybridagi.config import Config
 
 from hybridagikb import FileSystem
 
@@ -215,7 +215,7 @@ def load_folder():
     folder_name = os.path.basename(os.path.abspath(folder_path))
     print(
         f"{Fore.GREEN}[*] Are you sure about loading the folder named " \
-        + "'{folder_name}'? [y/N]{Style.RESET_ALL}"
+        + f"'{folder_name}'? [y/N]{Style.RESET_ALL}"
     )
     while True:
         decision = input("> ").upper().strip()
@@ -230,7 +230,7 @@ def load_folder():
     try:
         filesystem.add_folders(
             [folder_path],
-            folder_names=[f"/home/user/Workspace/{folder_name}"]
+            folder_names=[f"/home/user/{folder_name}"]
         )
     except Exception as err:
         print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")

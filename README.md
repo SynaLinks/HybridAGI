@@ -58,7 +58,8 @@ Or on its working memory:
 
 - `UpdateObjective`: Update the long-term objective of the agent
 - `Predict`: Populate the prompt with intermediary data for reasoning
-- `Revert`: Remove from the prompt the N last steps
+- `RevertTrace`: Remove from the prompt the N last steps
+- `ClearTrace`: Clear the prompt (disable_inference need to be set to `true` and the prompt empty)
 
 The system can interact with the User using the following tools:
 
