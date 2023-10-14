@@ -22,7 +22,6 @@
 
 ---
 
-
 HybridAGI represents the future of hybrid architectures that combine the strengths of both machine learning models and explicit programming. This approach aims to bridge the gap between the impressive language generation abilities of Large Language Models (LLM) and the need for logical reasoning and decision-making capabilities. By integrating advanced machine learning models with explicit programming, HybridAGI systems excel in language generation, logical reasoning, and decision-making tasks.
 
 HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you program its behavior using a **graph-based prompt programming** approach. This state-of-the-art feature allows the AGI to efficiently use any tool while controlling the long-term behavior of the agent.
@@ -50,6 +49,8 @@ To inspect the database, open your browser to [localhost:8001](https://localhost
 
 ## Available Tools 🔨
 
+You can use the natively the following tools in your graph programs, obviously you can add more tools if they are compatible with Langchain Tool format.
+
 The AI system can interact with its long-term memory using the following tools:
 
 - `WriteFiles`: Write into files, or override if existing
@@ -69,9 +70,10 @@ It can also perform several operations on its program memory:
 Or on its working memory:
 
 - `UpdateObjective`: Update the long-term objective of the agent
+- `UpdateNote`: Update the note (used to learn from mistakes)
 - `Predict`: Populate the prompt with intermediary data for reasoning
-- `RevertTrace`: Remove from the prompt the N last steps
-- `ClearTrace`: Clear the prompt (disable_inference need to be set to `true` and the prompt empty)
+- `RevertTrace`: Remove from the trace the N last steps
+- `ClearTrace`: Clear the trace from the prompt
 
 The system can interact with the User using the following tools:
 

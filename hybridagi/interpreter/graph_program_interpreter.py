@@ -59,21 +59,29 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             post_action_callback: Optional[Callable[
                 [str, str, str, str],
                 None
-            ]] = None,
-        ):
+            ]] = None):
 
         update_objective_tool = Tool(
-            name="UpdateObjective",
-            description=\
+            name = "UpdateObjective",
+            description = \
     """
     Usefull to update your long-term objective
     The Input should be the new objective
     """,
             func=self.update_objective_tool)
 
+        update_note_tool = Tool(
+            name = "UpdateNote",
+            description = \
+    """
+    Usefull to update your notes
+    The Input should be the new note
+    """,
+            func=self.update_note_tool)
+
         clear_trace_tool = Tool(
-            name="ClearTrace",
-            description=\
+            name = "ClearTrace",
+            description = \
     """
     Usefull to clean up the working memory
     No Input needed (should be N/A)
@@ -81,8 +89,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             func=self.clear_trace_tool)
 
         revert_trace_tool = Tool(
-            name="RevertTrace",
-            description=\
+            name = "RevertTrace",
+            description = \
     """
     Usefull to correct your last actions
     The Input should be the number of steps to revert
@@ -90,16 +98,16 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             func=self.revert_trace_tool)
 
         call_program_tool = Tool(
-            name="CallProgram",
-            description=\
+            name = "CallProgram",
+            description = \
     """
     Usefull to call a subprogram dynamically
     The Input should be the name of the program
     """,
-            func=self.call_program_tool
-        )
+            func=self.call_program_tool)
 
         tools.append(update_objective_tool)
+        tools.append(update_note_tool)
         tools.append(revert_trace_tool)
         tools.append(call_program_tool)
         tools.append(clear_trace_tool)
@@ -134,14 +142,17 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                 " please make sure you loaded the programs.")
         if len(result.result_set) > 1:
             raise RuntimeError("Multiple entry point detected,"+
-                " please correct your programs."
-            )
+                " please correct your programs.")
         starting_node = result.result_set[0][0]
         return starting_node
 
     def update_objective_tool(self, objective: str):
         self.working_memory.update_objective(objective)
         return "Objective sucessfully updated"
+
+    def update_note_tool(self, note: str):
+        self.working_memory.update_note(note)
+        return "Note sucessfully updated"
 
     def revert_trace_tool(self, n_steps: str):
         n = int(n_steps)
@@ -287,8 +298,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             else:
                 raise RuntimeError(
                     "Invalid name for control node."+
-                    " Please verify your programs using RedisInsight."
-                )
+                    " Please verify your programs using RedisInsight.")
         else:
             node_name = current_node.properties["name"]
             raise RuntimeError(

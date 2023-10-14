@@ -7,12 +7,14 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import tiktoken
 
 class ProgramTraceMemory(BaseModel):
-    objective: str = ""
+    objective: str = "N/A"
+    note: str = "N/A"
     program_trace: Iterable = deque()
     chunk_size: int = 100
     memory_template: str = \
 """The Objective is from the perspective of the User
 Objective: {objective}
+Note: {note}
 {program_trace}"""
 
     def clear(self):
@@ -50,8 +52,8 @@ Objective: {objective}
 
                 memory = self.memory_template.format(
                     objective = self.objective,
-                    program_trace = program_trace
-                )
+                    note = self.note,
+                    program_trace = program_trace)
 
                 encoding = tiktoken.get_encoding("cl100k_base")
                 num_tokens = len(encoding.encode(memory))
@@ -61,13 +63,17 @@ Objective: {objective}
                     break
             return result
 
-    def update_trace(self, prompt):
+    def update_trace(self, prompt: str):
         """Method to update the program trace"""
         self.program_trace.append(prompt)
 
-    def update_objective(self, objective):
+    def update_objective(self, new_objective: str):
         """Method to update the objective"""
-        self.objective = objective
+        self.objective = new_objective
+
+    def update_note(self, new_node: str):
+        """Method to update the note"""
+        self.note = new_node
 
     def revert(self, n: int):
         """Method to revert N steps of the trace"""
