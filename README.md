@@ -30,9 +30,9 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 - **Efficient Storage:** Thanks to an hybrid vector and graph filesystem database enabling efficient storage of data the AI system can work safely within its own memory in a unix-like fashion.
 
-- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI by trying the app](https://github.com/SynaLinks/HybridAGI-app)!
+- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-app/Tutorials.md)!
 
-- **Graph Program Interpreter:** We introduce a [revolutionary Agent](hybrid_agi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
+- **Graph Program Interpreter:** We introduce a [revolutionary Agent](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
 
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your programs under *the license of your choice* while using the framework under GNU GPL.
 
@@ -42,6 +42,11 @@ To start just use the following commands:
 ```
 git clone https://github.com/SynaLinks/HybridAGI
 cd HybridAGI
+```
+
+Rename `.env.template` to `.env` and replace `my-openai-api-key` with your actual API key, then, launch the app with:
+
+```
 docker-compose run --rm hybrid-agi-cli
 ```
 
@@ -49,7 +54,7 @@ To inspect the database, open your browser to [localhost:8001](https://localhost
 
 ## Available Tools 🔨
 
-You can use the natively the following tools in your graph programs, obviously you can add more tools if they are compatible with Langchain Tool format.
+You can use natively the following tools in your graph programs, and add more ones, if they are compatible with Langchain Tool format.
 
 The AI system can interact with its long-term memory using the following tools:
 
@@ -96,6 +101,21 @@ HybridAGI is made possible by the following open-source tools:
 <a href="https://github.com/SynaLinks/HybridAGI/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=SynaLinks/HybridAGI" />
 </a>
+
+## Cite this work
+
+If you found this repository usefull for your research, please consider citing us:
+
+```
+@misc{Sallami2023,
+  author = {Yoan Sallami},
+  title = {HybridAGI: Introducing graph-based prompt programming},
+  year = {2023},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/SynaLinks/HybridAGI}}
+}
+```
 
 ## Get Involved 💬
 
