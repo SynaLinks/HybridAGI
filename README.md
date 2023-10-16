@@ -30,7 +30,7 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 - **Efficient Storage:** Thanks to an hybrid vector and graph filesystem database enabling efficient storage of data the AI system can work safely within its own memory in a unix-like fashion.
 
-- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-app/Tutorials.md)!
+- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://github.com/SynaLinks/HybridAGI-app/blob/main/Tutorials.md)!
 
 - **Graph Program Interpreter:** We introduce a [revolutionary Agent](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
 
