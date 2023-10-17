@@ -33,18 +33,21 @@ Note: {note}
         if len(texts) == 0:
             memory = self.memory_template.format(
                 objective = self.objective,
+                note = self.note,
                 program_trace = ""
             )
             return memory
         elif len(texts) == 1:
             memory = self.memory_template.format(
                 objective = self.objective,
+                note = self.note,
                 program_trace = texts[0]
             )
             return memory
         else:
             result = self.memory_template.format(
                 objective = self.objective,
+                note = self.note,
                 program_trace = ""
             )
             for i in range(0, len(texts)):
