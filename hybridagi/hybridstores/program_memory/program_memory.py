@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional, Callable, Any
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.language_model import BaseLanguageModel
 from .base import BaseProgramMemory, _default_norm
