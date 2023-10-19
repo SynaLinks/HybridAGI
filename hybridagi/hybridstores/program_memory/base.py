@@ -49,36 +49,36 @@ class BaseProgramMemory(BaseHybridStore):
                 ". Please correct your program")
             result = self.playground.query(
                 'MATCH (n:Control {name:"Start"}) RETURN n')
-            if len(result.result_set) == 0:
+            if len(result) == 0:
                 raise RuntimeError(f"Error while loading '{program_name}':"+\
                 " No starting node detected, please "+\
                 "make sure to start your program correctly")
-            if len(result.result_set) > 1:
+            if len(result) > 1:
                 raise RuntimeError(f"Error while loading '{program_name}':"+\
                     "Multiple entry point detected,"+
                     " please correct your programs.")
 
             result = self.playground.query(
                 'MATCH (n:Control {name:"End"}) RETURN n')
-            if len(result.result_set) == 0:
+            if len(result) == 0:
                 raise RuntimeError(f"Error while loading '{program_name}':"+\
                 " No ending node detected, please "+\
                 "make sure to end your program correctly")
-            if len(result.result_set) > 1:
+            if len(result) > 1:
                 raise RuntimeError(f"Error while loading '{program_name}':"+\
                     "Multiple ending point detected,"+
                     " please correct your programs.")
                 
             result = self.playground.query(
-                'MATCH (p:Program) RETURN p'
+                'MATCH (p:Program) RETURN p.name AS name'
             )
-            if (result.result_set) > 0:
-                for p in result.result_set[0]:
-                    if not self.exists(program):
-                        raise RuntimeError(
-                            f"Error while loading '{program_name}': "+\
-                            f"The sub-program '{p}' do not exist."+\
-                            " Please correct your program")
+            for record in result:
+                subprogram = record[0]
+                if not self.exists(subprogram):
+                    raise RuntimeError(
+                        f"Error while loading '{program_name}': "+\
+                        f"The sub-program '{subprogram}' do not exist."+\
+                        " Please correct your program")
             self.playground.delete()
 
     def add_programs(
@@ -124,7 +124,7 @@ class BaseProgramMemory(BaseHybridStore):
             self.set_content(program_name, program)
             result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
             dependencies[program_name] = []
-            for record in result.result_set:
+            for record in result:
                 dependencies[program_name].append(record[0])
             indexes.append(program_name)
             if self.verbose:

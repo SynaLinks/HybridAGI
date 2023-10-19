@@ -46,10 +46,7 @@ class ProgramMemory(BaseProgramMemory):
 
     def get_program_names(self):
         program_names = []
-        result = self.query(
-            "MATCH (n:Program) RETURN n.name AS name")
-        print(result)
-        if len(result.result_set) > 0:
-            for res in result.result_set:
-                program_names.append(res[0])
+        result = self.query("MATCH (n:Program) RETURN n.name AS name")
+        for record in result:
+            program_names.append(record[0])
         return program_names
