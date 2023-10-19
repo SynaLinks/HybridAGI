@@ -70,8 +70,7 @@ class BaseProgramMemory(BaseHybridStore):
                     " please correct your programs.")
                 
             result = self.playground.query(
-                'MATCH (p:Program) RETURN p.name AS name'
-            )
+                'MATCH (p:Program) RETURN p.name AS name')
             for record in result:
                 subprogram = record[0]
                 if not self.exists(subprogram):
@@ -112,14 +111,12 @@ class BaseProgramMemory(BaseHybridStore):
             if not program_description:
                 chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
                 program_description = chain.predict(program=program)
-            vector = np.array(
-                self.embedding.embed_query(text=program_description),
-                dtype=np.float32)
-            params = {"program_name": program_name, "vector": list(vector)}
-            self.query('MERGE (n:Program {name:"$program_name"'+
-                    ', description:vector32f($vector)})', params = params)
-            params = {"program_name": program_name}
-            self.query('MATCH (n:Program {name:"$program_name"})'+
+            vector = self.normalize(np.array(
+                        self.embedding.embed_query(text=program_description),
+                        dtype=np.float32))
+            self.query('MERGE (n:Program {name:"'+program_name+'"'+
+                    ', description:vector32f('+str(list(vector))+')})')
+            self.query('MATCH (n:Program {name:"'+program_name+'"})'+
                 '-[r:DEPENDS_ON]->(m) DELETE r')
             self.set_content(program_name, program)
             result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
