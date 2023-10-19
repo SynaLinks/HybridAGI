@@ -19,7 +19,7 @@ class BaseProgramMemory(BaseHybridStore):
             embedding: Embeddings,
             embedding_dim: int,
             llm: BaseLanguageModel,
-            normalize: Optional[Callable[Any], Any] = _default_norm,
+            normalize: Optional[Callable[[Any], Any]] = _default_norm,
             verbose: bool = True):
         """The base program memory constructor"""
         super().__init__(
