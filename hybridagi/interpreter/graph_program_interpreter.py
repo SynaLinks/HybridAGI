@@ -139,13 +139,13 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         program = self.program_memory.create_graph(program_name)
         result = program.query(
             'MATCH (n:Control {name:"Start"}) RETURN n')
-        if len(result.result_set) == 0:
+        if len(result) == 0:
             raise RuntimeError("No entry point detected,"+
                 " please make sure you loaded the programs.")
-        if len(result.result_set) > 1:
+        if len(result) > 1:
             raise RuntimeError("Multiple entry point detected,"+
                 " please correct your programs.")
-        starting_node = result.result_set[0][0]
+        starting_node = result[0][0]
         return starting_node
 
     def update_objective_tool(self, objective: str):
@@ -227,8 +227,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         name = node.properties["name"]
         result = self.get_current_program().query(
             'MATCH ({name:"'+name+'"})-[:NEXT]->(n) RETURN n')
-        if len(result.result_set) > 0:
-            return result.result_set[0][0]
+        if len(result) > 0:
+            return result[0][0]
         return None
 
     def decide_next(self, node:Node) -> Node:
@@ -240,7 +240,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         result = self.get_current_program().query(
             'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)'
         )
-        for record in result.result_set:
+        for record in result:
             options.append(record[0])
 
         decision = self.perform_decision(purpose, question, options)
@@ -255,7 +255,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
 
         result = self.get_current_program().query(
             'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
-        next_node = result.result_set[0][0]
+        next_node = result[0][0]
         return next_node
 
     def use_tool(self, node:Node):
