@@ -3,8 +3,10 @@
 from collections import deque
 from typing import List, Optional, Iterable, Callable
 from colorama import Fore, Style
+
 from redisgraph import Node
-from hybridagikb import Graph
+
+from hybridagikb import KnowledgeGraph
 
 from langchain.tools import Tool
 from langchain.base_language import BaseLanguageModel
@@ -175,7 +177,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.current_node_stack.append(starting_node)
         return f"Successfully called '{program_name}' program"
 
-    def get_current_program(self) -> Optional[Graph]:
+    def get_current_program(self) -> Optional[KnowledgeGraph]:
         """Method to retreive the current program from the stack"""
         if len(self.program_stack) > 0:
             return self.program_stack[-1]

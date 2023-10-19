@@ -2,8 +2,7 @@ import os
 from typing import List
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.language_model import BaseLanguageModel
-
-from .base import BaseProgramMemory
+from .base import BaseProgramMemory, _default_norm
 
 class ProgramMemory(BaseProgramMemory):
     """The Program Memory"""
@@ -14,6 +13,7 @@ class ProgramMemory(BaseProgramMemory):
             embedding: Embeddings,
             embedding_dim: int,
             llm: BaseLanguageModel,
+            normalize: Optional[Callable[Any], Any] = _default_norm,
             verbose: bool = True):
         """The program memory constructor"""
         super().__init__(
@@ -22,6 +22,7 @@ class ProgramMemory(BaseProgramMemory):
             embedding = embedding,
             embedding_dim = embedding_dim,
             llm = llm,
+            normalize = normalize,
             verbose = verbose)
 
     def load_folders(

@@ -32,6 +32,9 @@ from hybridagi import GraphProgramInterpreter
 
 cfg = Config()
 
+def _normalize_vector(value):
+    return np.add(np.divide(value, 2), 0.5)
+
 if cfg.private_mode:
     from langchain.embeddings import GPT4AllEmbeddings
     from langchain.llms import GPT4All
@@ -72,7 +75,8 @@ filesystem = FileSystem(
     redis_url = cfg.redis_url,
     index_name = cfg.memory_index,
     embedding = embedding,
-    embedding_dim = embedding_dim)
+    embedding_dim = embedding_dim,
+    normalize = _normalize_vector)
 filesystem.initialize()
 
 program_memory = ProgramMemory(
@@ -80,6 +84,7 @@ program_memory = ProgramMemory(
     index_name = cfg.memory_index,
     embedding = embedding,
     embedding_dim = embedding_dim,
+    normalize = _normalize_vector,
     llm = fast_llm)
 program_memory.initialize()
 

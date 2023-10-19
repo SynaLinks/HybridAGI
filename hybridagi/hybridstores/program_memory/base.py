@@ -1,11 +1,14 @@
 import numpy as np
 from tqdm import tqdm
-from typing import List
+from typing import List, Optional, Callable, Any
 from hybridagikb import BaseHybridStore
 from .prompt import PROGRAM_DESCRIPTION_PROMPT
 from langchain.schema.embeddings import Embeddings
 from langchain.chains.llm import LLMChain
 from langchain.schema.language_model import BaseLanguageModel
+
+def _default_norm(value):
+    return value
 
 class BaseProgramMemory(BaseHybridStore):
 
@@ -16,6 +19,7 @@ class BaseProgramMemory(BaseHybridStore):
             embedding: Embeddings,
             embedding_dim: int,
             llm: BaseLanguageModel,
+            normalize: Optional[Callable[Any], Any] = _default_norm,
             verbose: bool = True):
         """The base program memory constructor"""
         super().__init__(
@@ -25,6 +29,7 @@ class BaseProgramMemory(BaseHybridStore):
             embedding_dim = embedding_dim,
             graph_index = "program_memory",
             indexed_label = "Program",
+            normalize = normalize,
             verbose = verbose)
         self.llm = llm
         self.embedding = embedding
