@@ -1,5 +1,6 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+import numpy as np
 import os
 from colorama import Fore, Style
 
@@ -22,7 +23,6 @@ from hybridagi import ProgramMemory
 from hybridagi.tools import (
     AskUserTool,
     SpeakTool,
-    ListProgramsTool,
     LoadProgramsTool,
     ProgramSearchTool)
 
@@ -84,14 +84,12 @@ program_memory = ProgramMemory(
     index_name = cfg.memory_index,
     embedding = embedding,
     embedding_dim = embedding_dim,
-    normalize = _normalize_vector,
-    llm = fast_llm)
+    normalize = _normalize_vector)
 program_memory.initialize()
 
 ask_user = AskUserTool()
 speak = SpeakTool()
 
-list_programs = ListProgramsTool(program_memory=program_memory)
 load_programs = LoadProgramsTool(program_memory=program_memory)
 program_search = ProgramSearchTool(program_memory=program_memory)
 
@@ -138,10 +136,6 @@ tools = [
         name=content_search.name,
         func=content_search.run,
         description=content_search.description),
-    Tool(
-        name=list_programs.name,
-        func=list_programs.run,
-        description=list_programs.description),
     Tool(
         name=load_programs.name,
         func=load_programs.run,

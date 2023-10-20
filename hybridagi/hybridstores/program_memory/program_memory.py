@@ -1,7 +1,6 @@
 import os
 from typing import List, Optional, Callable, Any
 from langchain.schema.embeddings import Embeddings
-from langchain.schema.language_model import BaseLanguageModel
 from .base import BaseProgramMemory, _default_norm
 
 class ProgramMemory(BaseProgramMemory):
@@ -12,7 +11,6 @@ class ProgramMemory(BaseProgramMemory):
             redis_url: str,
             embedding: Embeddings,
             embedding_dim: int,
-            llm: BaseLanguageModel,
             normalize: Optional[Callable[[Any], Any]] = _default_norm,
             verbose: bool = True):
         """The program memory constructor"""
@@ -21,7 +19,6 @@ class ProgramMemory(BaseProgramMemory):
             redis_url = redis_url,
             embedding = embedding,
             embedding_dim = embedding_dim,
-            llm = llm,
             normalize = normalize,
             verbose = verbose)
 
