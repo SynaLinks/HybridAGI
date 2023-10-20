@@ -42,6 +42,7 @@ class ProgramMemory(BaseProgramMemory):
         self.add_programs(names = names, programs = programs)
 
     def get_program_names(self):
+        """Method to get the program names"""
         program_names = []
         result = self.query("MATCH (n:Program) RETURN n.name AS name")
         for record in result:

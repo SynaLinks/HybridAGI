@@ -35,42 +35,55 @@ class BaseProgramMemory(BaseHybridStore):
             programs: List[str]):
         for idx, program in enumerate(programs):
             program_name = names[idx]
+            if self.depends_on("main", program_name):
+                raise RuntimeError(
+                    f"Error while loading '{program_name}': "+\
+                    "Trying to modify a protected program")
             try:
                 self.playground.query(program)
             except Exception as err:
-                raise RuntimeError(f"Error while loading '{program_name}': {err}"+\
-                ". Please correct your program")
+                raise RuntimeError(
+                    f"Error while loading '{program_name}': {err}. "+\
+                    "Please correct your program")
             result = self.playground.query(
                 'MATCH (n:Control {name:"Start"}) RETURN n')
             if len(result) == 0:
-                raise RuntimeError(f"Error while loading '{program_name}':"+\
-                " No starting node detected, please "+\
-                "make sure to start your program correctly")
+                raise RuntimeError(
+                    f"Error while loading '{program_name}': "+\
+                    "No starting node detected, please "+\
+                    "make sure to start your program correctly")
             if len(result) > 1:
-                raise RuntimeError(f"Error while loading '{program_name}':"+\
-                    "Multiple entry point detected,"+
-                    " please correct your programs.")
+                raise RuntimeError(
+                    f"Error while loading '{program_name}': "+\
+                    "Multiple entry point detected, "+
+                    "please correct your programs.")
 
             result = self.playground.query(
                 'MATCH (n:Control {name:"End"}) RETURN n')
             if len(result) == 0:
-                raise RuntimeError(f"Error while loading '{program_name}':"+\
-                " No ending node detected, please "+\
-                "make sure to end your program correctly")
+                raise RuntimeError(
+                    f"Error while loading '{program_name}': "+\
+                    "No ending node detected, please "+\
+                    "make sure to end your program correctly")
             if len(result) > 1:
-                raise RuntimeError(f"Error while loading '{program_name}':"+\
-                    "Multiple ending point detected,"+
-                    " please correct your programs.")
+                raise RuntimeError(
+                    f"Error while loading '{program_name}': "+\
+                    "Multiple ending point detected, "+
+                    "please correct your programs.")
                 
             result = self.playground.query(
                 'MATCH (p:Program) RETURN p.program AS program')
             for record in result:
                 subprogram = record[0]
+                if self.depends_on("main", subprogram):
+                    raise RuntimeError(
+                        f"Error while loading '{program_name}': "+\
+                        "Trying to call a protected program")
                 if not self.exists(subprogram):
                     raise RuntimeError(
                         f"Error while loading '{program_name}': "+\
-                        f"The sub-program '{subprogram}' do not exist."+\
-                        " Please correct your program")
+                        f"The sub-program '{subprogram}' do not exist. "+\
+                        "Please correct your program")
             self.playground.delete()
 
     def add_programs(
@@ -105,3 +118,12 @@ class BaseProgramMemory(BaseHybridStore):
                     '(d:Program {name:"'+prog_dep+'"}) '+
                     'MERGE (p)-[:DEPENDS_ON]->(d)')
         return indexes
+
+    def depends_on(self, source: str, target: str):
+        """Method to check if a program depend on another"""
+        result = self.query('MATCH (n:Program {name:"'+source+
+            '"})-[:DEPENDS_ON*]->(m:Program {name:"'+target+
+            '"}) RETURN r')
+        if len(result) > 0:
+            return True
+        return False
