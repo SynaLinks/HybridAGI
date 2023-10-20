@@ -35,6 +35,9 @@ class BaseProgramMemory(BaseHybridStore):
             programs: List[str]):
         for idx, program in enumerate(programs):
             program_name = names[idx]
+            if self.depends_on("main", program_name):
+                raise RuntimeError(f"Error while loading '{program_name}': "+\
+                "Trying to modify protected program")
             try:
                 self.playground.query(program)
             except Exception as err:
@@ -105,3 +108,12 @@ class BaseProgramMemory(BaseHybridStore):
                     '(d:Program {name:"'+prog_dep+'"}) '+
                     'MERGE (p)-[:DEPENDS_ON]->(d)')
         return indexes
+
+    def depends_on(self, source: str, target: str):
+        """Method to check if a program depend on another"""
+        result = self.query('MATCH (n:Program {name:"'+source+
+            '"})-[:DEPENDS_ON*]->(m:Program {name:"'+target+
+            '"}) RETURN r')
+        if len(result) > 0:
+            return True
+        return False
