@@ -166,6 +166,10 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         return "Working memory cleaned sucessfully"
 
     def call_program_tool(self, program_name: str):
+        if self.program_memory.depends_on("main", program_name):
+            raise RuntimeError(
+                f"Error occured while calling '{program_name}': "+
+                "Trying to call a protected program")
         program_name = program_name.strip().lower().replace(" ", "_")
         if not self.program_memory.exists(program_name):
             return f"Error occured while calling '{program_name}': "+\
