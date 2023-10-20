@@ -37,26 +37,20 @@ def _normalize_vector(value):
 
 if cfg.private_mode:
     from langchain.embeddings import GPT4AllEmbeddings
-    from langchain.llms import GPT4All
-    from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+    from langchain.llms import HuggingFaceTextGenInference
     
     embedding = GPT4AllEmbeddings()
     embedding_dim = 384
 
-    local_path = cfg.local_model_path
-    callbacks = [StreamingStdOutCallbackHandler()]
-
-    smart_llm = GPT4All(
-        model = local_path,
-        temperature=cfg.temperature,
-        model_name=cfg.fast_llm_model,
-        openai_api_base=cfg.openai_base_path
-    )
-    fast_llm = GPT4All(
-        model = local_path,
-        temperature=cfg.temperature,
-        model_name=cfg.fast_llm_model,
-        openai_api_base=cfg.openai_base_path)
+    smart_llm = HuggingFaceTextGenInference(
+        inference_server_url="http://localhost:8010/",
+        max_new_tokens=512,
+        top_k=10,
+        top_p=0.95,
+        typical_p=0.95,
+        temperature=0.01,
+        repetition_penalty=1.03)
+    fast_llm = smart_llm
 else:
     from langchain.embeddings import OpenAIEmbeddings
     from langchain.chat_models import ChatOpenAI
