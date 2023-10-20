@@ -1,5 +1,4 @@
 import numpy as np
-from tqdm import tqdm
 from typing import List, Optional, Callable, Any
 from hybridagikb import BaseHybridStore
 from .prompt import PROGRAM_DESCRIPTION_PROMPT
@@ -11,7 +10,6 @@ def _default_norm(value):
     return value
 
 class BaseProgramMemory(BaseHybridStore):
-
     def __init__(
             self,
             index_name: str,
@@ -68,7 +66,7 @@ class BaseProgramMemory(BaseHybridStore):
                     " please correct your programs.")
                 
             result = self.playground.query(
-                'MATCH (p:Program) RETURN p.name AS name')
+                'MATCH (p:Program) RETURN p.program AS program')
             for record in result:
                 subprogram = record[0]
                 if not self.exists(subprogram):
@@ -85,12 +83,7 @@ class BaseProgramMemory(BaseHybridStore):
         """Method to add programs"""
         indexes = []
         dependencies = {}
-        vectors = []
         assert(len(programs) == len(names))
-        if descriptions:
-            assert(len(programs) == len(descriptions))
-        if self.verbose:
-            pbar = tqdm(total=len(programs))
         indexes = self.add_texts(programs)
         for idx, program in enumerate(programs):
             program_name = names[idx]
@@ -101,26 +94,17 @@ class BaseProgramMemory(BaseHybridStore):
                 pass
             graph_program.query(program)
             self.query('MERGE (n:Program {name:"'+program_name+'"})')
-            self.query('MATCH (n:Program {name:"'+program_name+'"})'+
-                '-[r:DEPENDS_ON]->(m) DELETE r')
             self.query('MATCH (p:Program {name:"'+program_name+'"}), '+
-                '(c:Content {name:'+indexes[idx]+'}) '+
+                '(c:Content {name:"'+indexes[idx]+'"}) '+
                 'MERGE (p)-[:CONTAINS]->(c)')
-            self.set_content(program_name, program)
-            result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
+            result = graph_program.query('MATCH (n:Program) RETURN n.program AS program')
             dependencies[program_name] = []
             for record in result:
                 dependencies[program_name].append(record[0])
-            indexes.append(program_name)
-            if self.verbose:
-                pbar.update(1)
-        if self.verbose:
-            pbar.close()
         for name, dep in dependencies.items():
             for prog_dep in dep:
                 self.query(
-                    'MATCH (n:Program {name:"'+name+'"}), '+
-                    '(m:Program {name:"'+prog_dep+'"}) '+
-                    'MERGE (n)-[:DEPENDS_ON]->(m)')
+                    'MATCH (p:Program {name:"'+name+'"}), '+
+                    '(d:Program {name:"'+prog_dep+'"}) '+
+                    'MERGE (p)-[:DEPENDS_ON]->(d)')
         return indexes
-
