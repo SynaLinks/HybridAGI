@@ -1,10 +1,7 @@
-import numpy as np
+
 from typing import List, Optional, Callable, Any
 from hybridagikb import BaseHybridStore
-from .prompt import PROGRAM_DESCRIPTION_PROMPT
 from langchain.schema.embeddings import Embeddings
-from langchain.chains.llm import LLMChain
-from langchain.schema.language_model import BaseLanguageModel
 
 def _default_norm(value):
     return value
