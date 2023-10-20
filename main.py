@@ -1,5 +1,6 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+import numpy as np
 import os
 from colorama import Fore, Style
 

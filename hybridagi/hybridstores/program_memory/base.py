@@ -18,7 +18,6 @@ class BaseProgramMemory(BaseHybridStore):
             redis_url: str,
             embedding: Embeddings,
             embedding_dim: int,
-            llm: BaseLanguageModel,
             normalize: Optional[Callable[[Any], Any]] = _default_norm,
             verbose: bool = True):
         """The base program memory constructor"""
@@ -28,10 +27,9 @@ class BaseProgramMemory(BaseHybridStore):
             embedding = embedding,
             embedding_dim = embedding_dim,
             graph_index = "program_memory",
-            indexed_label = "Program",
+            indexed_label = "Content",
             normalize = normalize,
             verbose = verbose)
-        self.llm = llm
         self.embedding = embedding
         self.embedding_dim = embedding_dim
         self.playground = self.create_graph("testing_playground")
@@ -83,17 +81,17 @@ class BaseProgramMemory(BaseHybridStore):
     def add_programs(
             self,
             names: List[str],
-            programs: List[str],
-            descriptions: List[str] = [],
-            use_hardcoded_description = True):
+            programs: List[str]):
         """Method to add programs"""
         indexes = []
         dependencies = {}
+        vectors = []
         assert(len(programs) == len(names))
         if descriptions:
             assert(len(programs) == len(descriptions))
         if self.verbose:
             pbar = tqdm(total=len(programs))
+        indexes = self.add_texts(programs)
         for idx, program in enumerate(programs):
             program_name = names[idx]
             graph_program = self.create_graph(program_name)
@@ -102,22 +100,12 @@ class BaseProgramMemory(BaseHybridStore):
             except Exception:
                 pass
             graph_program.query(program)
-            program_description = "" if not descriptions else descriptions[idx]
-            if use_hardcoded_description:
-                lines = program.split("\n")
-                for ln in lines:
-                    if ln.startswith("// @desc:"):
-                        program_description += ln.replace("// @desc:", "").strip()
-            if not program_description:
-                chain = LLMChain(llm=self.llm, prompt=PROGRAM_DESCRIPTION_PROMPT)
-                program_description = chain.predict(program=program)
-            vector = self.normalize(np.array(
-                        self.embedding.embed_query(text=program_description),
-                        dtype=np.float32))
-            self.query('MERGE (n:Program {name:"'+program_name+'"'+
-                    ', description:vector32f('+str(list(vector))+')})')
+            self.query('MERGE (n:Program {name:"'+program_name+'"})')
             self.query('MATCH (n:Program {name:"'+program_name+'"})'+
                 '-[r:DEPENDS_ON]->(m) DELETE r')
+            self.query('MATCH (p:Program {name:"'+program_name+'"}), '+
+                '(c:Content {name:'+indexes[idx]+'}) '+
+                'MERGE (p)-[:CONTAINS]->(c)')
             self.set_content(program_name, program)
             result = graph_program.query('MATCH (n:Program) RETURN n.name AS name')
             dependencies[program_name] = []
