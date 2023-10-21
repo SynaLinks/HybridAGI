@@ -43,14 +43,15 @@ if cfg.private_mode:
     embedding_dim = 384
 
     smart_llm = HuggingFaceTextGenInference(
-        inference_server_url="http://localhost:8010/",
-        max_new_tokens=512,
+        inference_server_url=cfg.local_model_url,
+        max_new_tokens=1024,
         top_k=10,
         top_p=0.95,
         typical_p=0.95,
         temperature=0.01,
         repetition_penalty=1.03)
     fast_llm = smart_llm
+
 else:
     from langchain.embeddings import OpenAIEmbeddings
     from langchain.chat_models import ChatOpenAI
@@ -208,8 +209,7 @@ def load_folder():
     folder_name = os.path.basename(os.path.abspath(folder_path))
     print(
         f"{Fore.GREEN}[*] Are you sure about loading the folder named " \
-        + f"'{folder_name}'? [y/N]{Style.RESET_ALL}"
-    )
+        + f"'{folder_name}'? [y/N]{Style.RESET_ALL}")
     while True:
         decision = input("> ").upper().strip()
         if decision == "Y" or decision == "YES":
@@ -223,8 +223,7 @@ def load_folder():
     try:
         filesystem.add_folders(
             [folder_path],
-            folder_names=[f"/home/user/{folder_name}"]
-        )
+            folder_names=[f"/home/user/{folder_name}"])
     except Exception as err:
         print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
 

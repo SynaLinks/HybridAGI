@@ -12,9 +12,7 @@ class Config():
         self.debug_mode = os.getenv("DEBUG_MODE", "True") == "True"
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
-        self.local_model_path = os.environ.get(
-            "LOCAL_MODEL_PATH",
-            "./models/ggml-gpt4all-l13b-snoozy.bin")
+        self.local_model_url = os.environ.get("LOCAL_MODEL_URL", "http://localhost:8010")
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
