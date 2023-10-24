@@ -12,7 +12,9 @@ class Config():
         self.debug_mode = os.getenv("DEBUG_MODE", "True") == "True"
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
-        self.local_model_url = os.environ.get("LOCAL_MODEL_URL", "http://localhost:8010")
+        self.local_model_url = os.environ.get(
+            "LOCAL_MODEL_URL",
+            "http://localhost:8010")
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
@@ -25,8 +27,7 @@ class Config():
         self.user_agent = os.getenv(
             "USER_AGENT",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36"
-            " (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
-        )
+            " (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36")
         
         self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")

@@ -60,11 +60,11 @@ else:
     embedding_dim = 1536
     
     smart_llm = ChatOpenAI(
-        temperature=cfg.temperature,
-        model_name=cfg.smart_llm_model)
+        temperature = cfg.temperature,
+        model_name = cfg.smart_llm_model)
     fast_llm = ChatOpenAI(
-        temperature=cfg.temperature,
-        model_name=cfg.fast_llm_model)
+        temperature = cfg.temperature,
+        model_name = cfg.fast_llm_model)
 
 filesystem = FileSystem(
     redis_url = cfg.redis_url,

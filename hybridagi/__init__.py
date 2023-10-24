@@ -5,6 +5,7 @@ from .interpreter.base import BaseGraphProgramInterpreter
 from .interpreter.graph_program_interpreter import GraphProgramInterpreter
 from .interpreter.program_trace_memory import ProgramTraceMemory
 from .parsers.interpreter_output_parser import InterpreterOutputParser
+from .reasoners.base import BaseReasoner
 
 __all__ = [
     "ProgramMemory",
@@ -12,5 +13,6 @@ __all__ = [
     "BaseGraphProgramInterpreter",
     "GraphProgramInterpreter",
     "ProgramTraceMemory",
-    "InterpreterOutputParser"
+    "InterpreterOutputParser",
+    "BaseReasoner"
 ]

@@ -8,10 +8,10 @@ from redisgraph import Node
 
 from hybridagikb import KnowledgeGraph
 
-from langchain.tools import Tool
+from langchain.tools import BaseTool, Tool
 from langchain.base_language import BaseLanguageModel
 from ..hybridstores.program_memory.program_memory import ProgramMemory
-
+from ..reasoners.base import BaseReasoner
 from .base import BaseGraphProgramInterpreter
 
 COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]
@@ -24,6 +24,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     program_name: str = ""
     program_stack: Iterable = deque()
     current_node_stack: Iterable = deque()
+    reasoners: List[BaseReasoner] = []
     max_decision_attemp: int = 5
     current_iteration:int = 0
     max_iteration: int = 50
@@ -37,8 +38,9 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             program_memory: ProgramMemory,
             smart_llm: BaseLanguageModel,
             fast_llm: BaseLanguageModel,
-            program_name:str = "main",
-            tools:List[Tool] = [],
+            program_name: str = "main",
+            tools: List[BaseTool] = [],
+            reasoners: List[BaseReasoner] =  [],
             smart_llm_max_token: int = 4000,
             fast_llm_max_token: int = 4000,
             max_decision_attemp:int = 5,
@@ -113,6 +115,9 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         tools.append(call_program_tool)
         tools.append(clear_trace_tool)
 
+        for reasoner in reasoners:
+            tools += reasoner.tools
+
         tools_map = {}
         for tool in tools:
             tools_map[tool.name] = tool
@@ -124,6 +129,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             smart_llm_max_token = smart_llm_max_token,
             fast_llm_max_token = fast_llm_max_token,
             program_name = program_name,
+            reasoners = reasoners,
             tools_map = tools_map,
             max_decision_attemp = max_decision_attemp,
             max_iteration = max_iteration,

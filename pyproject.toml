@@ -26,6 +26,7 @@ dependencies = [
     "langchain>=0.0.308",
     "openai",
     "gpt4all",
+    "text_generation",
     "pydantic",
     "python-dotenv",
     "coverage",
