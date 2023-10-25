@@ -94,7 +94,7 @@ class BaseProgramMemory(BaseHybridStore):
         indexes = []
         dependencies = {}
         assert(len(programs) == len(names))
-        indexes = self.add_texts(programs)
+        indexes = self.add_texts(programs, ids=names)
         for idx, program in enumerate(programs):
             program_name = names[idx]
             graph_program = self.create_graph(program_name)
