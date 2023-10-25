@@ -322,6 +322,13 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Check if the run is finished"""
         return self.get_current_node() is None
 
+    def stop(self):
+        """Stop the agent"""
+        self.current_node_stack = deque()
+        self.program_stack = deque()
+        self.working_memory.clear()
+        self.working_memory.update_objective("N/A")
+
     def start(self, objective: str):
         """Start the agent"""
         self.working_memory.update_objective(objective)
