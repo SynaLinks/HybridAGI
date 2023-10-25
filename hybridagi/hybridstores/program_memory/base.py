@@ -122,7 +122,7 @@ class BaseProgramMemory(BaseHybridStore):
     def depends_on(self, source: str, target: str):
         """Method to check if a program depend on another"""
         result = self.query('MATCH (n:Program {name:"'+source+
-            '"})-[:DEPENDS_ON*]->(m:Program {name:"'+target+
+            '"})-[r:DEPENDS_ON*]->(m:Program {name:"'+target+
             '"}) RETURN r')
         if len(result) > 0:
             return True
