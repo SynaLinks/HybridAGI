@@ -102,7 +102,10 @@ class BaseProgramMemory(BaseHybridStore):
                 graph_program.delete()
             except Exception:
                 pass
-            graph_program.query(program)
+            try:
+                graph_program.query(program)
+            except Exception as e:
+                return RuntimeError(f"{program_name}: {e}")
             self.query('MERGE (n:Program {name:"'+program_name+'"})')
             self.query('MATCH (p:Program {name:"'+program_name+'"}), '+
                 '(c:Content {name:"'+indexes[idx]+'"}) '+
