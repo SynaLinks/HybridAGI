@@ -24,7 +24,8 @@ from hybridagi.tools import (
     AskUserTool,
     SpeakTool,
     LoadProgramsTool,
-    ProgramSearchTool)
+    ProgramSearchTool,
+    ReadProgramTool)
 
 from langchain.tools import DuckDuckGoSearchResults
 
@@ -87,6 +88,7 @@ speak = SpeakTool()
 
 load_programs = LoadProgramsTool(program_memory=program_memory)
 program_search = ProgramSearchTool(program_memory=program_memory)
+read_program = ReadProgramTool(program_memory=program_memory)
 
 shell_tool = ShellTool(filesystem=filesystem)
 write_files = WriteFilesTool(filesystem=filesystem)
@@ -139,6 +141,10 @@ tools = [
         name=program_search.name,
         func=program_search.run,
         description=program_search.description),
+    Tool(
+        name=read_program.name,
+        func=read_program.run,
+        description=read_program.description),
     Tool(
         name="InternetSearch",
         func=internet_search.run,

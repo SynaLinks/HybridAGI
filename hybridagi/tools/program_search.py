@@ -18,7 +18,7 @@ class ProgramSearchTool(BaseTool):
             name = "ProgramSearch",
             description = \
     """
-    Usefull when you want to search for a similar program.
+    Usefull when you want to search for relevant programs.
     The input should be the description of the program to look for.
     """
         ):
@@ -35,14 +35,17 @@ class ProgramSearchTool(BaseTool):
 
     def program_search(self, query: str) -> str:
         """Use the tool."""
-        result = self.program_memory.similarity_search(
-            query,
-            k = 1, 
-            fetch_content = True)
-        if len(result) > 0:
-            return result[0]
-        else:
-            return "Nothing found"
+        result = self.program_memory.similarity_search(query, k = 10)
+        result_string = "Top-5 most relevant programs:"
+        n = 0
+        for program_name in result:
+            if program_name != "main":
+                if not self.program_memory.depends_on("main", program_name):
+                    result_string += f"\n{program_name}"
+                    n += 1
+            if n > 5:
+                break
+        return result_string
 
     def _run(
             self,
