@@ -93,11 +93,24 @@ class BaseProgramMemory(BaseHybridStore):
         """Method to add programs"""
         indexes = []
         dependencies = {}
+        descriptions = []
         assert(len(programs) == len(names))
-        indexes = self.add_texts(programs, ids=names)
         for idx, program in enumerate(programs):
             program_name = names[idx]
             graph_program = self.create_graph(program_name)
+            description = ""
+            for line in program.split():
+                if line.startswith("// @desc:"):
+                    description += line.replace("// @desc:", "")
+                elif line.startswith("//"):
+                    pass
+                else:
+                    break
+            if description:
+                descriptions.append(description)
+            else:
+                descriptions.append(program)
+            
             try:
                 graph_program.delete()
             except Exception:
@@ -108,18 +121,24 @@ class BaseProgramMemory(BaseHybridStore):
                 raise RuntimeError(f"{program_name}: {e}")
             self.query('MERGE (n:Program {name:"'+program_name+'"})')
             self.query('MATCH (p:Program {name:"'+program_name+'"}), '+
-                '(c:Content {name:"'+indexes[idx]+'"}) '+
+                '(c:Content {name:"'+program_name+'"}) '+
                 'MERGE (p)-[:CONTAINS]->(c)')
             result = graph_program.query('MATCH (n:Program) RETURN n.program AS program')
-            dependencies[program_name] = []
-            for record in result:
-                dependencies[program_name].append(record[0])
+            if len(result) > 0:
+                dependencies[program_name] = []
+                for record in result:
+                    dependencies[program_name].append(record[0])
         for name, dep in dependencies.items():
             for prog_dep in dep:
                 self.query(
                     'MATCH (p:Program {name:"'+name+'"}), '+
                     '(d:Program {name:"'+prog_dep+'"}) '+
                     'MERGE (p)-[:DEPENDS_ON]->(d)')
+
+        indexes = self.add_texts(
+            programs,
+            ids = names,
+            descriptions = descriptions)
         return indexes
 
     def depends_on(self, source: str, target: str):
