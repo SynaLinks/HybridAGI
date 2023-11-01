@@ -43,7 +43,7 @@ class ProgramSearchTool(BaseTool):
                 if not self.program_memory.depends_on("main", program_name):
                     result_string += "\n- " + program_name
                     n += 1
-            if n > 5:
+            if n >= 5:
                 break
         return result_string
 
