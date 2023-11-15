@@ -345,5 +345,5 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         while not self.finished():
             self.run_step()
         if self.verbose:
-            print(f"{Fore.GREEN}[!] Program Sucessfully Executed{Style.RESET_ALL}")
-        return "Program Sucessfully Executed"
+            print(f"{Fore.GREEN}[!] Program Successfully Executed{Style.RESET_ALL}")
+        return "Program Successfully Executed"
