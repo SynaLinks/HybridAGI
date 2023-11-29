@@ -14,14 +14,14 @@ from ..parsers.interpreter_output_parser import InterpreterOutputParser
 DECISION_TEMPLATE = \
 """{context}
 Decision Purpose: {purpose}
-Decision: {question} \
+Decision: [INST]{question}
 
 Please use the following format to Answer:
 
 Step 1: First reasoning step
 Step 2: Second reasoning step
 ...
-Final Answer (must be {choice}):..."""
+Final Step (must be {choice}):...[/INST]"""
 
 DECISION_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "question", "choice"],
@@ -32,7 +32,7 @@ TOOL_INPUT_TEMPLATE = \
 """{context}
 Action Purpose: {purpose}
 Action: {tool}
-Action Input Prompt: {prompt}
+Action Input Prompt: [INST]{prompt}[/INST]
 Action Input:"""
 
 TOOL_INPUT_PROMPT = PromptTemplate(
