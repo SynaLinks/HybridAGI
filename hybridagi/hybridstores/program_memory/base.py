@@ -120,9 +120,6 @@ class BaseProgramMemory(BaseHybridStore):
             except Exception as e:
                 raise RuntimeError(f"{program_name}: {e}")
             self.query('MERGE (n:Program {name:"'+program_name+'"})')
-            self.query('MATCH (p:Program {name:"'+program_name+'"}), '+
-                '(c:Content {name:"'+program_name+'"}) '+
-                'MERGE (p)-[:CONTAINS]->(c)')
             result = graph_program.query('MATCH (n:Program) RETURN n.program AS program')
             if len(result) > 0:
                 dependencies[program_name] = []
@@ -139,6 +136,10 @@ class BaseProgramMemory(BaseHybridStore):
             programs,
             ids = names,
             descriptions = descriptions)
+        for idx in indexes:
+            self.query('MATCH (p:Program {name:"'+idx+'"}), '+
+                '(c:Content {name:"'+idx+'"}) '+
+                'MERGE (p)-[:CONTAINS]->(c)')
         return indexes
 
     def depends_on(self, source: str, target: str):
