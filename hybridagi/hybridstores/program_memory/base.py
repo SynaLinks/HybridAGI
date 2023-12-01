@@ -35,7 +35,7 @@ class BaseProgramMemory(BaseHybridStore):
             programs: List[str]):
         for idx, program in enumerate(programs):
             program_name = names[idx]
-            if self.depends_on("main", program_name):
+            if program_name == "main" or self.depends_on("main", program_name):
                 raise RuntimeError(
                     f"Error while loading '{program_name}': "+\
                     "Trying to modify a protected program")
