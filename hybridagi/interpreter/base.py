@@ -68,7 +68,6 @@ class BaseGraphProgramInterpreter(BaseModel):
             None
         ]
     ] = None
-
     pre_action_callback: Optional[
         Callable[
             [str, str, str],
@@ -142,12 +141,15 @@ class BaseGraphProgramInterpreter(BaseModel):
                 tool = tool,
                 prompt = tool_input + f"\nAction Observation: {observation}")
         else:
-            observation = tool_input
+            if disable_inference:
+                observation = ""
+            else:
+                observation = tool_input
             tool_input = prompt
             action = action_template.format(
                 purpose = purpose,
                 tool = tool,
-                prompt = tool_input + observation)
+                prompt = tool_input + "\n" + observation)
         action = action.strip()
         if self.post_action_callback is not None:
             self.post_action_callback(purpose, tool, tool_input, observation)
