@@ -39,7 +39,7 @@ Action Input Prompt: {prompt}
 Action Input: {tool_input}
 
 Evaluation: Please, evaluate the quality of the above Action Input
-It is better when less assumption are made.
+It is always better when less assumption are made.
 
 Please ensure to use the following format to Answer:
 
