@@ -19,6 +19,7 @@ class Config():
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
         self.max_decision_attemp = int(os.getenv("MAX_DECISION_ATTEMP", "5"))
+        self.max_evaluation_attemp = int(os.getenv("MAX_EVALUATION_ATTEMP", "5"))
         self.max_iteration = int(os.getenv("MAX_ITERATION", "50"))
 
         self.chunk_size = int(os.getenv("CHUNK_SIZE", 1000))
