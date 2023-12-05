@@ -171,11 +171,13 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         return "Working memory cleaned sucessfully"
 
     def call_program_tool(self, program_name: str):
-        if program_name == "main" or self.program_memory.depends_on("main", program_name):
-            return f"Error occured while calling '{program_name}': "+\
-                "Trying to call a protected program"
         program_name = program_name.strip().lower().replace(" ", "_")
-        if not self.program_memory.exists(program_name):
+        if self.program_memory.exists(program_name):
+            if program_name == "main" \
+                or self.program_memory.depends_on("main", program_name):
+                return f"Error occured while calling '{program_name}': "+\
+                    "Trying to call a protected program"
+        else:
             return f"Error occured while calling '{program_name}': "+\
                 "Not existing, please verify that you have the correct name"
         self.set_current_node(self.get_next(self.get_current_node()))
@@ -197,7 +199,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             return self.current_node_stack[-1]
         return None
     
-    def set_current_node(self, node):
+    def set_current_node(self, node: Node):
         """Method to set the current node from the stack"""
         if len(self.current_node_stack) > 0:
             self.current_node_stack[-1] = node
@@ -246,8 +248,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
 
         options = []
         result = self.get_current_program().query(
-            'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)'
-        )
+            'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)')
         for record in result:
             options.append(record[0])
 
@@ -276,12 +277,18 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if "disable_inference" in node.properties:
             disable = node.properties["disable_inference"]
             disable_inference = (disable.lower() == "true")
+
+        ranked_inferences = 1
+        if "ranked_inferences" in node.properties:
+            nb_ranked_inferences = node.properties["ranked_inferences"]
+            ranked_inferences = int(nb_ranked_inferences)
         
         action = self.perform_action(
             purpose,
             tool_name,
             tool_input_prompt,
-            disable_inference = disable_inference)
+            disable_inference = disable_inference,
+            ranked_inferences = ranked_inferences)
         
         if self.verbose:
             print(COLORS[self.current_iteration%2])

@@ -69,7 +69,7 @@ The AI system can interact with its long-term memory using the following tools:
 It can also perform several operations on its program memory:
 
 - `ReadProgram`: Read a program based on its name
-- `ProgramSearch`: Perform a similarity based search on the program memory and list the top-5 most relevant programs
+- `ProgramSearch`: Perform a similarity based search on the program memory and list the top-10 most relevant programs
 - `LoadPrograms`: Load programs, override if existing (similar to `WriteFiles`)
 - `CallProgram`: Call a program based on its name
 

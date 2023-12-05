@@ -14,25 +14,52 @@ from ..parsers.interpreter_output_parser import InterpreterOutputParser
 DECISION_TEMPLATE = \
 """{context}
 Decision Purpose: {purpose}
-Decision: [INST]{question}
+Decision: {question}
 
-Please use the following format to Answer:
+Please ensure to use the following format to Answer:
 
-Step 1: First reasoning step
-Step 2: Second reasoning step
-...
-Final Step (must be {choice}):...[/INST]"""
+Step 1: First reasoning step to answer to the Decision
+Step 2: Second reasoning step to answer to the Decision
+... and so on (max 5 reasoning steps)
+Final Step (must be {choice}):...
+
+Please, always use the above format to answer"""
 
 DECISION_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "question", "choice"],
     template = DECISION_TEMPLATE
 )
 
+EVALUATION_TEMPLATE = \
+"""
+{context}
+Action Purpose: {purpose}
+Action: {tool}
+Action Input Prompt: {prompt}
+Action Input: {tool_input}
+
+Evaluation: Please, evaluate the quality of the above Action Input
+It is better when less assumption are made.
+
+Please ensure to use the following format to Answer:
+
+Step 1: First reasoning step to evaluate the above Action Input
+Step 2: Second reasoning step to evaluate the above Action Input
+... and so on (max 5 reasoning steps)
+Final Step (must be a score between 0.0 and 1.0):...
+
+Please, always use the above format to answer"""
+
+EVALUATION_PROMPT = PromptTemplate(
+    input_variables = ["context", "purpose", "tool", "prompt", "tool_input"],
+    template = EVALUATION_TEMPLATE
+)
+
 TOOL_INPUT_TEMPLATE = \
 """{context}
 Action Purpose: {purpose}
 Action: {tool}
-Action Input Prompt: [INST]{prompt}[/INST]
+Action Input Prompt: {prompt}
 Action Input:"""
 
 TOOL_INPUT_PROMPT = PromptTemplate(
@@ -48,9 +75,10 @@ class BaseGraphProgramInterpreter(BaseModel):
     tools_map: OrderedDict[str, Tool] = {}
 
     max_decision_attemp: int = 5
+    max_evaluation_attemp: int = 5
 
     verbose: bool = True
-    debug: bool = False
+    debug: bool = True
 
     working_memory: ProgramTraceMemory = ProgramTraceMemory()
 
@@ -120,15 +148,37 @@ class BaseGraphProgramInterpreter(BaseModel):
             purpose: str,
             tool:str,
             prompt: str,
-            disable_inference: bool = False
+            disable_inference: bool = False,
+            ranked_inferences: int = 1
         ) -> str:
         """Method to perform an action"""
         if self.pre_action_callback is not None:
             self.pre_action_callback(purpose, tool, prompt)
+        if ranked_inferences == 0:
+            disable_inference = True
         if disable_inference:
             tool_input = prompt
         else:
-            tool_input = self.predict_tool_input(purpose, tool, prompt)
+            tool_input = ""
+            if ranked_inferences == 1:
+                tool_input = self.predict_tool_input(purpose, tool, prompt)
+            else:
+                predictions = []
+                scores = []
+                for i in range(0, ranked_inferences):
+                    pred = self.predict_tool_input(purpose, tool, prompt)
+                    predictions.append(pred)
+                    score = self.perform_evaluation(
+                        purpose,
+                        tool,
+                        prompt,
+                        pred)
+                    scores.append(str(i+1))
+                prediction_score_pairs = zip(predictions, scores)
+                sorted_predictions = sorted(prediction_score_pairs, key=lambda x: x[1], reverse=True)
+                best_prediction, _ = sorted_predictions[0]
+                tool_input = best_prediction
+                
         action_template = \
         "Action Purpose: {purpose}\nAction: {tool}\nAction Input: {prompt}"""
 
@@ -169,10 +219,10 @@ class BaseGraphProgramInterpreter(BaseModel):
         attemps = 0
         while attemps < self.max_decision_attemp:
             decision_prompt = DECISION_TEMPLATE.format(
-                context="",
-                purpose=purpose,
-                question=question,
-                choice=choice)
+                context = "",
+                purpose = purpose,
+                question = question,
+                choice = choice)
             encoding = tiktoken.get_encoding("cl100k_base")
             num_tokens = len(encoding.encode(decision_prompt))
             context = self.working_memory.get_trace(self.fast_llm_max_token-num_tokens)
@@ -182,7 +232,7 @@ class BaseGraphProgramInterpreter(BaseModel):
                 question = question,
                 choice = choice)
             if self.debug:
-                print(result)
+                print("Decision:" +result)
             result = self.output_parser.parse(result)
             decision = result.split()[-1].upper()
             decision = decision.strip(".")
@@ -197,6 +247,45 @@ class BaseGraphProgramInterpreter(BaseModel):
         if self.post_decision_callback is not None:
             self.post_decision_callback(purpose, question, options, decision)
         return decision
+
+    def perform_evaluation(
+            self,
+            purpose: str,
+            tool: str,
+            prompt: str,
+            tool_input: str) -> float:
+        """Method to perform an evaluation of the tool's input inference"""
+        chain = LLMChain(llm=self.fast_llm, prompt=EVALUATION_PROMPT, verbose=self.debug)
+        attemps = 0
+        while attemps < self.max_evaluation_attemp:
+            evaluation_prompt = EVALUATION_TEMPLATE.format(
+                context = "",
+                purpose = purpose,
+                tool = tool,
+                prompt = prompt,
+                tool_input = tool_input)
+            encoding = tiktoken.get_encoding("cl100k_base")
+            num_tokens = len(encoding.encode(evaluation_prompt))
+            context = self.working_memory.get_trace(self.fast_llm_max_token-num_tokens)
+            result = chain.predict(
+                context = context,
+                purpose = purpose,
+                tool = tool,
+                prompt = prompt,
+                tool_input = tool_input)
+            result = self.output_parser.parse(result)
+            score = result.split()[-1].upper()
+            score = score.strip(".")
+            if self.debug:
+                print("Evaluation:" +result)
+            try:
+                return float(score)
+            except:
+                pass
+            attemps += 1
+        raise ValueError(
+            f"Failed to evaluate after {attemps} attemps."+
+            f" Got {result} should be a score between 0.0 and 1.0.")
 
     def validate_tool(self, name):
         """Method to validate the given tool"""

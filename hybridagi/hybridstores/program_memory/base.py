@@ -33,12 +33,17 @@ class BaseProgramMemory(BaseHybridStore):
             self,
             names: List[str],
             programs: List[str]):
+        try:
+            self.playground.delete()
+        except:
+            pass
         for idx, program in enumerate(programs):
-            program_name = names[idx]
-            if program_name == "main" or self.depends_on("main", program_name):
-                raise RuntimeError(
-                    f"Error while loading '{program_name}': "+\
-                    "Trying to modify a protected program")
+            program_name = names[idx].replace(".cypher", "")
+            if self.exists(program_name):
+                if program_name == "main" or self.depends_on("main", program_name):
+                    raise RuntimeError(
+                        f"Error while loading '{program_name}': "+\
+                        "Trying to modify a protected program")
             try:
                 self.playground.query(program)
             except Exception as err:
@@ -75,16 +80,15 @@ class BaseProgramMemory(BaseHybridStore):
                 'MATCH (p:Program) RETURN p.program AS program')
             for record in result:
                 subprogram = record[0]
-                if self.depends_on("main", subprogram):
+                if subprogram == "main" or self.depends_on("main", subprogram):
                     raise RuntimeError(
-                        f"Error while loading '{program_name}': "+\
-                        "Trying to call a protected program")
+                        f"Error while loading '{program_name}'. "+\
+                        "Trying to call a protected program '{subprogram}'. Try to remove it")
                 if not self.exists(subprogram):
                     raise RuntimeError(
                         f"Error while loading '{program_name}': "+\
-                        f"The sub-program '{subprogram}' do not exist. "+\
+                        f"The sub-program '{subprogram}' does not exist. "+\
                         "Please correct your program")
-            self.playground.delete()
 
     def add_programs(
             self,
@@ -99,9 +103,10 @@ class BaseProgramMemory(BaseHybridStore):
             program_name = names[idx]
             graph_program = self.create_graph(program_name)
             description = ""
-            for line in program.split():
+            for line in program.split("\n"):
                 if line.startswith("// @desc:"):
-                    description += line.replace("// @desc:", "")
+                    description = line.replace("// @desc:", "").strip()
+                    break
                 elif line.startswith("//"):
                     pass
                 else:
@@ -110,7 +115,6 @@ class BaseProgramMemory(BaseHybridStore):
                 descriptions.append(description)
             else:
                 descriptions.append(program)
-            
             try:
                 graph_program.delete()
             except Exception:
@@ -133,7 +137,7 @@ class BaseProgramMemory(BaseHybridStore):
                     'MERGE (p)-[:DEPENDS_ON]->(d)')
 
         indexes = self.add_texts(
-            programs,
+            texts = programs,
             ids = names,
             descriptions = descriptions)
         for idx in indexes:
