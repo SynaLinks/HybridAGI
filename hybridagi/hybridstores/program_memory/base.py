@@ -35,7 +35,7 @@ class BaseProgramMemory(BaseHybridStore):
             programs: List[str]):
         try:
             self.playground.delete()
-        except:
+        except Exception:
             pass
         for idx, program in enumerate(programs):
             program_name = names[idx].replace(".cypher", "")

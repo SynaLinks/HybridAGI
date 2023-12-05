@@ -173,7 +173,7 @@ class BaseGraphProgramInterpreter(BaseModel):
                         tool,
                         prompt,
                         pred)
-                    scores.append(str(i+1))
+                    scores.append(score)
                 prediction_score_pairs = zip(predictions, scores)
                 sorted_predictions = sorted(prediction_score_pairs, key=lambda x: x[1], reverse=True)
                 best_prediction, _ = sorted_predictions[0]
@@ -280,7 +280,7 @@ class BaseGraphProgramInterpreter(BaseModel):
                 print("Evaluation:" +result)
             try:
                 return float(score)
-            except:
+            except Exception:
                 pass
             attemps += 1
         raise ValueError(
