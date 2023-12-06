@@ -26,6 +26,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     current_node_stack: Iterable = deque()
     reasoners: List[BaseReasoner] = []
     max_decision_attemp: int = 5
+    max_evaluation_attemp: int = 5
     current_iteration:int = 0
     max_iteration: int = 50
     smart_llm_max_token: int = 4000
@@ -44,6 +45,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             smart_llm_max_token: int = 4000,
             fast_llm_max_token: int = 4000,
             max_decision_attemp:int = 5,
+            max_evaluation_attemp:int = 5,
             max_iteration:int = 50,
             verbose: bool = True,
             debug: bool = False,
@@ -132,6 +134,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             reasoners = reasoners,
             tools_map = tools_map,
             max_decision_attemp = max_decision_attemp,
+            max_evaluation_attemp = max_evaluation_attemp,
             max_iteration = max_iteration,
             verbose = verbose,
             debug = debug,
