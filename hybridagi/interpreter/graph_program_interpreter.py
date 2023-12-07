@@ -1,6 +1,5 @@
 """The graph program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
-import asyncio
 from collections import deque
 from typing import List, Optional, Iterable, Callable
 from colorama import Fore, Style
