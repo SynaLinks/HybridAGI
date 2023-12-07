@@ -1,5 +1,6 @@
 """The graph program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+import asyncio
 from collections import deque
 from typing import List, Optional, Iterable, Callable
 from colorama import Fore, Style
@@ -176,8 +177,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     def call_program_tool(self, program_name: str):
         program_name = program_name.strip().lower().replace(" ", "_")
         if self.program_memory.exists(program_name):
-            if program_name == "main" \
-                or self.program_memory.depends_on("main", program_name):
+            if self.program_memory.program_tester.is_protected(program_name):
                 return f"Error occured while calling '{program_name}': "+\
                     "Trying to call a protected program"
         else:
@@ -244,7 +244,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             return result[0][0]
         return None
 
-    def decide_next(self, node:Node) -> Node:
+    async def decide_next(self, node:Node) -> Node:
         """Method to make a decision"""
         purpose = node.properties["name"]
         question = node.properties["question"]
@@ -255,7 +255,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         for record in result:
             options.append(record[0])
 
-        decision = self.perform_decision(purpose, question, options)
+        decision = await self.perform_decision(purpose, question, options)
 
         if self.verbose:
             decision_template = \
@@ -270,7 +270,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         next_node = result[0][0]
         return next_node
 
-    def use_tool(self, node:Node):
+    async def use_tool(self, node:Node):
         """Method to use a tool"""
         purpose = node.properties["name"]
         tool_name = node.properties["tool"]
@@ -286,7 +286,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             nb_ranked_inferences = node.properties["ranked_inferences"]
             ranked_inferences = int(nb_ranked_inferences)
         
-        action = self.perform_action(
+        action = await self.perform_action(
             purpose,
             tool_name,
             tool_input_prompt,
@@ -299,7 +299,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.working_memory.update_trace(action)
         return self.get_next(self.get_current_node())
 
-    def run_step(self) -> Optional[Node]:
+    async def run_step(self) -> Optional[Node]:
         """Run a single step of the program"""
         current_node = self.get_current_node()
         next_node = None
@@ -309,9 +309,9 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if current_node.label == "Program":
             next_node = self.call_program(current_node)
         elif current_node.label == "Action":
-            next_node = self.use_tool(current_node)
+            next_node = await self.use_tool(current_node)
         elif current_node.label == "Decision":
-            next_node = self.decide_next(current_node)
+            next_node = await self.decide_next(current_node)
         elif current_node.label == "Control":
             if current_node.properties["name"] == "End":
                 next_node = self.end_current_program()
@@ -349,11 +349,11 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         starting_node = self.get_starting_node(self.program_name)
         self.current_node_stack.append(self.get_next(starting_node))
     
-    def run(self, objective: str):
+    async def run(self, objective: str):
         """Method to run the agent"""
         self.start(objective)
         while not self.finished():
-            self.run_step()
+            await self.run_step()
         if self.verbose:
             print(f"{Fore.GREEN}[!] Program Successfully Executed{Style.RESET_ALL}")
         return "Program Successfully Executed"

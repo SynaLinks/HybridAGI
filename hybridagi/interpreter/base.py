@@ -1,5 +1,6 @@
 """The base program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+import asyncio
 from typing import OrderedDict, List, Optional, Callable
 from pydantic.v1 import BaseModel
 from langchain.chains.llm import LLMChain
@@ -113,7 +114,7 @@ class BaseGraphProgramInterpreter(BaseModel):
         """Configuration for this pydantic object."""
         arbitrary_types_allowed = True
 
-    def predict_tool_input(
+    async def predict_tool_input(
             self,
             purpose: str,
             tool:str,
@@ -133,7 +134,7 @@ class BaseGraphProgramInterpreter(BaseModel):
             llm=self.smart_llm,
             prompt=TOOL_INPUT_PROMPT,
             verbose=self.debug)
-        prediction = chain.predict(
+        prediction = await chain.arun(
             context = context,
             purpose = purpose,
             tool = tool,
@@ -143,7 +144,38 @@ class BaseGraphProgramInterpreter(BaseModel):
             print(prediction)
         return prediction
 
-    def perform_action(
+    async def ranked_tool_input_prediction(
+            self,
+            purpose: str,
+            tool:str,
+            prompt: str,
+            ranked_inferences: int):
+        predictions = []
+        scores = []
+        
+        async def get_prediction():
+            prediction = await self.predict_tool_input(purpose, tool, prompt)
+            predictions.append(prediction)
+        
+        tasks = [get_prediction() for _ in range(ranked_inferences)]
+        await asyncio.gather(*tasks)
+
+        async def get_score(prediction):
+            prediction = await self.perform_evaluation(purpose, tool, prompt, prediction)
+            scores.append(prediction)
+        
+        tasks = [get_score(predictions[i]) for i in range(len(predictions))]
+        await asyncio.gather(*tasks)
+
+        prediction_score_pairs = zip(predictions, scores)
+        sorted_predictions = sorted(
+            prediction_score_pairs,
+            key=lambda x: x[1],
+            reverse=True)
+        best_prediction, _ = sorted_predictions[0]
+        return best_prediction
+
+    async def perform_action(
             self,
             purpose: str,
             tool:str,
@@ -161,24 +193,17 @@ class BaseGraphProgramInterpreter(BaseModel):
         else:
             tool_input = ""
             if ranked_inferences == 1:
-                tool_input = self.predict_tool_input(purpose, tool, prompt)
+                tool_input = await self.predict_tool_input(
+                        purpose,
+                        tool,
+                        prompt)
             else:
-                predictions = []
-                scores = []
-                for i in range(0, ranked_inferences):
-                    pred = self.predict_tool_input(purpose, tool, prompt)
-                    predictions.append(pred)
-                    score = self.perform_evaluation(
+                tool_input = await self.ranked_tool_input_prediction(
                         purpose,
                         tool,
                         prompt,
-                        pred)
-                    scores.append(score)
-                prediction_score_pairs = zip(predictions, scores)
-                sorted_predictions = sorted(prediction_score_pairs, key=lambda x: x[1], reverse=True)
-                best_prediction, _ = sorted_predictions[0]
-                tool_input = best_prediction
-                
+                        ranked_inferences)
+
         action_template = \
         "Action Purpose: {purpose}\nAction: {tool}\nAction Input: {prompt}"""
 
@@ -205,7 +230,7 @@ class BaseGraphProgramInterpreter(BaseModel):
             self.post_action_callback(purpose, tool, tool_input, observation)
         return action
 
-    def perform_decision(
+    async def perform_decision(
             self,
             purpose:str, 
             question: str,
@@ -226,7 +251,7 @@ class BaseGraphProgramInterpreter(BaseModel):
             encoding = tiktoken.get_encoding("cl100k_base")
             num_tokens = len(encoding.encode(decision_prompt))
             context = self.working_memory.get_trace(self.fast_llm_max_token-num_tokens)
-            result = chain.predict(
+            result = await chain.arun(
                 context = context,
                 purpose = purpose,
                 question = question,
@@ -248,7 +273,7 @@ class BaseGraphProgramInterpreter(BaseModel):
             self.post_decision_callback(purpose, question, options, decision)
         return decision
 
-    def perform_evaluation(
+    async def perform_evaluation(
             self,
             purpose: str,
             tool: str,
@@ -267,7 +292,7 @@ class BaseGraphProgramInterpreter(BaseModel):
             encoding = tiktoken.get_encoding("cl100k_base")
             num_tokens = len(encoding.encode(evaluation_prompt))
             context = self.working_memory.get_trace(self.fast_llm_max_token-num_tokens)
-            result = chain.predict(
+            result = await chain.arun(
                 context = context,
                 purpose = purpose,
                 tool = tool,

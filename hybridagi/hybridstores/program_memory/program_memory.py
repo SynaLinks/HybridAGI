@@ -1,9 +1,13 @@
+"""The program memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import os
 from typing import List, Optional, Callable, Any
 from langchain.schema.embeddings import Embeddings
 from .base import BaseProgramMemory, _default_norm
+from .program_tester import ProgramTester
 
 class ProgramMemory(BaseProgramMemory):
+    program_tester: ProgramTester
     """The Program Memory"""
     def __init__(
             self,
@@ -21,6 +25,10 @@ class ProgramMemory(BaseProgramMemory):
             embedding_dim = embedding_dim,
             normalize = normalize,
             verbose = verbose)
+        playground = self.create_graph("playground")
+        self.program_tester = ProgramTester(
+            program_memory = self,
+            playground = playground)
 
     def load_folders(
             self,

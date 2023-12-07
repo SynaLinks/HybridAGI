@@ -1,5 +1,6 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+import asyncio
 import numpy as np
 import os
 from colorama import Fore, Style
@@ -183,7 +184,7 @@ f"""{Fore.YELLOW}[*] Please choose one of the following option:
 3 - Load a folder into the hybrid database
 4 - Start HybridAGI (programs must have been loaded){Style.RESET_ALL}"""
 
-def main():
+async def main():
     print(BANNER)
     while True:
         print(MENU)
@@ -201,7 +202,7 @@ def main():
         elif choice == 3:
             load_folder()
         elif choice == 4:
-            run_agent()
+            await run_agent()
 
 def clean_database():
     print(f"{Fore.GREEN}[*] Cleaning the hybrid database...{Style.RESET_ALL}")
@@ -240,15 +241,15 @@ def load_programs():
     program_memory.load_folders([cfg.library_directory])
     print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 
-def run_agent():
+async def run_agent():
     message = "Please, write your objective then press [Enter]"
     print(f"{Fore.GREEN}[*] {message}{Style.RESET_ALL}")
     objective = input("> ")
     try:
-        result = interpreter.run(objective)
+        result = await interpreter.run(objective)
         print(f"{Fore.YELLOW}[*] {result}{Style.RESET_ALL}")
     except Exception as err:
         print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

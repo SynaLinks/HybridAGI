@@ -48,7 +48,7 @@ class LoadProgramsTool(BaseTool):
             run_manager: Optional[CallbackManagerForToolRun] = None
         ) -> str:
         filenames, contents, _ = self.file_parser.parse(query)
-        self.program_memory.verify_programs(
+        self.program_memory.program_tester.verify_programs(
             filenames,
             contents
         )

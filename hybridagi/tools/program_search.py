@@ -25,8 +25,7 @@ class ProgramSearchTool(BaseTool):
         super().__init__(
             name = name,
             description = description,
-            program_memory = program_memory
-        )
+            program_memory = program_memory)
 
     class Config:
         """Configuration for this pydantic object."""
@@ -39,15 +38,14 @@ class ProgramSearchTool(BaseTool):
         result_string = "Top-10 most relevant implemented programs:"
         n = 0
         for program_name in result:
-            if program_name != "main":
-                if not self.program_memory.depends_on("main", program_name):
-                    description = \
-                        self.program_memory.get_content_description(program_name)
-                    if description:
-                        result_string += f"\n- {program_name}: {description}"
-                    else:
-                        result_string += f"\n- {program_name}"
-                    n += 1
+            if not self.program_memory.program_tester.is_protected(program_name):
+                description = \
+                    self.program_memory.get_content_description(program_name)
+                if description:
+                    result_string += f"\n- {program_name}: {description}"
+                else:
+                    result_string += f"\n- {program_name}"
+                n += 1
             if n >= 10:
                 break
         return result_string

@@ -1,3 +1,4 @@
+"""The base program memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import List, Optional, Callable, Any
 from hybridagikb import BaseHybridStore
@@ -25,70 +26,6 @@ class BaseProgramMemory(BaseHybridStore):
             indexed_label = "Content",
             normalize = normalize,
             verbose = verbose)
-        self.embedding = embedding
-        self.embedding_dim = embedding_dim
-        self.playground = self.create_graph("testing_playground")
-
-    def verify_programs(
-            self,
-            names: List[str],
-            programs: List[str]):
-        try:
-            self.playground.delete()
-        except Exception:
-            pass
-        for idx, program in enumerate(programs):
-            program_name = names[idx].replace(".cypher", "")
-            if self.exists(program_name):
-                if program_name == "main" or self.depends_on("main", program_name):
-                    raise RuntimeError(
-                        f"Error while loading '{program_name}': "+\
-                        "Trying to modify a protected program")
-            try:
-                self.playground.query(program)
-            except Exception as err:
-                raise RuntimeError(
-                    f"Error while loading '{program_name}': {err}. "+\
-                    "Please correct your program")
-            result = self.playground.query(
-                'MATCH (n:Control {name:"Start"}) RETURN n')
-            if len(result) == 0:
-                raise RuntimeError(
-                    f"Error while loading '{program_name}': "+\
-                    "No starting node detected, please "+\
-                    "make sure to start your program correctly")
-            if len(result) > 1:
-                raise RuntimeError(
-                    f"Error while loading '{program_name}': "+\
-                    "Multiple entry point detected, "+
-                    "please correct your programs.")
-
-            result = self.playground.query(
-                'MATCH (n:Control {name:"End"}) RETURN n')
-            if len(result) == 0:
-                raise RuntimeError(
-                    f"Error while loading '{program_name}': "+\
-                    "No ending node detected, please "+\
-                    "make sure to end your program correctly")
-            if len(result) > 1:
-                raise RuntimeError(
-                    f"Error while loading '{program_name}': "+\
-                    "Multiple ending point detected, "+
-                    "please correct your programs.")
-                
-            result = self.playground.query(
-                'MATCH (p:Program) RETURN p.program AS program')
-            for record in result:
-                subprogram = record[0]
-                if subprogram == "main" or self.depends_on("main", subprogram):
-                    raise RuntimeError(
-                        f"Error while loading '{program_name}'. "+\
-                        "Trying to call a protected program '{subprogram}'. Try to remove it")
-                if not self.exists(subprogram):
-                    raise RuntimeError(
-                        f"Error while loading '{program_name}': "+\
-                        f"The sub-program '{subprogram}' does not exist. "+\
-                        "Please correct your program")
 
     def add_programs(
             self,
