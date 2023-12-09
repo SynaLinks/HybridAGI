@@ -37,7 +37,7 @@ class BaseProgramMemory(BaseHybridStore):
         descriptions = []
         assert(len(programs) == len(names))
         for idx, program in enumerate(programs):
-            program_name = names[idx]
+            program_name = names[idx].replace(".cypher", "")
             graph_program = self.create_graph(program_name)
             description = ""
             for line in program.split("\n"):
