@@ -55,7 +55,11 @@ class LoadProgramsTool(BaseTool):
         self.program_memory.add_programs(
             filenames,
             contents)
-        return f"Successfully loaded {len(filenames)} programs"
+        if len(filenames) == 1:
+            program_name = filenames[0].replace(".cypher", "")
+            return f"Successfully loaded '{program_name}' program"
+        else:
+            return f"Successfully loaded {len(filenames)} programs"
 
     def _arun(
             self,
