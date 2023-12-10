@@ -1,61 +1,8 @@
 import asyncio
-from typing import Dict, Optional, Callable
-from ..hybridstores.trace_memory.trace_memory import TraceMemory
-from langchain.base_language import BaseLanguageModel
-from langchain.tools import BaseTool
 from .evaluation_reasoner import EvaluationReasoner
 
 class RankedActionReasoner(EvaluationReasoner):
     """LLM reasoner that use ranked inferences to perform better"""
-
-    # def __init__(
-    #         self,
-    #         trace_memory: TraceMemory,
-    #         smart_llm: BaseLanguageModel,
-    #         fast_llm: BaseLanguageModel,
-    #         smart_llm_max_token: int,
-    #         fast_llm_max_token: int,
-    #         tools_map: Dict[str, BaseTool] = {},
-    #         pre_action_callback: Optional[
-    #             Callable[
-    #                 [str, str, str],
-    #                 None
-    #             ]
-    #         ] = None,
-    #         post_action_callback: Optional[
-    #             Callable[
-    #                 [str, str, str, str],
-    #                 None
-    #             ]
-    #         ] = None,
-    #         max_evaluation_attemps: int = 5,
-    #         debug: bool = False,
-    #         verbose: bool = False,
-    #     ):
-    #     ActionReasoner.__init__(
-    #         self,
-    #         trace_memory = trace_memory,
-    #         smart_llm = smart_llm,
-    #         fast_llm = fast_llm,
-    #         smart_llm_max_token = smart_llm_max_token,
-    #         fast_llm_max_token = fast_llm_max_token,
-    #         tools_map = tools_map,
-    #         pre_action_callback = pre_action_callback,
-    #         post_action_callback = post_action_callback,
-    #         debug = debug,
-    #         verbose = verbose,
-    #     )
-    #     EvaluationReasoner.__init__(
-    #         self,
-    #         trace_memory = trace_memory,
-    #         smart_llm = smart_llm,
-    #         fast_llm = fast_llm,
-    #         smart_llm_max_token = smart_llm_max_token,
-    #         fast_llm_max_token = fast_llm_max_token,
-    #         max_evaluation_attemps = max_evaluation_attemps,
-    #         debug = debug,
-    #         verbose = verbose,
-    #     )
     
     def ranked_tool_input_prediction(
             self,

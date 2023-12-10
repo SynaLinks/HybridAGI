@@ -1,6 +1,5 @@
 from .base import BaseTraceMemory
 from typing import Optional, Callable, Any
-from pydantic.v1 import Extra
 from langchain.schema.embeddings import Embeddings
 from .base import _default_norm
 
