@@ -2,9 +2,9 @@ from .base import BaseTraceMemory
 from typing import Optional, Callable, Any
 from langchain.schema.embeddings import Embeddings
 from .base import _default_norm
-from pydantic.v1 import Extra
 
 class TraceMemory(BaseTraceMemory):
+    """The trace memory"""
 
     def __init__(
             self,
