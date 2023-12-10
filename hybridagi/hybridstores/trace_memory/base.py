@@ -3,7 +3,6 @@
 import tiktoken
 from collections import deque
 from typing import Iterable, Optional, Callable, Any
-from pydantic.v1 import BaseModel
 from langchain.schema.embeddings import Embeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 

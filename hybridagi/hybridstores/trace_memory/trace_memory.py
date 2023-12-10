@@ -6,11 +6,6 @@ from pydantic.v1 import Extra
 
 class TraceMemory(BaseTraceMemory):
 
-    class Config:
-        """Configuration for this pydantic object."""
-        extra = Extra.forbid
-        arbitrary_types_allowed = True
-
     def __init__(
             self,
             index_name: str,
