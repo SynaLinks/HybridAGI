@@ -12,16 +12,16 @@ class BaseProgramMemory(BaseHybridStore):
             self,
             index_name: str,
             redis_url: str,
-            embedding: Embeddings,
-            embedding_dim: int,
+            embeddings: Embeddings,
+            embeddings_dim: int,
             normalize: Optional[Callable[[Any], Any]] = _default_norm,
             verbose: bool = True):
         """The base program memory constructor"""
         super().__init__(
             index_name = index_name,
             redis_url = redis_url,
-            embedding = embedding,
-            embedding_dim = embedding_dim,
+            embeddings = embeddings,
+            embeddings_dim = embeddings_dim,
             graph_index = "program_memory",
             indexed_label = "Content",
             normalize = normalize,

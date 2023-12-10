@@ -10,27 +10,22 @@ from langchain.tools import Tool
 from hybridagi.config import Config
 
 from hybridagikb import FileSystem
+from hybridagi import (
+    ProgramMemory,
+    TraceMemory,
+    GraphProgramInterpreter,
+)
 
-from hybridagikb.tools import (
-    ShellTool,
-    WriteFilesTool,
-    AppendFilesTool,
-    ReadFileTool,
-    UploadTool,
-    ContentSearchTool)
-
-from hybridagi import ProgramMemory
+from hybridagi.toolkits import (
+    FileSystemToolKit,
+)
 
 from hybridagi.tools import (
     AskUserTool,
-    SpeakTool,
-    LoadProgramsTool,
-    ProgramSearchTool,
-    ReadProgramTool)
+    SpeakTool
+)
 
-from langchain.tools import DuckDuckGoSearchResults
-
-from hybridagi import GraphProgramInterpreter
+from langchain.tools import DuckDuckGoSearchRun
 
 cfg = Config()
 
@@ -41,8 +36,8 @@ if cfg.private_mode:
     from langchain.embeddings import GPT4AllEmbeddings
     from langchain.llms import HuggingFaceTextGenInference
     
-    embedding = GPT4AllEmbeddings()
-    embedding_dim = 384
+    embeddings = GPT4AllEmbeddings()
+    embeddings_dim = 384
 
     smart_llm = HuggingFaceTextGenInference(
         inference_server_url=cfg.local_model_url,
@@ -58,8 +53,8 @@ else:
     from langchain.embeddings import OpenAIEmbeddings
     from langchain.chat_models import ChatOpenAI
     
-    embedding = OpenAIEmbeddings()
-    embedding_dim = 1536
+    embeddings = OpenAIEmbeddings()
+    embeddings_dim = 1536
     
     smart_llm = ChatOpenAI(
         temperature = cfg.temperature,
@@ -71,35 +66,30 @@ else:
 filesystem = FileSystem(
     redis_url = cfg.redis_url,
     index_name = cfg.memory_index,
-    embedding = embedding,
-    embedding_dim = embedding_dim,
+    embeddings = embeddings,
+    embeddings_dim = embeddings_dim,
     normalize = _normalize_vector)
 filesystem.initialize()
 
 program_memory = ProgramMemory(
     redis_url = cfg.redis_url,
     index_name = cfg.memory_index,
-    embedding = embedding,
-    embedding_dim = embedding_dim,
+    embeddings = embeddings,
+    embeddings_dim = embeddings_dim,
     normalize = _normalize_vector)
 program_memory.initialize()
 
+trace_memory = TraceMemory(
+    redis_url = cfg.redis_url,
+    index_name = cfg.memory_index,
+    embeddings = embeddings,
+    embeddings_dim = embeddings_dim,
+    normalize = _normalize_vector)
+trace_memory.initialize()
+
 ask_user = AskUserTool()
 speak = SpeakTool()
-
-load_programs = LoadProgramsTool(program_memory=program_memory)
-program_search = ProgramSearchTool(program_memory=program_memory)
-read_program = ReadProgramTool(program_memory=program_memory)
-
-shell_tool = ShellTool(filesystem=filesystem)
-write_files = WriteFilesTool(filesystem=filesystem)
-append_files = AppendFilesTool(filesystem=filesystem)
-read_file = ReadFileTool(filesystem=filesystem)
-upload = UploadTool(
-    filesystem = filesystem,
-    downloads_directory = cfg.downloads_directory)
-content_search = ContentSearchTool(filesystem=filesystem)
-internet_search = DuckDuckGoSearchResults()
+internet_search = DuckDuckGoSearchRun()
 
 tools = [
     Tool(
@@ -111,56 +101,30 @@ tools = [
         func=speak.run,
         description=speak.description),
     Tool(
-        name=write_files.name,
-        func=write_files.run,
-        description=write_files.description),
-    Tool(
-        name=append_files.name,
-        func=append_files.run,
-        description=append_files.description),
-    Tool(
-        name=read_file.name,
-        func=read_file.run,
-        description=read_file.description),
-    Tool(
-        name=upload.name,
-        func=upload.run,
-        description=upload.description),
-    Tool(
-        name=shell_tool.name,
-        func=shell_tool.run,
-        description=shell_tool.description),
-    Tool(
-        name=content_search.name,
-        func=content_search.run,
-        description=content_search.description),
-    Tool(
-        name=load_programs.name,
-        func=load_programs.run,
-        description=load_programs.description),
-    Tool(
-        name=program_search.name,
-        func=program_search.run,
-        description=program_search.description),
-    Tool(
-        name=read_program.name,
-        func=read_program.run,
-        description=read_program.description),
-    Tool(
         name="InternetSearch",
         func=internet_search.run,
-        description=internet_search.description)
+        description=internet_search.description
+    )
+]
+
+toolkits = [
+    FileSystemToolKit(
+        filesystem = filesystem,
+        downloads_directory = cfg.downloads_directory,
+    ),
 ]
 
 interpreter = GraphProgramInterpreter(
     program_memory = program_memory,
+    trace_memory = trace_memory,
     smart_llm = smart_llm,
     fast_llm = fast_llm,
     tools = tools,
+    toolkits = toolkits,
     smart_llm_max_token = cfg.smart_llm_max_token,
     fast_llm_max_token = cfg.fast_llm_max_token,
-    max_decision_attemp = cfg.max_decision_attemp,
-    max_evaluation_attemp = cfg.max_evaluation_attemp,
+    max_decision_attemps = cfg.max_decision_attemps,
+    max_evaluation_attemps = cfg.max_evaluation_attemps,
     max_iteration = cfg.max_iteration,
     verbose = cfg.verbose,
     debug = cfg.debug_mode
@@ -246,7 +210,7 @@ async def run_agent():
     print(f"{Fore.GREEN}[*] {message}{Style.RESET_ALL}")
     objective = input("> ")
     try:
-        result = await interpreter.run(objective)
+        result = await interpreter.async_run(objective)
         print(f"{Fore.YELLOW}[*] {result}{Style.RESET_ALL}")
     except Exception as err:
         print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")

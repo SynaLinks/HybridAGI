@@ -3,7 +3,7 @@
 import re
 from langchain.schema import BaseOutputParser
 
-class InterpreterOutputParser(BaseOutputParser):
+class ReasonerOutputParser(BaseOutputParser):
     """
     The Output Parser for the program interpreter
     """

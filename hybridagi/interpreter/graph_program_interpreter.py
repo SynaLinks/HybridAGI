@@ -1,32 +1,40 @@
 """The graph program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from collections import deque
-from typing import List, Optional, Iterable, Callable
+from typing import Dict, List, Optional, Iterable, Callable
 from colorama import Fore, Style
 
 from redisgraph import Node
-
 from hybridagikb import KnowledgeGraph
 
 from langchain.tools import BaseTool, Tool
 from langchain.base_language import BaseLanguageModel
+
 from ..hybridstores.program_memory.program_memory import ProgramMemory
-from ..reasoners.base import BaseReasoner
-from .base import BaseGraphProgramInterpreter
+from ..hybridstores.trace_memory.trace_memory import TraceMemory
+
+from ..toolkits.base import BaseToolKit
+from ..toolkits.trace_memory_toolkit import TraceMemoryToolKit
+from ..toolkits.program_memory_toolkit import ProgramMemoryToolKit
+
+from ..reasoners.ranked_action_reasoner import RankedActionReasoner
 
 COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]
 
-class GraphProgramInterpreter(BaseGraphProgramInterpreter):
+class GraphProgramInterpreter(RankedActionReasoner):
     """LLM based interpreter for graph programs"""
     program_memory: ProgramMemory
+    trace_memory: TraceMemory
     smart_llm: BaseLanguageModel
     fast_llm: BaseLanguageModel
     program_name: str = ""
     program_stack: Iterable = deque()
     current_node_stack: Iterable = deque()
-    reasoners: List[BaseReasoner] = []
-    max_decision_attemp: int = 5
-    max_evaluation_attemp: int = 5
+    tools: List[BaseTool] = []
+    toolkits: List[BaseToolKit] = []
+    tools_map: Dict[str, BaseTool] = {}
+    max_decision_attemps: int = 5
+    max_evaluation_attemps: int = 5
     current_iteration:int = 0
     max_iteration: int = 50
     smart_llm_max_token: int = 4000
@@ -37,15 +45,16 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
     def __init__(
             self,
             program_memory: ProgramMemory,
+            trace_memory: TraceMemory,
             smart_llm: BaseLanguageModel,
             fast_llm: BaseLanguageModel,
             program_name: str = "main",
             tools: List[BaseTool] = [],
-            reasoners: List[BaseReasoner] =  [],
+            toolkits: List[BaseToolKit] =  [],
             smart_llm_max_token: int = 4000,
             fast_llm_max_token: int = 4000,
-            max_decision_attemp:int = 5,
-            max_evaluation_attemp:int = 5,
+            max_decision_attemps:int = 5,
+            max_evaluation_attemps:int = 5,
             max_iteration:int = 50,
             verbose: bool = True,
             debug: bool = False,
@@ -66,59 +75,41 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
                 None
             ]] = None):
 
-        update_objective_tool = Tool(
-            name = "UpdateObjective",
-            description = \
-    """
-    Usefull to update your long-term objective
-    The Input should be the new objective
-    """,
-            func=self.update_objective_tool)
+        trace_memory_toolkit = TraceMemoryToolKit(
+            trace_memory = trace_memory,
+        )
 
-        update_note_tool = Tool(
-            name = "UpdateNote",
-            description = \
-    """
-    Usefull to update your notes
-    The Input should be the new note
-    """,
-            func=self.update_note_tool)
+        program_memory_toolkit = ProgramMemoryToolKit(
+            program_memory = program_memory,
+        )
 
-        clear_trace_tool = Tool(
-            name = "ClearTrace",
-            description = \
-    """
-    Usefull to clean up the working memory
-    No Input needed (should be N/A)
-    """,
-            func=self.clear_trace_tool)
+        toolkits.append(trace_memory_toolkit)
+        toolkits.append(program_memory_toolkit)
 
-        revert_trace_tool = Tool(
-            name = "RevertTrace",
-            description = \
-    """
-    Usefull to correct your last actions
-    The Input should be the number of steps to revert
-    """,
-            func=self.revert_trace_tool)
+        predict_tool = Tool(
+            name = "Predict",
+            description = "Usefull for intermediate reasoning steps."+\
+                "The Input should be the Prompt used.",
+            func=self.predict_tool)
 
         call_program_tool = Tool(
             name = "CallProgram",
-            description = \
-    """
-    Usefull to call a subprogram dynamically
-    The Input should be the name of the program
-    """,
+            description = "Usefull to call a subprogram dynamically. "+\
+                "The Input should be the name of the program",
             func=self.call_program_tool)
 
-        tools.append(update_objective_tool)
-        tools.append(update_note_tool)
-        tools.append(revert_trace_tool)
-        tools.append(call_program_tool)
-        tools.append(clear_trace_tool)
+        plannify_tool = Tool(
+            name = "Plannify",
+            description = "Usefull to plan a workflow of programs. "+\
+                "The Input should be the Cypher program to execute.",
+            func=self.plannify_tool)
 
-        for reasoner in reasoners:
-            tools += reasoner.tools
+        tools.append(predict_tool)
+        tools.append(call_program_tool)
+        tools.append(plannify_tool)
+
+        for toolkit in toolkits:
+            tools += toolkit.tools
 
         tools_map = {}
         for tool in tools:
@@ -126,22 +117,48 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
 
         super().__init__(
             program_memory = program_memory,
+            trace_memory = trace_memory,
             smart_llm = smart_llm,
             fast_llm = fast_llm,
             smart_llm_max_token = smart_llm_max_token,
             fast_llm_max_token = fast_llm_max_token,
             program_name = program_name,
-            reasoners = reasoners,
+            tools = tools,
+            toolkits = toolkits,
             tools_map = tools_map,
-            max_decision_attemp = max_decision_attemp,
-            max_evaluation_attemp = max_evaluation_attemp,
+            max_decision_attemps = max_decision_attemps,
+            max_evaluation_attemps = max_evaluation_attemps,
             max_iteration = max_iteration,
             verbose = verbose,
             debug = debug,
             pre_decision_callback = pre_decision_callback,
             post_decision_callback = post_decision_callback,
             pre_action_callback = pre_action_callback,
-            post_action_callback = post_action_callback)
+            post_action_callback = post_action_callback,
+        )
+    
+    def predict_tool(self, prediction: str):
+        return prediction
+
+    def call_program_tool(self, program_name: str):
+        self.call_program_by_name(program_name)
+        return f"Successfully called '{program_name}' program"
+
+    def plannify_tool(self, program: str):
+        file_parser = FileOutputParser()
+        filenames, contents, _ = file_parser.parse(program)
+        program_name = filenames[0].replace(".cypher", "")
+        if len(filenames) > 1:
+            return f"Error occured while loading '{program_name}': "+\
+                "More than one Cypher program detected"
+        self.program_memory.program_tester.verify_programs(
+            filenames,
+            contents)
+        self.program_memory.add_programs(
+            filenames,
+            contents)
+        self.call_program_by_name(program_name)
+        return f"Successfully planned '{program_name}'"
 
     def get_starting_node(self, program_name: str):
         program = self.program_memory.create_graph(program_name)
@@ -156,24 +173,8 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         starting_node = result[0][0]
         return starting_node
 
-    def update_objective_tool(self, objective: str):
-        self.working_memory.update_objective(objective)
-        return "Objective sucessfully updated"
-
-    def update_note_tool(self, note: str):
-        self.working_memory.update_note(note)
-        return "Note sucessfully updated"
-
-    def revert_trace_tool(self, n_steps: str):
-        n = int(n_steps)
-        self.working_memory.revert(n)
-        return f"Successfully reverted {n} steps"
-
-    def clear_trace_tool(self, _):
-        self.working_memory.clear()
-        return "Working memory cleaned sucessfully"
-
-    def call_program_tool(self, program_name: str):
+    def call_program_by_name(self, program_name: str):
+        program_name = program_name.replace(".cypher", "")
         program_name = program_name.strip().lower().replace(" ", "_")
         if self.program_memory.exists(program_name):
             if self.program_memory.program_tester.is_protected(program_name):
@@ -187,7 +188,6 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.program_stack.append(program)
         starting_node = self.get_starting_node(program_name)
         self.current_node_stack.append(starting_node)
-        return f"Successfully called '{program_name}' program"
 
     def get_current_program(self) -> Optional[KnowledgeGraph]:
         """Method to retreive the current program from the stack"""
@@ -206,11 +206,11 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if len(self.current_node_stack) > 0:
             self.current_node_stack[-1] = node
 
-    def call_program(self, node: Node):
+    def call_program_node(self, node: Node):
         """Method to call a program"""
         purpose = node.properties["name"]
         program_name = node.properties["program"]
-        self.working_memory.update_trace(
+        self.trace_memory.update_trace(
             f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}"
         )
         if self.verbose:
@@ -229,7 +229,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         self.current_node_stack.pop()
         if ending_program is not None:
             ending_program_name = ending_program.name
-            self.working_memory.update_trace(f"End Sub-Program: {ending_program_name}")
+            self.trace_memory.update_trace(f"End Sub-Program: {ending_program_name}")
             if self.get_current_node() is not None:
                 return self.get_next(self.get_current_node())
         return None
@@ -243,7 +243,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             return result[0][0]
         return None
 
-    async def decide_next(self, node:Node) -> Node:
+    def decide_next(self, node:Node) -> Node:
         """Method to make a decision"""
         purpose = node.properties["name"]
         question = node.properties["question"]
@@ -254,7 +254,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         for record in result:
             options.append(record[0])
 
-        decision = await self.perform_decision(purpose, question, options)
+        decision = self.perform_decision(purpose, question, options)
 
         if self.verbose:
             decision_template = \
@@ -269,7 +269,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         next_node = result[0][0]
         return next_node
 
-    async def use_tool(self, node:Node):
+    def use_tool(self, node:Node) -> Node:
         """Method to use a tool"""
         purpose = node.properties["name"]
         tool_name = node.properties["tool"]
@@ -285,7 +285,7 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
             nb_ranked_inferences = node.properties["ranked_inferences"]
             ranked_inferences = int(nb_ranked_inferences)
         
-        action = await self.perform_action(
+        action = self.perform_action(
             purpose,
             tool_name,
             tool_input_prompt,
@@ -295,10 +295,10 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if self.verbose:
             print(COLORS[self.current_iteration%2])
             print(f"{action}{Style.RESET_ALL}")
-        self.working_memory.update_trace(action)
+        self.trace_memory.update_trace(action)
         return self.get_next(self.get_current_node())
 
-    async def run_step(self) -> Optional[Node]:
+    def run_step(self) -> Optional[Node]:
         """Run a single step of the program"""
         current_node = self.get_current_node()
         next_node = None
@@ -306,11 +306,95 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         if self.current_iteration > self.max_iteration:
             raise RuntimeError("Program failed after reaching max iteration")
         if current_node.label == "Program":
-            next_node = self.call_program(current_node)
+            next_node = self.call_program_node(current_node)
         elif current_node.label == "Action":
-            next_node = await self.use_tool(current_node)
+            next_node = self.use_tool(current_node)
         elif current_node.label == "Decision":
-            next_node = await self.decide_next(current_node)
+            next_node = self.decide_next(current_node)
+        elif current_node.label == "Control":
+            if current_node.properties["name"] == "End":
+                next_node = self.end_current_program()
+            else:
+                raise RuntimeError(
+                    "Invalid name for control node."+
+                    " Please verify your programs using RedisInsight.")
+        else:
+            node_name = current_node.properties["name"]
+            raise RuntimeError(
+                f"Invalid label for node '{node_name}'."+
+                " Please verify your programs using RedisInsight.")
+        if next_node is not None:
+            self.set_current_node(next_node)
+        return next_node
+
+    async def async_decide_next(self, node:Node) -> Node:
+        """Method to make a decision"""
+        purpose = node.properties["name"]
+        question = node.properties["question"]
+
+        options = []
+        result = self.get_current_program().query(
+            'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)')
+        for record in result:
+            options.append(record[0])
+
+        decision = await self.async_perform_decision(purpose, question, options)
+
+        if self.verbose:
+            decision_template = \
+            f"Decision Purpose: {purpose}" + \
+            f"\nDecision: {question}" + \
+            f"\nDecision Answer: {decision}"
+            print(COLORS[self.current_iteration%2])
+            print(f"{decision_template}{Style.RESET_ALL}")
+
+        result = self.get_current_program().query(
+            'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
+        next_node = result[0][0]
+        return next_node
+
+    async def async_use_tool(self, node:Node) -> Node:
+        """Method to use a tool"""
+        purpose = node.properties["name"]
+        tool_name = node.properties["tool"]
+        tool_input_prompt = node.properties["prompt"]
+
+        disable_inference = False
+        if "disable_inference" in node.properties:
+            disable = node.properties["disable_inference"]
+            disable_inference = (disable.lower() == "true")
+
+        ranked_inferences = 1
+        if "ranked_inferences" in node.properties:
+            nb_ranked_inferences = node.properties["ranked_inferences"]
+            ranked_inferences = int(nb_ranked_inferences)
+        
+        action = await self.async_perform_action(
+            purpose,
+            tool_name,
+            tool_input_prompt,
+            disable_inference = disable_inference,
+            ranked_inferences = ranked_inferences)
+        
+        if self.verbose:
+            print(COLORS[self.current_iteration%2])
+            print(f"{action}{Style.RESET_ALL}")
+        self.trace_memory.update_trace(action)
+        return self.get_next(self.get_current_node())
+
+    async def async_run_step(self) -> Optional[Node]:
+        """Run a single step of the program"""
+        current_node = self.get_current_node()
+        next_node = None
+        self.current_iteration += 1
+        if self.current_iteration > self.max_iteration:
+            raise RuntimeError("Program failed after reaching max iteration")
+        if current_node.label == "Program":
+            next_node = self.call_program_node(current_node)
+        elif current_node.label == "Action":
+            next_node = await self.async_use_tool(current_node)
+        elif current_node.label == "Decision":
+            next_node = await self.async_decide_next(current_node)
         elif current_node.label == "Control":
             if current_node.properties["name"] == "End":
                 next_node = self.end_current_program()
@@ -335,24 +419,33 @@ class GraphProgramInterpreter(BaseGraphProgramInterpreter):
         """Stop the agent"""
         self.current_node_stack = deque()
         self.program_stack = deque()
-        self.working_memory.clear()
-        self.working_memory.update_objective("N/A")
+        self.trace_memory.clear()
+        self.trace_memory.update_objective("N/A")
 
     def start(self, objective: str):
         """Start the agent"""
-        self.working_memory.update_objective(objective)
+        self.trace_memory.update_objective(objective)
         self.current_iteration = 0
-        self.working_memory.clear()
+        self.trace_memory.clear()
         program = self.program_memory.create_graph(self.program_name)
         self.program_stack.append(program)
         starting_node = self.get_starting_node(self.program_name)
         self.current_node_stack.append(self.get_next(starting_node))
     
-    async def run(self, objective: str):
+    def run(self, objective: str):
         """Method to run the agent"""
         self.start(objective)
         while not self.finished():
-            await self.run_step()
+            self.run_step()
+        if self.verbose:
+            print(f"{Fore.GREEN}[!] Program Successfully Executed{Style.RESET_ALL}")
+        return "Program Successfully Executed"
+    
+    async def async_run(self, objective: str):
+        """Method to run the agent"""
+        self.start(objective)
+        while not self.finished():
+            await self.async_run_step()
         if self.verbose:
             print(f"{Fore.GREEN}[!] Program Successfully Executed{Style.RESET_ALL}")
         return "Program Successfully Executed"

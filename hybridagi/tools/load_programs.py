@@ -66,4 +66,4 @@ class LoadProgramsTool(BaseTool):
             query:str,
             run_manager: Optional[AsyncCallbackManagerForToolRun] = None
         ) -> str:
-        raise NotImplementedError("LoadPrograms does not support async")
+        return self._run(query)

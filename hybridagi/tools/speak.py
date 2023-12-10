@@ -29,4 +29,4 @@ class SpeakTool(BaseTool):
             run_manager: Optional[AsyncCallbackManagerForToolRun] = None
         ) -> str:
         """Use the tool asynchronously."""
-        raise NotImplementedError("Speak does not support async")
+        return self._run(query)

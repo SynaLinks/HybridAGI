@@ -5,6 +5,14 @@ from typing import List
 from .base import BaseProgramMemory
 from hybridagikb import KnowledgeGraph
 
+RESERVED_NAMES = [
+    "main",
+    "playground",
+    "filesystem",
+    "program_memory",
+    "trace_memory",
+]
+
 class ProgramTester(BaseModel):
     """The class to make some verification to graph programs"""
     program_memory: BaseProgramMemory
@@ -16,7 +24,7 @@ class ProgramTester(BaseModel):
         arbitrary_types_allowed = True
 
     def is_protected(self, program_name: str):
-        if program_name == "main" or program_name == "playground":
+        if program_name in RESERVED_NAMES:
             return True
         else:
             if self.program_memory.depends_on("main", program_name):
