@@ -77,9 +77,10 @@ class EvaluationReasoner(ActionReasoner):
 
     def perform_evaluation(
             self,
-            purpose:str, 
-            question: str,
-            options: List[str]
+            purpose: str,
+            tool_name: str,
+            tool_prompt: str,
+            tool_input: str,
         ) -> str:
         """Method to perform an evaluation"""
         attemps = 0
@@ -119,9 +120,10 @@ class EvaluationReasoner(ActionReasoner):
 
     async def async_perform_evaluation(
             self,
-            purpose:str, 
-            question: str,
-            options: List[str]
+            purpose: str,
+            tool_name: str,
+            tool_prompt: str,
+            tool_input: str,
         ) -> str:
         """Method to asynchronously perform an evaluation"""
         attemps = 0
