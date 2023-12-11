@@ -23,4 +23,10 @@ class TraceMemory(BaseTraceMemory):
             verbose = verbose,
         )
 
+    def update_objective(
+            self,
+            new_objective: str):
+        """Method to update the objective"""
+        self.objective = new_objective
+
     

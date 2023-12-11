@@ -140,11 +140,11 @@ class ProgramTester(BaseModel):
             if self.is_protected(subprogram):
                 raise RuntimeError(
                     f"Error while loading '{self.program_name}'. "+\
-                    f"Trying to call a protected program '{self.subprogram}'. Try to remove it")
+                    f"Trying to call a protected program '{subprogram}'. Try to remove it")
             if not self.program_memory.exists(subprogram):
                 raise RuntimeError(
                     f"Error while loading '{self.program_name}': "+\
-                    f"The sub-program '{self.subprogram}' does not exist. "+\
+                    f"The sub-program '{subprogram}' does not exist. "+\
                     "Please correct your program")
                 
     def verify_programs(
