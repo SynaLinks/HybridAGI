@@ -6,7 +6,7 @@ from typing import Iterable, Optional, Callable, Any
 from langchain.schema.embeddings import Embeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from hybridagikb import BaseHybridStore
+from ..hybridstore import BaseHybridStore
 
 TRACE_MEMORY_TEMPLATE = \
 """The Objective is from the perspective of the User

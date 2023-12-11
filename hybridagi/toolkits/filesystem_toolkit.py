@@ -1,6 +1,6 @@
 from .base import BaseToolKit
-from hybridagikb import FileSystem
-from hybridagikb.tools import (
+from hybridagi import FileSystem
+from hybridagi.tools import (
     ShellTool,
     WriteFilesTool,
     AppendFilesTool,

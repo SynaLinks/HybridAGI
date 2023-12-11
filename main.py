@@ -9,7 +9,7 @@ from langchain.tools import Tool
 
 from hybridagi.config import Config
 
-from hybridagikb import FileSystem
+from hybridagi import FileSystem
 from hybridagi import (
     ProgramMemory,
     TraceMemory,

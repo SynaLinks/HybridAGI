@@ -1,9 +1,9 @@
 import unittest
-from hybrid_agi import InterpreterOutputParser
+from hybridagi import ReasonerOutputParser
 
-class TestInterpreterOutputParser(unittest.TestCase):
+class TestReasonerOutputParser(unittest.TestCase):
     def setUp(self):
-        self.parser = InterpreterOutputParser()
+        self.parser = ReasonerOutputParser()
 
     def test_parse_valid_output(self):
         output = \

@@ -2,8 +2,7 @@
 
 from pydantic.v1 import BaseModel
 from typing import List
-from .base import BaseProgramMemory
-from hybridagikb import KnowledgeGraph
+from ..hybridstores.program_memory.base import BaseProgramMemory
 
 RESERVED_NAMES = [
     "main",
@@ -13,10 +12,9 @@ RESERVED_NAMES = [
     "trace_memory",
 ]
 
-class ProgramTester(BaseModel):
+class TesterUtility(BaseModel):
     """The class to make some verification to graph programs"""
     program_memory: BaseProgramMemory
-    playground: KnowledgeGraph
     program_name: str = ""
 
     class Config:
@@ -37,11 +35,11 @@ class ProgramTester(BaseModel):
             program: str):
         """Try to load a program into playground for testing"""
         try:
-            self.playground.delete()
+            self.program_memory.playground.delete()
         except Exception:
             pass
         try:
-            self.playground.query(program)
+            self.program_memory.playground.query(program)
         except Exception as err:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': {err}. "+\
@@ -59,7 +57,7 @@ class ProgramTester(BaseModel):
 
     def check_starting_node_count(self):
         """Check how many starting node the program have"""
-        result = self.playground.query(
+        result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"Start"}) RETURN n')
         if len(result) == 0:
             raise RuntimeError(
@@ -74,7 +72,7 @@ class ProgramTester(BaseModel):
 
     def check_ending_node_count(self):
         """Check how many ending node the program have"""
-        result = self.playground.query(
+        result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"End"}) RETURN n')
         if len(result) == 0:
             raise RuntimeError(
@@ -89,7 +87,7 @@ class ProgramTester(BaseModel):
 
     def check_starting_node_output(self):
         """Check starting node outgoing edges"""
-        result = self.playground.query(
+        result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"Start"})-[r]->(m) RETURN r')
         if len(result) == 0:
             raise RuntimeError(
@@ -104,7 +102,7 @@ class ProgramTester(BaseModel):
 
     def check_starting_node_input(self):
         """Check starting node incoming edges"""
-        result = self.playground.query(
+        result = self.program_memory.playground.query(
             'MATCH (m)-[r]->(n:Control {name:"Start"}) RETURN r')
         if len(result) > 0:
             raise RuntimeError(
@@ -114,7 +112,7 @@ class ProgramTester(BaseModel):
 
     def check_ending_node_input(self):
         """Check ending node incoming edges"""
-        result = self.playground.query(
+        result = self.program_memory.playground.query(
             'MATCH (m)-[r]->(n:Control {name:"End"}) RETURN r')
         if len(result) == 0:
             raise RuntimeError(
@@ -124,7 +122,7 @@ class ProgramTester(BaseModel):
 
     def check_ending_node_output(self):
         """Check ending node outgoing edges"""
-        result = self.playground.query(
+        result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"End"})-[r]->(m) RETURN r')
         if len(result) > 0:
             raise RuntimeError(
@@ -133,7 +131,7 @@ class ProgramTester(BaseModel):
                 "make sure to end your program correctly")
 
     def check_program_dependencies(self):
-        result = self.playground.query(
+        result = self.program_memory.playground.query(
             'MATCH (p:Program) RETURN p.program AS program')
         for record in result:
             subprogram = record[0]

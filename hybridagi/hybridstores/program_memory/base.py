@@ -1,7 +1,7 @@
 """The base program memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import List, Optional, Callable, Any
-from hybridagikb import BaseHybridStore
+from ..hybridstore import BaseHybridStore
 from langchain.schema.embeddings import Embeddings
 
 def _default_norm(value):

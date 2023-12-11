@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Iterable, Callable
 from colorama import Fore, Style
 
 from redisgraph import Node
-from hybridagikb import KnowledgeGraph
+from ..hybridstores.hybridstore import KnowledgeGraph
 
 from langchain.tools import BaseTool, Tool
 from langchain.base_language import BaseLanguageModel
@@ -16,7 +16,7 @@ from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..toolkits.base import BaseToolKit
 from ..toolkits.trace_memory_toolkit import TraceMemoryToolKit
 from ..toolkits.program_memory_toolkit import ProgramMemoryToolKit
-from hybridagikb.parsers.file import FileOutputParser
+from ..parsers.file import FileOutputParser
 from ..reasoners.ranked_action_reasoner import RankedActionReasoner
 
 COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]

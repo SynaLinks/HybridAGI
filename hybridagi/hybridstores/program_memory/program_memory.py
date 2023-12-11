@@ -4,11 +4,9 @@ import os
 from typing import List, Optional, Callable, Any
 from langchain.schema.embeddings import Embeddings
 from .base import BaseProgramMemory, _default_norm
-from .program_tester import ProgramTester
+from ...utility.tester import TesterUtility
 
 class ProgramMemory(BaseProgramMemory):
-    program_tester: Optional[ProgramTester] = None
-    
     """The Program Memory"""
     def __init__(
             self,
@@ -26,10 +24,8 @@ class ProgramMemory(BaseProgramMemory):
             embeddings_dim = embeddings_dim,
             normalize = normalize,
             verbose = verbose)
-        playground = self.create_graph("playground")
-        self.program_tester = ProgramTester(
-            program_memory = self,
-            playground = playground)
+        self.playground = self.create_graph("playground")
+        self.program_tester = TesterUtility(program_memory = self)
 
     def load_folders(
             self,

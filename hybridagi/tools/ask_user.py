@@ -1,5 +1,4 @@
 """The ask user tool. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
-import aioconsole
 from colorama import Fore, Style
 from typing import Optional
 from langchain.callbacks.manager import (
@@ -34,9 +33,4 @@ class AskUserTool(BaseTool):
             run_manager: Optional[AsyncCallbackManagerForToolRun] = None
         ) -> str:
         """Use the tool asynchronously."""
-        print(f"{Fore.YELLOW}[*] "+query+f"{Style.RESET_ALL}")
-        response = await aioconsole.ainput("> ")
-        if response:
-            return "The User responded with: "+response
-        else:
-            return "The User did not respond"
+        return self._run(query)

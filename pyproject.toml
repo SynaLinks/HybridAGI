@@ -21,18 +21,18 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "aioconsole",
-    "redis>=4.5.2",
-    "redisgraph",
-    "langchain>=0.0.308",
-    "openai",
-    "gpt4all",
-    "text_generation",
+    "json"
     "pydantic",
     "python-dotenv",
-    "coverage",
+    "coverage>=5.6",
     "colorama",
-    "duckduckgo-search",
+    "numpy",
+    "redis>=4.5.2",
+    "redisgraph",
+    "langchain>=0.0.348",
+    "openai",
     "tiktoken",
-    "hybridagikb@git+https://github.com/SynaLinks/HybridAGI-knowledge"
+    "gpt4all",
+    "text_generation",
+    "duckduckgo-search",
 ]

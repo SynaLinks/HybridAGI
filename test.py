@@ -1,7 +1,9 @@
 import unittest
 import coverage
 
-cov = coverage.Coverage()
+source_dirs = ['hybridagi']
+
+cov = coverage.Coverage(source=source_dirs)
 cov.start()
 
 test_loader = unittest.TestLoader()

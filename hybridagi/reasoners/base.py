@@ -2,7 +2,7 @@ from pydantic.v1 import BaseModel
 from langchain.base_language import BaseLanguageModel
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from ..parsers.reasoner_output_parser import ReasonerOutputParser
+from ..parsers.reasoner import ReasonerOutputParser
 from ..hybridstores.trace_memory.trace_memory import TraceMemory
 
 class BaseReasoner(BaseModel):
