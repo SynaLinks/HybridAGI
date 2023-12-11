@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "json"
+    "json",
     "pydantic",
     "python-dotenv",
     "coverage>=5.6",
