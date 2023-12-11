@@ -8,7 +8,7 @@ from langchain.callbacks.manager import (
 )
 from langchain.tools import BaseTool
 from ..hybridstores.program_memory.program_memory import ProgramMemory
-from hybridagikb import FileOutputParser
+from ..parsers.file import FileOutputParser
 
 class LoadProgramsTool(BaseTool):
     program_memory: ProgramMemory
