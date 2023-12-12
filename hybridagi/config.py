@@ -10,12 +10,18 @@ class Config():
     def __init__(self):
         self.verbose = os.getenv("VERBOSE", "True") == "True"
         self.debug_mode = os.getenv("DEBUG_MODE", "True") == "True"
+
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
+        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
+        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4-1106-preview")
 
-        self.local_model_url = os.environ.get(
-            "LOCAL_MODEL_URL",
+        self.local_smart_llm_model_url = os.environ.get(
+            "LOCAL_SMART_LLM_MODEL_URL",
+            "http://localhost:8010")
+        self.local_fast_llm_model_url = os.environ.get(
+            "LOCAL_FAST_LLM_MODEL_URL",
             "http://localhost:8010")
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
@@ -35,8 +41,7 @@ class Config():
         self.redis_url = os.getenv("REDIS_URL", "redis://falkordb:6379")
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")
 
-        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
-        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4-1106-preview")
+        
 
         self.fast_llm_max_token = os.getenv("FAST_LLM_MAX_TOKEN", "4000")
         self.smart_llm_max_token = os.getenv("SMART_LLM_MAX_TOKEN", "8000")
