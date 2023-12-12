@@ -1,10 +1,31 @@
+from collections import deque
 from .base import BaseTraceMemory
 from typing import Optional, Callable, Any
 from langchain.schema.embeddings import Embeddings
 from .base import _default_norm
 
+START_PROGRAM_DESCRIPTION = \
+"""Start Program: {program_name}
+Program Purpose: {purpose}"""
+
+END_PROGRAM_DESCRIPTION = \
+"""End Program: {program_name}"""
+
+ACTION_DESCRIPTION = \
+"""Action Purpose: {purpose}
+Action: {tool_name}
+Action Input: {tool_input}
+Action Observation: {tool_observation}"""
+
+DECISION_DESCRIPTION = \
+"""Decision Purpose: {purpose}
+Decision: {question}
+Decision Answer: {decision}"""
+
 class TraceMemory(BaseTraceMemory):
     """The trace memory"""
+    commit_index_trace: deque = deque()
+    last_decision_index: str = ""
 
     def __init__(
             self,
@@ -22,11 +43,3 @@ class TraceMemory(BaseTraceMemory):
             normalize = normalize,
             verbose = verbose,
         )
-
-    def update_objective(
-            self,
-            new_objective: str):
-        """Method to update the objective"""
-        self.objective = new_objective
-
-    

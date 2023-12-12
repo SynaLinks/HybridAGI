@@ -102,19 +102,24 @@ class BaseHybridStore(BaseModel):
             self,
             texts: List[str],
             ids: List[str] = [],
-            descriptions: List[str] = []):
+            descriptions: List[str] = [],
+            metadatas: List[Dict[str, str]] = {},
+        ):
         """Method to add texts"""
         indexes = []
         for idx, text in enumerate(texts):
             content_index = str(uuid.uuid4().hex) if not ids else ids[idx]
             description = text if not descriptions else descriptions[idx]
+            metadata = text if not metadatas else metadatas[idx]
             vector = self.normalize(np.array(self.embeddings.embed_query(description), dtype=np.float32))
-            self.set_content(content_index, text)
             self.query(
                 'MERGE (n:'+self.indexed_label+' {name:"'+content_index+'"'+
                 ', embeddings_vector:vector32f('+str(list(vector))+')})')
+            self.set_content(content_index, text)
             if descriptions:
                 self.set_content_description(content_index, description)
+            if metadatas:
+                self.set_content_metadata(content_index, metadata)
             indexes.append(content_index)
         return indexes
 
@@ -146,7 +151,8 @@ class BaseHybridStore(BaseModel):
 
     def set_content(self, content_index: str, text: str) -> bool:
         """Set content into Redis"""
-        self.query('MERGE (n:'+self.indexed_label+' {name:"'+content_index+'"})')
+        if not self.exists(content_index):
+            self.query('MERGE (n:'+self.indexed_label+' {name:"'+content_index+'"})')
         return self.client.set(self.index_name+":content:"+content_index, text)
 
     def get_content(self, content_index: str) -> Optional[str]:

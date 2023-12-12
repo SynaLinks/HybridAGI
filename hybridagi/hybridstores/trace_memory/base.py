@@ -37,6 +37,7 @@ class BaseTraceMemory(BaseHybridStore):
             embeddings = embeddings,
             embeddings_dim = embeddings_dim,
             graph_index = "trace_memory",
+            indexed_label = "Step",
             normalize = normalize,
             verbose = verbose,
         )
@@ -45,7 +46,7 @@ class BaseTraceMemory(BaseHybridStore):
         """Method to clear the actions trace"""
         self.actions_trace = deque()
 
-    def get_trace(self, max_tokens: int) -> str:
+    def get_current_trace(self, max_tokens: int) -> str:
         """Load the memory variables"""
         text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size = self.chunk_size,
@@ -97,12 +98,12 @@ class BaseTraceMemory(BaseHybridStore):
         """Method to get the context given a prompt and max total token"""
         encoding = tiktoken.get_encoding("cl100k_base")
         num_tokens = len(encoding.encode(prompt))
-        context = self.get_trace(
+        context = self.get_current_trace(
             max_total_tokens-num_tokens)
         return context
 
     def update_trace(self, action_description: str):
-        """Method to update the program actions_trace"""
+        """Method to update the trace"""
         self.actions_trace.append(action_description)
 
     def update_objective(self, new_objective: str):
@@ -117,3 +118,4 @@ class BaseTraceMemory(BaseHybridStore):
         """Method to revert N steps of the actions_trace"""
         for i in range(n):
             self.actions_trace.pop()
+            
