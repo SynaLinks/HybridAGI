@@ -32,7 +32,7 @@ class Config():
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36"
             " (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36")
         
-        self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+        self.redis_url = os.getenv("REDIS_URL", "redis://falkordb:6379")
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")
 
         self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
