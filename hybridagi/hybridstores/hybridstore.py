@@ -1,6 +1,4 @@
 import uuid
-import json
-import base64
 import redis
 import numpy as np
 from pydantic.v1 import BaseModel, Extra
