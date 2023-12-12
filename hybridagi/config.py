@@ -12,6 +12,8 @@ class Config():
         self.debug_mode = os.getenv("DEBUG_MODE", "True") == "True"
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
+        self.openai_api_key = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
+
         self.local_model_url = os.environ.get(
             "LOCAL_MODEL_URL",
             "http://localhost:8010")
@@ -34,12 +36,12 @@ class Config():
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")
 
         self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
-        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4")
+        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4-1106-preview")
 
         self.fast_llm_max_token = os.getenv("FAST_LLM_MAX_TOKEN", "4000")
         self.smart_llm_max_token = os.getenv("SMART_LLM_MAX_TOKEN", "8000")
 
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "archives")
-        self.library_directory = os.getenv("LIBRARY_DIRECTORY", "")
+        self.library_directory = os.getenv("LIBRARY_DIRECTORY", "programs")
 
         self.user_language = os.getenv("USER_LANGUAGE", "English")
