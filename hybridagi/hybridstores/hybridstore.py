@@ -199,7 +199,7 @@ class BaseHybridStore(BaseModel):
             try:
                 self.query(
                     'MATCH (n:'+self.indexed_label+' {name:"'+content_index+'"})'
-                    +' SET n.'+str(key)+'="'+str(value)+'"')
+                    +' SET n.'+str(key)+'='+repr(value))
             except Exception:
                 return False
         return True

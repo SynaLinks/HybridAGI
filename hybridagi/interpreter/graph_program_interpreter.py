@@ -210,8 +210,9 @@ class GraphProgramInterpreter(RankedActionReasoner):
         """Method to call a program"""
         purpose = node.properties["name"]
         program_name = node.properties["program"]
-        self.trace_memory.update_trace(
-            f"Start Sub-Program: {program_name}\nSub-Program Purpose: {purpose}"
+        self.trace_memory.commit_program_start(
+            purpose = purpose,
+            program_name = program_name,
         )
         if self.verbose:
             print(COLORS[self.current_iteration%2])
@@ -229,7 +230,8 @@ class GraphProgramInterpreter(RankedActionReasoner):
         self.current_node_stack.pop()
         if ending_program is not None:
             ending_program_name = ending_program.name
-            self.trace_memory.update_trace(f"End Sub-Program: {ending_program_name}")
+            self.trace_memory.commit_program_end(
+                program_name = ending_program_name)
             if self.get_current_node() is not None:
                 return self.get_next(self.get_current_node())
         return None
@@ -295,7 +297,6 @@ class GraphProgramInterpreter(RankedActionReasoner):
         if self.verbose:
             print(COLORS[self.current_iteration%2])
             print(f"{action}{Style.RESET_ALL}")
-        self.trace_memory.update_trace(action)
         return self.get_next(self.get_current_node())
 
     def run_step(self) -> Optional[Node]:
@@ -379,7 +380,6 @@ class GraphProgramInterpreter(RankedActionReasoner):
         if self.verbose:
             print(COLORS[self.current_iteration%2])
             print(f"{action}{Style.RESET_ALL}")
-        self.trace_memory.update_trace(action)
         return self.get_next(self.get_current_node())
 
     async def async_run_step(self) -> Optional[Node]:
@@ -419,14 +419,18 @@ class GraphProgramInterpreter(RankedActionReasoner):
         """Stop the agent"""
         self.current_node_stack = deque()
         self.program_stack = deque()
-        self.trace_memory.clear()
+        self.trace_memory.start_new_trace()
         self.trace_memory.update_objective("N/A")
 
     def start(self, objective: str):
         """Start the agent"""
         self.trace_memory.update_objective(objective)
         self.current_iteration = 0
-        self.trace_memory.clear()
+        self.trace_memory.start_new_trace()
+        self.trace_memory.commit_program_start(
+            purpose = objective,
+            program_name = self.program_name,
+        )
         program = self.program_memory.create_graph(self.program_name)
         self.program_stack.append(program)
         starting_node = self.get_starting_node(self.program_name)

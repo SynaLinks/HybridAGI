@@ -26,6 +26,16 @@ from .utility.reader import ReaderUtility
 from .utility.archiver import ArchiverUtility
 from .utility.tester import TesterUtility
 
+from .utility.commands import (
+    BaseShellCommand,
+    ChangeDirectory,
+    ListDirectory,
+    MakeDirectory,
+    Move,
+    PrintWorkingDirectory,
+    Remove,
+)
+
 from .interpreter.graph_program_interpreter import GraphProgramInterpreter
 
 __all__ = [
@@ -41,7 +51,7 @@ __all__ = [
     "BaseFileSystem",
     "FileSystem",
 
-    "BaseProgramMemory"
+    "BaseProgramMemory",
     "ProgramMemory",
 
     "BaseTraceMemory",
@@ -59,4 +69,12 @@ __all__ = [
     "ArchiverUtility",
     "ReaderUtility",
     "ShellUtility",
+
+    "BaseShellCommand",
+    "ChangeDirectory",
+    "ListDirectory",
+    "MakeDirectory",
+    "Move",
+    "PrintWorkingDirectory",
+    "Remove",
 ]

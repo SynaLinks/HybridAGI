@@ -130,6 +130,12 @@ class RankedActionReasoner(EvaluationReasoner):
             tool_input = tool_input,
             tool_observation = tool_observation,
         )
+        self.trace_memory.commit_action(
+            purpose = purpose,
+            tool_name = tool_name,
+            tool_input = tool_input,
+            tool_observation = tool_observation,
+        )
         if self.post_action_callback is not None:
             self.post_action_callback(
                 purpose,
@@ -179,6 +185,12 @@ class RankedActionReasoner(EvaluationReasoner):
         self.validate_tool(tool_name)
         tool_observation = self.execute_tool(tool_name, tool_input)
         action_description = self.get_action_description(
+            purpose = purpose,
+            tool_name = tool_name,
+            tool_input = tool_input,
+            tool_observation = tool_observation,
+        )
+        self.trace_memory.commit_action(
             purpose = purpose,
             tool_name = tool_name,
             tool_input = tool_input,

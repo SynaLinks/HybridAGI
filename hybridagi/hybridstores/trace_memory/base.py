@@ -1,5 +1,6 @@
 """The base trace memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+from pydantic.v1 import BaseModel
 import tiktoken
 from collections import deque
 from typing import Iterable, Optional, Callable, Any
@@ -14,35 +15,33 @@ Objective: {objective}
 Note: {note}
 {actions_trace}"""
 
-def _default_norm(value):
-    return value
-
-class BaseTraceMemory(BaseHybridStore):
+class BaseTraceMemory(BaseModel):
     objective: str = "N/A"
     note: str = "N/A"
     actions_trace: Iterable = deque()
+    current_program: str = ""
     chunk_size: int = 200
 
-    def __init__(
-            self,
-            index_name: str,
-            redis_url: str,
-            embeddings: Embeddings,
-            embeddings_dim: int,
-            normalize: Optional[Callable[[Any], Any]] = _default_norm,
-            verbose: bool = True):
-        super().__init__(
-            index_name = index_name,
-            redis_url = redis_url,
-            embeddings = embeddings,
-            embeddings_dim = embeddings_dim,
-            graph_index = "trace_memory",
-            indexed_label = "Step",
-            normalize = normalize,
-            verbose = verbose,
-        )
+    # def __init__(
+    #         self,
+    #         index_name: str,
+    #         redis_url: str,
+    #         embeddings: Embeddings,
+    #         embeddings_dim: int,
+    #         normalize: Optional[Callable[[Any], Any]] = _default_norm,
+    #         verbose: bool = True):
+    #     super().__init__(
+    #         index_name = index_name,
+    #         redis_url = redis_url,
+    #         embeddings = embeddings,
+    #         embeddings_dim = embeddings_dim,
+    #         graph_index = "trace_memory",
+    #         indexed_label = "Step",
+    #         normalize = normalize,
+    #         verbose = verbose,
+    #     )
 
-    def clear(self):
+    def clear_trace(self):
         """Method to clear the actions trace"""
         self.actions_trace = deque()
 
@@ -102,13 +101,17 @@ class BaseTraceMemory(BaseHybridStore):
             max_total_tokens-num_tokens)
         return context
 
-    def update_trace(self, action_description: str):
+    def update_trace(self, description: str):
         """Method to update the trace"""
-        self.actions_trace.append(action_description)
+        self.actions_trace.append(description)
 
     def update_objective(self, new_objective: str):
         """Method to update the objective"""
         self.objective = new_objective
+
+    def update_current_program(self, current_program: str):
+        """Method to update the current program"""
+        self.current_program = current_program
 
     def update_note(self, new_note: str):
         """Method to update the note"""

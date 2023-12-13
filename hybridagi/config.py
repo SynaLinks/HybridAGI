@@ -41,12 +41,11 @@ class Config():
         self.redis_url = os.getenv("REDIS_URL", "redis://falkordb:6379")
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")
 
-        
-
         self.fast_llm_max_token = os.getenv("FAST_LLM_MAX_TOKEN", "4000")
         self.smart_llm_max_token = os.getenv("SMART_LLM_MAX_TOKEN", "8000")
 
-        self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "archives")
-        self.library_directory = os.getenv("LIBRARY_DIRECTORY", "programs")
+        self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "./archives")
+        self.documentation_directory = os.getenv("DOCUMENTATION_DIRECTORY", "./archives")
+        self.library_directory = os.getenv("LIBRARY_DIRECTORY", "./programs")
 
         self.user_language = os.getenv("USER_LANGUAGE", "English")

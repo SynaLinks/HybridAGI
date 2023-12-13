@@ -110,6 +110,12 @@ class DecisionReasoner(BaseReasoner):
                 f"Failed to decide after {attemps} attemps."+
                 f" Got {result} should finish with {choice},"+
                 " please verify your prompts or programs.")
+        self.trace_memory.commit_decision(
+            purpose = purpose,
+            question = question,
+            options = options,
+            decision = decision,
+        )
         if self.post_decision_callback is not None:
             self.post_decision_callback(
                 purpose,
@@ -161,6 +167,12 @@ class DecisionReasoner(BaseReasoner):
                 f"Failed to decide after {attemps} attemps."+
                 f" Got {result} should finish with {choice},"+
                 " please verify your prompts or programs.")
+        self.trace_memory.commit_decision(
+            purpose = purpose,
+            question = question,
+            options = options,
+            decision = decision,
+        )
         if self.post_decision_callback is not None:
             asyncio.create_task(
                 self.post_decision_callback(

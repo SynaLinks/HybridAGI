@@ -39,10 +39,6 @@ class ActionReasoner(DecisionReasoner):
         ]
     ] = None
 
-    # class Config:
-    #     """Configuration for this pydantic object."""
-    #     arbitrary_types_allowed = True
-
     def get_action_prompt_without_context(
             self,
             purpose: str,
@@ -167,6 +163,12 @@ class ActionReasoner(DecisionReasoner):
             tool_input = tool_input,
             tool_observation = tool_observation,
         )
+        self.trace_memory.commit_action(
+            purpose = purpose,
+            tool_name = tool_name,
+            tool_input = tool_input,
+            tool_observation = tool_observation,
+        )
         if self.post_action_callback is not None:
             self.post_action_callback(
                 purpose,
@@ -203,6 +205,12 @@ class ActionReasoner(DecisionReasoner):
         self.validate_tool(tool_name)
         tool_observation = self.execute_tool(tool_name, tool_input)
         action_description = self.get_action_description(
+            purpose = purpose,
+            tool_name = tool_name,
+            tool_input = tool_input,
+            tool_observation = tool_observation,
+        )
+        self.trace_memory.commit_action(
             purpose = purpose,
             tool_name = tool_name,
             tool_input = tool_input,
