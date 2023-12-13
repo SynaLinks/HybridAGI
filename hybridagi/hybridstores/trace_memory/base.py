@@ -3,11 +3,8 @@
 from pydantic.v1 import BaseModel
 import tiktoken
 from collections import deque
-from typing import Iterable, Optional, Callable, Any
-from langchain.schema.embeddings import Embeddings
+from typing import Iterable
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-from ..hybridstore import BaseHybridStore
 
 TRACE_MEMORY_TEMPLATE = \
 """The Objective is from the perspective of the User
