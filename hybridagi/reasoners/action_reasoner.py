@@ -1,3 +1,5 @@
+"""The action reasoner. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import asyncio
 from typing import Dict, Optional, Callable
 from langchain.prompts import PromptTemplate

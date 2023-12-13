@@ -1,3 +1,4 @@
+"""The evaluation reasoner. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from langchain.prompts import PromptTemplate
 from .action_reasoner import ActionReasoner

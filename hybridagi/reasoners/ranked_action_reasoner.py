@@ -1,3 +1,5 @@
+"""The ranked action reasoner. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import asyncio
 from .evaluation_reasoner import EvaluationReasoner
 

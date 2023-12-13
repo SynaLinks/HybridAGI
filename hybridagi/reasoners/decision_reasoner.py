@@ -1,3 +1,5 @@
+"""The decision reasoner. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import asyncio
 from typing import List, Optional, Callable
 from langchain.prompts import PromptTemplate

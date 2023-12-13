@@ -1,3 +1,5 @@
+"""The program memory toolkit. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 from .base import BaseToolKit
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..tools.load_programs import LoadProgramsTool

@@ -1,3 +1,5 @@
+"""The filesystem toolkit. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 from .base import BaseToolKit
 from hybridagi import FileSystem
 from hybridagi.tools import (

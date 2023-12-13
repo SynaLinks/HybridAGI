@@ -1,3 +1,5 @@
+"""The base trace memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import uuid
 from collections import deque
 from .base import BaseTraceMemory
