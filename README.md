@@ -17,58 +17,68 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under *the license of your choice* while using the framework under GNU GPL.
 
-## Quick Start (CLI version) 🚀
 
-To start just use the following commands:
+## Quickstart in 5 simple steps!
+
+#### What you need to start?
+- An OpenAI API key or a functional text generation endpoint
+- [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/products/docker-desktop/)
+
+### Installation
+
+First, clone the chat repository with:
+
 ```
-git clone https://github.com/SynaLinks/HybridAGI
-cd HybridAGI
+git clone https://github.com/SynaLinks/HybridAGI-chat
+cd HybridAGI-chat
 ```
 
-Rename `.env.template` to `.env` and replace `my-openai-api-key` with your actual API key, then, launch the app with:
+### Directory hierarchy
+
+First you should start by opening the repository folder in your favorite IDE ([VSCodium](https://vscodium.com/) with the Neo4J plugin is a good start). 
 
 ```
-docker-compose run --rm hybrid-agi-cli
+📦HybridAGI-chat
+┣ 📂archives  # This is where the AGI will save the archives when uploading file or folders
+┣ 📂documentation # This is where you can put your pdf and documents for similarity search
+┣ 📂programs # This is where you should put your Cypher programs
+┣ 📂src # The source code of the UI
+... the license and other files related to deployment
 ```
 
-To inspect the database, open your browser to [localhost:8001](https://localhost:8001) and connect to an existing database using `falkordb` hostname and port `6379`.
+Note that these folders are shared with the application container, you should use them to share data between the user and the AI system.
 
-## Available Tools 🔨
+### Echo test program
 
-You can use natively the following tools in your graph programs, and add more ones, if they are compatible with Langchain Tool format.
+Start with a simple echo test, create a `main.cypher` file inside the `programs` folder:
 
-The AI system can interact with its long-term memory using the following tools:
+```javascript
+// Nodes declaration
+CREATE
+(start:Control {name:"Start"}),
+(end:Control {name:"End"}),
+(echo_objective:Action {
+  name:"Reformulate the Objective",
+  tool:"Speak",
+  prompt:"Please reformulate the objective using other words"}),
+// Structure declaration
+(start)-[:NEXT]->(echo_objective),
+(echo_objective)-[:NEXT]->(end)
+```
 
-- `WriteFiles`: Write into files, or override if existing
-- `AppendFiles`: Append data to files, or create if non-existing
-- `ReadFile`: Read data chunk by chunk (use multiple times to scroll)
-- `Shell`: Enable basic unix commands: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`]
-- `Upload`: Archive and upload the target folder or file to the User
-- `ContentSearch`: Perform a similarity based search on the filesystem and fetch the most relevant content
+Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
-It can also perform several operations on its program memory:
+### Deploy your app
 
-- `ReadProgram`: Read a program based on its name
-- `ProgramSearch`: Perform a similarity based search on the program memory and list the top-10 most relevant programs
-- `LoadPrograms`: Load programs, override if existing (similar to `WriteFiles`)
-- `CallProgram`: Call a program based on its name
+Now it is time to deploy this app, just use the following command
 
-Or on its working memory:
+```
+docker-compose up
+```
 
-- `UpdateObjective`: Update the long-term objective of the agent
-- `UpdateNote`: Update the note (used to learn from mistakes)
-- `Predict`: Populate the prompt with intermediary data for reasoning
-- `RevertTrace`: Remove from the trace the N last steps
-- `ClearTrace`: Clear the trace from the prompt
+### Inspect the database
 
-The system can interact with the User using the following tools:
-
-- `AskUser`: Ask a question to the User
-- `Speak`: Tell something to the User
-
-And fetch external data using:
-
-- `InternetSearch`: Perform a DuckDuckGo search
+Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `falkordb` and port `6379`.
 
 ## Credits 👏
 
