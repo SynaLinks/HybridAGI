@@ -19,8 +19,6 @@ from ..toolkits.program_memory_toolkit import ProgramMemoryToolKit
 from ..parsers.file import FileOutputParser
 from ..reasoners.ranked_action_reasoner import RankedActionReasoner
 
-COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]
-
 class GraphProgramInterpreter(RankedActionReasoner):
     """LLM based interpreter for graph programs"""
     program_memory: ProgramMemory
@@ -214,10 +212,6 @@ class GraphProgramInterpreter(RankedActionReasoner):
             purpose = purpose,
             program_name = program_name,
         )
-        if self.verbose:
-            print(COLORS[self.current_iteration%2])
-            print(f"Start Sub-Program: {program_name}")
-            print(f"Sub-Program Purpose: {purpose}{Style.RESET_ALL}")
         program = self.program_memory.create_graph(program_name)
         self.program_stack.append(program)
         starting_node = self.get_starting_node(program_name)
@@ -255,17 +249,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
             'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)')
         for record in result:
             options.append(record[0])
-
         decision = self.perform_decision(purpose, question, options)
-
-        if self.verbose:
-            decision_template = \
-            f"Decision Purpose: {purpose}" + \
-            f"\nDecision: {question}" + \
-            f"\nDecision Answer: {decision}"
-            print(COLORS[self.current_iteration%2])
-            print(f"{decision_template}{Style.RESET_ALL}")
-
         result = self.get_current_program().query(
             'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
         next_node = result[0][0]
@@ -287,16 +271,14 @@ class GraphProgramInterpreter(RankedActionReasoner):
             nb_ranked_inferences = node.properties["ranked_inferences"]
             ranked_inferences = int(nb_ranked_inferences)
         
-        action = self.perform_action(
+        self.perform_action(
             purpose,
             tool_name,
             tool_input_prompt,
             disable_inference = disable_inference,
-            ranked_inferences = ranked_inferences)
+            ranked_inferences = ranked_inferences,
+        )
         
-        if self.verbose:
-            print(COLORS[self.current_iteration%2])
-            print(f"{action}{Style.RESET_ALL}")
         return self.get_next(self.get_current_node())
 
     def run_step(self) -> Optional[Node]:
@@ -340,15 +322,6 @@ class GraphProgramInterpreter(RankedActionReasoner):
             options.append(record[0])
 
         decision = await self.async_perform_decision(purpose, question, options)
-
-        if self.verbose:
-            decision_template = \
-            f"Decision Purpose: {purpose}" + \
-            f"\nDecision: {question}" + \
-            f"\nDecision Answer: {decision}"
-            print(COLORS[self.current_iteration%2])
-            print(f"{decision_template}{Style.RESET_ALL}")
-
         result = self.get_current_program().query(
             'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
         next_node = result[0][0]
@@ -370,16 +343,13 @@ class GraphProgramInterpreter(RankedActionReasoner):
             nb_ranked_inferences = node.properties["ranked_inferences"]
             ranked_inferences = int(nb_ranked_inferences)
         
-        action = await self.async_perform_action(
+        await self.async_perform_action(
             purpose,
             tool_name,
             tool_input_prompt,
             disable_inference = disable_inference,
-            ranked_inferences = ranked_inferences)
-        
-        if self.verbose:
-            print(COLORS[self.current_iteration%2])
-            print(f"{action}{Style.RESET_ALL}")
+            ranked_inferences = ranked_inferences,
+        )
         return self.get_next(self.get_current_node())
 
     async def async_run_step(self) -> Optional[Node]:
@@ -424,6 +394,8 @@ class GraphProgramInterpreter(RankedActionReasoner):
 
     def start(self, objective: str):
         """Start the agent"""
+        if self.verbose:
+            print(f"{Fore.GREEN}[!] Starting the interpreter{Style.RESET_ALL}")
         self.trace_memory.update_objective(objective)
         self.current_iteration = 0
         self.trace_memory.start_new_trace()

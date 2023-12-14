@@ -1,11 +1,15 @@
 """The base trace memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import uuid
+from colorama import Fore, Style
+from time import gmtime, strftime
 from collections import deque
 from .base import BaseTraceMemory
 from typing import Optional, Callable, Any, Dict, List
 from langchain.schema.embeddings import Embeddings
 from ..hybridstore import BaseHybridStore
+
+COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]
 
 START_PROGRAM_DESCRIPTION = \
 """Start Program: {program_name}
@@ -31,6 +35,7 @@ def _default_norm(value):
 class TraceMemory(BaseTraceMemory, BaseHybridStore):
     """The trace memory"""
     commit_index_trace: deque = deque()
+    current_iteration = 0 # Used to display the trace
 
     def __init__(
             self,
@@ -50,6 +55,9 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             normalize = normalize,
             verbose = verbose,
         )
+
+    def get_time(self):
+        return strftime("%Y-%m-%d_%H:%M:%S", gmtime())
 
     def get_current_commit(self) -> str:
         """Returns the current commit index"""
@@ -85,6 +93,7 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             metadata: Dict[str, Any] = {}
         ):
         """Commit a step of the program into memory"""
+        metadata["time"] = self.get_time()
         if label == self.indexed_label:
             indexes = self.add_texts(
                 texts = [description],
@@ -104,6 +113,10 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
                     +'"}), (m {name:"'+new_commit+'"})'
                     +' MERGE (n)-[:NEXT]->(m)')
         self.commit_index_trace.append(new_commit)
+        if self.verbose:
+            print(COLORS[self.current_iteration%2])
+            print(f"{description}{Style.RESET_ALL}")
+        self.current_iteration += 1
         return new_commit
         
     def commit_action(

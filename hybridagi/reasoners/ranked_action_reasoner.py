@@ -126,12 +126,6 @@ class RankedActionReasoner(EvaluationReasoner):
                 raise ValueError("Ranked inferences parameter should be positive")
         self.validate_tool(tool_name)
         tool_observation = self.execute_tool(tool_name, tool_input)
-        action_description = self.get_action_description(
-            purpose = purpose,
-            tool_name = tool_name,
-            tool_input = tool_input,
-            tool_observation = tool_observation,
-        )
         self.trace_memory.commit_action(
             purpose = purpose,
             tool_name = tool_name,
@@ -145,7 +139,7 @@ class RankedActionReasoner(EvaluationReasoner):
                 tool_input,
                 tool_observation,
             )
-        return action_description
+        return tool_observation
 
     async def async_perform_action(
             self,
@@ -186,12 +180,6 @@ class RankedActionReasoner(EvaluationReasoner):
                 raise ValueError("Ranked inferences parameter should be positive")
         self.validate_tool(tool_name)
         tool_observation = self.execute_tool(tool_name, tool_input)
-        action_description = self.get_action_description(
-            purpose = purpose,
-            tool_name = tool_name,
-            tool_input = tool_input,
-            tool_observation = tool_observation,
-        )
         self.trace_memory.commit_action(
             purpose = purpose,
             tool_name = tool_name,
@@ -207,4 +195,4 @@ class RankedActionReasoner(EvaluationReasoner):
                     tool_observation,
                 )
             )
-        return action_description
+        return tool_observation

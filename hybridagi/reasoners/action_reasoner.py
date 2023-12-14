@@ -18,12 +18,6 @@ TOOL_INPUT_PROMPT = PromptTemplate(
     template = TOOL_INPUT_TEMPLATE
 )
 
-ACTION_DESCRIPTION_TEMPLATE = \
-"""Action Purpose: {purpose}
-Action: {tool_name}
-Action Input: {tool_input}
-Action Observation: {tool_observation}"""
-
 class ActionReasoner(DecisionReasoner):
     """LLM reasoner that can use tools to act"""
     tools_map: Dict[str, BaseTool] = {}
@@ -159,12 +153,6 @@ class ActionReasoner(DecisionReasoner):
             )
         self.validate_tool(tool_name)
         tool_observation = self.execute_tool(tool_name, tool_input)
-        action_description = self.get_action_description(
-            purpose = purpose,
-            tool_name = tool_name,
-            tool_input = tool_input,
-            tool_observation = tool_observation,
-        )
         self.trace_memory.commit_action(
             purpose = purpose,
             tool_name = tool_name,
@@ -178,7 +166,7 @@ class ActionReasoner(DecisionReasoner):
                 tool_input,
                 tool_observation,
             )
-        return action_description
+        return tool_observation
 
     async def async_perform_action(
             self,
@@ -206,12 +194,6 @@ class ActionReasoner(DecisionReasoner):
             )
         self.validate_tool(tool_name)
         tool_observation = self.execute_tool(tool_name, tool_input)
-        action_description = self.get_action_description(
-            purpose = purpose,
-            tool_name = tool_name,
-            tool_input = tool_input,
-            tool_observation = tool_observation,
-        )
         self.trace_memory.commit_action(
             purpose = purpose,
             tool_name = tool_name,
@@ -227,7 +209,7 @@ class ActionReasoner(DecisionReasoner):
                     tool_observation,
                 )
             )
-        return action_description
+        return tool_observation
 
     def validate_tool(self, tool_name: str):
         """Method to validate the given tool_name"""
