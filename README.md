@@ -28,16 +28,16 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 First, clone the chat repository with:
 
-```
+```shell
 git clone https://github.com/SynaLinks/HybridAGI-chat
 cd HybridAGI-chat
 ```
 
 ### Directory hierarchy
 
-First you should start by opening the repository folder in your favorite IDE ([VSCodium](https://vscodium.com/) with the Neo4J plugin is a good start). 
+Then you should open the repository folder in your favorite IDE ([VSCodium](https://vscodium.com/) with the Neo4J plugin is a good start). 
 
-```
+```shell
 📦HybridAGI-chat
 ┣ 📂archives  # This is where the AGI will save the archives when uploading file or folders
 ┣ 📂documentation # This is where you can put your pdf and documents for similarity search
@@ -72,7 +72,7 @@ Learn more about Graph-based Prompt Programming by reading our [documentation](h
 
 Now it is time to deploy this app, just use the following command
 
-```
+```shell
 docker-compose up
 ```
 
@@ -97,7 +97,7 @@ HybridAGI is made possible by the following open-source tools:
 
 If you found this repository usefull for your research, please consider citing us:
 
-```
+```bibtex
 @misc{Sallami2023,
   author = {Yoan Sallami},
   title = {HybridAGI: Introducing graph-based prompt programming},
