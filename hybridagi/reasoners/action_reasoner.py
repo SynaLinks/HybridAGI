@@ -49,20 +49,6 @@ class ActionReasoner(DecisionReasoner):
             tool_prompt = tool_prompt,
         )
 
-    def get_action_description(
-            self,
-            purpose: str,
-            tool_name: str,
-            tool_input: str,
-            tool_observation: str):
-        """Returns the action description"""
-        return ACTION_DESCRIPTION_TEMPLATE.format(
-            purpose = purpose,
-            tool_name = tool_name,
-            tool_input = tool_input,
-            tool_observation = tool_observation,
-        ).strip()
-
     def get_action_context(
             self,
             purpose: str,
