@@ -45,7 +45,7 @@ class Config():
         self.smart_llm_max_token = os.getenv("SMART_LLM_MAX_TOKEN", "8000")
 
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "./archives")
-        self.documentation_directory = os.getenv("DOCUMENTATION_DIRECTORY", "./archives")
+        self.documentation_directory = os.getenv("DOCUMENTATION_DIRECTORY", "./documentation")
         self.library_directory = os.getenv("LIBRARY_DIRECTORY", "./programs")
 
         self.user_language = os.getenv("USER_LANGUAGE", "English")
