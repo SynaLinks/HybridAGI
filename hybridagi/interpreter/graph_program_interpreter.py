@@ -257,10 +257,17 @@ class GraphProgramInterpreter(RankedActionReasoner):
 
     def use_tool(self, node:Node) -> Node:
         """Method to use a tool"""
-        purpose = node.properties["name"]
-        tool_name = node.properties["tool"]
-        tool_input_prompt = node.properties["prompt"]
-
+        try:
+            purpose = node.properties["name"]
+            tool_name = node.properties["tool"]
+        except Exception:
+            raise RuntimeError(
+                "Every nodes should have a name and tool parameter, please verify '"
+                +self.get_current_program().index_name+"' program")
+        if "pompt" in node.properties:
+            tool_input_prompt = node.properties["prompt"]
+        else:
+            tool_input_prompt = ""
         disable_inference = False
         if "disable_inference" in node.properties:
             disable = node.properties["disable_inference"]

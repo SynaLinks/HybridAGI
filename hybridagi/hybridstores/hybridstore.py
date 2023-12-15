@@ -103,7 +103,7 @@ class BaseHybridStore(BaseModel):
             texts: List[str],
             ids: List[str] = [],
             descriptions: List[str] = [],
-            metadatas: List[Dict[str, str]] = {},
+            metadatas: List[Dict[str, str]] = [],
         ):
         """Method to add texts"""
         indexes = []

@@ -32,6 +32,8 @@ dependencies = [
     "openai",
     "tiktoken",
     "gpt4all",
+    "pypdf",
+    "rapidocr-onnxruntime",
     "text_generation",
     "duckduckgo-search",
 ]

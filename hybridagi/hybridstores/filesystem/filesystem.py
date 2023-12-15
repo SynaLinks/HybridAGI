@@ -1,5 +1,6 @@
 import os
-from typing import Optional, List, Callable, Any
+from typing import Optional, List, Callable, Any, Dict
+
 from .context import FileSystemContext
 from .path import join
 from .base import BaseFileSystem
@@ -8,6 +9,7 @@ from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,
     Language,
 )
+from langchain.document_loaders import PyPDFLoader
 from langchain.schema import Document
 from ..hybridstore import _default_norm
 
@@ -39,8 +41,10 @@ class FileSystem(BaseFileSystem):
     def add_documents(
             self,
             paths: List[str],
-            texts: List[str],
-            languages: List[str] = []):
+            texts: List[str | Document],
+            languages: List[str] = [],
+            metadatas: List[Dict[str, Any]] = [],
+        ):
         """Method to add documents"""
         assert(len(texts) == len(paths))
         if languages:
@@ -48,6 +52,7 @@ class FileSystem(BaseFileSystem):
         for idx, text in enumerate(texts):
             path = paths[idx]
             language = languages[idx] if languages else ""
+            metadata = metadatas[idx] if metadatas else {}
             if self.exists(path):
                 self.remove_documents([path])
             if language not in [e.value for e in Language]:
@@ -60,10 +65,20 @@ class FileSystem(BaseFileSystem):
                     language=language,
                     chunk_size=self.chunk_size,
                     chunk_overlap=self.chunk_overlap)
-            sub_docs = text_splitter.split_documents(
-                [Document(page_content=str(text))])
-            texts = [d.page_content for d in sub_docs]
-            keys = self.add_texts(texts)
+            if isinstance(text, Document):
+                    sub_docs = text_splitter.split_documents(
+                        [text]
+                    )
+            elif isinstance(text, str):
+                sub_docs = text_splitter.split_documents(
+                    [Document(page_content=text, metadata=metadata)]
+                )
+            subdocs_texts = [d.page_content for d in sub_docs]
+            subdocs_metadatas = [d.metadata for d in sub_docs]
+            keys = self.add_texts(
+                texts = subdocs_texts,
+                metadatas = subdocs_metadatas,
+            )
             if len(keys) > 0:
                 self.create_document(path)
                 for i, key in enumerate(keys):
@@ -84,8 +99,9 @@ class FileSystem(BaseFileSystem):
     def append_documents(
                 self,
                 paths: List[str],
-                texts: List[str],
-                languages: List[str] = []
+                texts: List[str | Document],
+                languages: List[str] = [],
+                metadatas: List[Dict[str, Any]] = [],
             ):
         """Method to append documents"""
         assert(len(texts) == len(paths))
@@ -94,6 +110,7 @@ class FileSystem(BaseFileSystem):
         for idx, text in enumerate(texts):
             path = paths[idx]
             language = languages[idx] if languages else ""
+            metadata = metadatas[idx] if metadatas else {}
             if not self.exists(path):
                 self.add_documents(
                     [path],
@@ -110,10 +127,22 @@ class FileSystem(BaseFileSystem):
                         language=language,
                         chunk_size=self.chunk_size,
                         chunk_overlap=self.chunk_overlap)
-                sub_docs = text_splitter.split_documents(
-                    [Document(page_content=str(text))])
-                texts = [d.page_content for d in sub_docs]
-                keys = self.add_texts(texts)
+                if isinstance(text, Document):
+                    sub_docs = text_splitter.split_documents(
+                        [text]
+                    )
+                elif isinstance(text, str):
+                    sub_docs = text_splitter.split_documents(
+                        [Document(page_content=text, metadata=metadata)]
+                    )
+                else:
+                    raise ValueError("Parameter texts should be a string or Document")
+                subdocs_texts = [d.page_content for d in sub_docs]
+                subdocs_metadatas = [d.metadata for d in sub_docs]
+                keys = self.add_texts(
+                    texts = subdocs_texts,
+                    metadatas = subdocs_metadatas,
+                )
                 eof = self.get_end_of_file(path)
                 if len(keys) > 0:
                     for i, key in enumerate(keys):
@@ -205,14 +234,21 @@ class FileSystem(BaseFileSystem):
                     if not filename.startswith(".") and not filename.endswith(".zip"):
                         source = os.path.join(dirpath, filename)
                         try:
-                            f = open(source, "r")
-                            file_content = f.read()
-                            doc = Document(page_content=str(file_content))
-                            path = join(
-                                [dirpath.replace(folder, folder_name), filename]
-                            )
-                            docs.append(doc)
-                            names.append(path)
+                            if filename.endswith(".pdf"):
+                                loader = PyPDFLoader(filename, extract_image=True)
+                                pages = loader.load_and_split()
+                                for idx, p in enumerate(pages):
+                                    docs.append(p)
+                                    names.append(f"page_{idx}_"+path)
+                            else:
+                                f = open(source, "r")
+                                file_content = f.read()
+                                doc = Document(page_content=str(file_content))
+                                docs.append(doc)
+                                path = join(
+                                    [dirpath.replace(folder, folder_name), filename]
+                                )
+                                names.append(path)
                         except Exception:
                             pass
         self.add_documents(names, docs)
