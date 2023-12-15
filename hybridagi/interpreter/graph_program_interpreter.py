@@ -139,7 +139,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
         return prediction
 
     def call_program_tool(self, program_name: str):
-        if not self.exists(program_name):
+        if not self.program_memory.exists(program_name):
             return f"Error while calling '{program_name}': This program does not exist"
         if self.program_memory.program_tester.is_protected():
             return f"Error while calling '{program_name}': Trying to call a protected program"
