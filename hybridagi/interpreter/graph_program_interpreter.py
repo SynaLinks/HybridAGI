@@ -183,8 +183,13 @@ class GraphProgramInterpreter(RankedActionReasoner):
                 return f"Error occured while calling '{program_name}': "+\
                     "Trying to call a protected program"
         else:
+            result = self.program_memory.similarity_search(program_name, k=1)
+            if len(result) > 0:
+                most_similar_name = result[0]
+                return f"Error occured while calling '{program_name}': "+\
+                    f"Not existing, do you mean '{most_similar_name}'?"
             return f"Error occured while calling '{program_name}': "+\
-                "Not existing, please verify that you have the correct name"
+                    "Not existing, please correct the program name"
         self.set_current_node(self.get_next(self.get_current_node()))
         program = self.program_memory.create_graph(program_name)
         self.program_stack.append(program)
