@@ -262,7 +262,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
             tool_name = node.properties["tool"]
         except Exception:
             raise RuntimeError(
-                "Every nodes should have a name and tool parameter, please verify '"
+                "Every Action Node should have a name and tool parameter, please verify '"
                 +self.get_current_program().index_name+"' program")
         if "pompt" in node.properties:
             tool_input_prompt = node.properties["prompt"]
@@ -309,10 +309,9 @@ class GraphProgramInterpreter(RankedActionReasoner):
                     "Invalid name for control node."+
                     " Please verify your programs using RedisInsight.")
         else:
-            node_name = current_node.properties["name"]
             raise RuntimeError(
-                f"Invalid label for node '{node_name}'."+
-                " Please verify your programs using RedisInsight.")
+                f"Invalid Node label used, should be Control, Action, Decision or Program, please verify '"
+                +self.get_current_program().index_name+"' program")
         if next_node is not None:
             self.set_current_node(next_node)
         return next_node
