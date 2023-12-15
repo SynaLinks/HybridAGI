@@ -273,7 +273,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
             raise RuntimeError(
                 "Every Action Node should have a name and tool parameter, please verify '"
                 +self.get_current_program().index_name+"' program")
-        if "pompt" in node.properties:
+        if "prompt" in node.properties:
             tool_input_prompt = node.properties["prompt"]
         else:
             tool_input_prompt = ""
