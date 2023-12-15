@@ -1,5 +1,5 @@
 import os
-from typing import Optional, List, Callable, Any, Dict
+from typing import Optional, List, Callable, Any, Dict, Union
 
 from .context import FileSystemContext
 from .path import join
@@ -41,7 +41,7 @@ class FileSystem(BaseFileSystem):
     def add_documents(
             self,
             paths: List[str],
-            texts: List[str] | List[Document],
+            texts: List[Union[str,Document]],
             languages: List[str] = [],
             metadatas: List[Dict[str, Any]] = [],
         ):
@@ -99,7 +99,7 @@ class FileSystem(BaseFileSystem):
     def append_documents(
                 self,
                 paths: List[str],
-                texts: List[str] | List[Document],
+                texts: List[Union[str,Document]],
                 languages: List[str] = [],
                 metadatas: List[Dict[str, Any]] = [],
             ):
