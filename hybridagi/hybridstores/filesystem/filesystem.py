@@ -41,7 +41,7 @@ class FileSystem(BaseFileSystem):
     def add_documents(
             self,
             paths: List[str],
-            texts: List[str | Document],
+            texts: List[str] | List[Document],
             languages: List[str] = [],
             metadatas: List[Dict[str, Any]] = [],
         ):
@@ -99,7 +99,7 @@ class FileSystem(BaseFileSystem):
     def append_documents(
                 self,
                 paths: List[str],
-                texts: List[str | Document],
+                texts: List[str] | List[Document],
                 languages: List[str] = [],
                 metadatas: List[Dict[str, Any]] = [],
             ):
