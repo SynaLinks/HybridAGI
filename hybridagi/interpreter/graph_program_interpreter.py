@@ -19,6 +19,8 @@ from ..toolkits.program_memory_toolkit import ProgramMemoryToolKit
 from ..parsers.file import FileOutputParser
 from ..reasoners.ranked_action_reasoner import RankedActionReasoner
 
+from ..parsers.program_name import ProgramNameOutputParser
+
 class GraphProgramInterpreter(RankedActionReasoner):
     """LLM based interpreter for graph programs"""
     program_memory: ProgramMemory
@@ -39,6 +41,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
     fast_llm_max_token: int = 4000
     verbose: bool = True
     debug: bool = False
+    program_name_parser: ProgramNameOutputParser = ProgramNameOutputParser()
     
     def __init__(
             self,
@@ -139,6 +142,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
         return prediction
 
     def call_program_tool(self, program_name: str):
+        program_name = self.program_name_parser.parse(program_name)
         if not self.program_memory.exists(program_name):
             return f"Error while calling '{program_name}': This program does not exist"
         if self.program_memory.program_tester.is_protected(program_name):
@@ -149,16 +153,17 @@ class GraphProgramInterpreter(RankedActionReasoner):
     def plannify_tool(self, program: str):
         file_parser = FileOutputParser()
         filenames, contents, _ = file_parser.parse(program)
-        program_name = filenames[0].replace(".cypher", "")
+        program_name = self.program_name_parser.parse(filenames[0])
+        program = contents[0]
         if len(filenames) > 1:
             return f"Error occured while loading '{program_name}': "+\
                 "More than one Cypher program detected"
         self.program_memory.program_tester.verify_programs(
-            filenames,
-            contents)
+            [program_name],
+            [program])
         self.program_memory.add_programs(
-            filenames,
-            contents)
+            [program_name],
+            [program])
         self.call_program_by_name(program_name)
         return f"Successfully planned '{program_name}'"
 
@@ -176,8 +181,6 @@ class GraphProgramInterpreter(RankedActionReasoner):
         return starting_node
 
     def call_program_by_name(self, program_name: str):
-        program_name = program_name.replace(".cypher", "")
-        program_name = program_name.strip().lower().replace(" ", "_")
         if self.program_memory.exists(program_name):
             if self.program_memory.program_tester.is_protected(program_name):
                 return f"Error occured while calling '{program_name}': "+\
