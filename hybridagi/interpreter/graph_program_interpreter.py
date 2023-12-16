@@ -322,7 +322,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
                     " Please verify your programs using RedisInsight.")
         else:
             raise RuntimeError(
-                f"Invalid Node label used, should be Control, Action, Decision or Program, please verify '"
+                "Invalid Node label used, should be Control, Action, Decision or Program, please verify '"
                 +self.get_current_program().index_name+"' program")
         if next_node is not None:
             self.set_current_node(next_node)

@@ -17,10 +17,10 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under *the license of your choice* while using the framework under GNU GPL.
 
-
 ## Quickstart in 5 simple steps!
 
 #### What you need to start?
+
 - An OpenAI API key or a functional text generation endpoint
 - [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/products/docker-desktop/)
 
@@ -39,14 +39,14 @@ Then you should open the repository folder in your favorite IDE ([VSCodium](http
 
 ```shell
 📦HybridAGI-chat
-┣ 📂archives  # This is where the AGI will save the archives when uploading file or folders
-┣ 📂documentation # This is where you can put your pdf and documents for similarity search
+┣ 📂archives  # This is where the AGI will save its uploaded work
+┣ 📂documentation # This is where you can put your pdf and documents
 ┣ 📂programs # This is where you should put your Cypher programs
 ┣ 📂src # The source code of the UI
 ... the license and other files related to deployment
 ```
 
-Note that these folders are shared with the application container, you should use them to share data between the user and the AI system.
+Note that the folders `archives`, `documentation` and `programs` are shared with the application container, you can edit them and reload your programs/documentation without restarting the application container.
 
 ### Echo test program
 
