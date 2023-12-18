@@ -1,5 +1,5 @@
 """The hybridstore. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
-
+import hashlib
 import uuid
 import redis
 import numpy as np
@@ -110,7 +110,7 @@ class BaseHybridStore(BaseModel):
         for idx, text in enumerate(texts):
             content_index = str(uuid.uuid4().hex) if not ids else ids[idx]
             description = text if not descriptions else descriptions[idx]
-            metadata = text if not metadatas else metadatas[idx]
+            metadata = {} if not metadatas else metadatas[idx]
             vector = self.normalize(np.array(self.embeddings.embed_query(description), dtype=np.float32))
             self.query(
                 'MERGE (n:'+self.indexed_label+' {name:"'+content_index+'"'+
@@ -118,7 +118,7 @@ class BaseHybridStore(BaseModel):
             self.set_content(content_index, text)
             if descriptions:
                 self.set_content_description(content_index, description)
-            if metadatas:
+            if metadata:
                 self.set_content_metadata(content_index, metadata)
             indexes.append(content_index)
         return indexes
