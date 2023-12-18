@@ -3,6 +3,7 @@
 import uuid
 from colorama import Fore, Style
 from time import gmtime, strftime
+from datetime import datetime
 from collections import deque
 from .base import BaseTraceMemory
 from typing import Optional, Callable, Any, Dict, List
@@ -56,8 +57,22 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             verbose = verbose,
         )
 
-    def get_time(self):
-        return strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+    def get_timestamp(self):
+        """Returns a timestamp"""
+        return strftime("%Y-%m-%d_%H:%M:%S.%f%z", gmtime())
+
+    def get_commit_time(
+            self,
+            commit_index: str,
+        ) -> Optional[datetime]:
+        """Returns the commit timestamp in datetime format"""
+        result = self.query(
+            'MATCH (n {name:"'+commit_index+'"}) RETURN n.time as time'
+        )
+        if len(result) > 0:
+            date_string = result[0]
+            return datetime.strptime(date_string, '%Y-%m-%d_%H:%M:%S.%f%z')
+        return None
 
     def get_current_commit(self) -> str:
         """Returns the current commit index"""
@@ -68,7 +83,7 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
     def get_next_commit(self, commit_index: str) -> str:
         """Method to return the next content index"""
         result = self.query(
-            'MATCH (:Step {name:"'+commit_index+'"})-[:NEXT]->(n:Step) RETURN n')
+            'MATCH ({name:"'+commit_index+'"})-[:NEXT]->(n) RETURN n')
         if len(result) > 0:
             return result[0][0].properties["name"]
         return ""
@@ -93,7 +108,7 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             metadata: Dict[str, Any] = {}
         ):
         """Commit a step of the program into memory"""
-        metadata["time"] = self.get_time()
+        metadata["time"] = self.get_timestamp()
         if label == self.indexed_label:
             indexes = self.add_texts(
                 texts = [description],
@@ -127,7 +142,7 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             tool_observation: str,
             metadata: Dict[str, Any] = {},
         ):
-        """Commit an action into memory"""
+        """Commit an action"""
         metadata["program"] = self.current_program
         metadata["objective"] = self.objective
         metadata["note"] = self.note
@@ -151,7 +166,7 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             decision: str,
             metadata: Dict[str, Any] = {},
         ):
-        """Commit a decision into memory"""
+        """Commit a decision"""
         metadata["purpose"] = purpose
         metadata["program"] = self.current_program
         metadata["question"] = question
@@ -176,7 +191,7 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             purpose: str,
             program_name: str,
         ):
-        """Commit the starting of a program into memory"""
+        """Commit the starting of a program"""
         metadata = {}
         metadata["purpose"] = purpose
         metadata["program"] = program_name
@@ -196,6 +211,7 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             self,
             program_name: str,
         ):
+        """Commit the ending of a program"""
         metadata = {}
         metadata["program"] = program_name
         metadata["objective"] = self.objective
@@ -208,3 +224,25 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             label = "EndProgram",
             description = end_desc,
             metadata = metadata)
+
+    def get_trace_indexes(
+            self,
+        ) -> List[str]:
+        """Get the traces indexes (the first commit index of each trace)"""
+        trace_indexes = []
+        result = self.query('MATCH (n:StartProgram {program:"main"}) RETURN n.name as name')
+        for record in result:
+            trace_indexes.append(record[0])
+        return trace_indexes
+
+    def is_finished(
+            self,
+            trace_index: str,
+        ) -> bool:
+        """Returns True if the execution of the program terminated"""
+        result = self.query(
+            'MATCH (n:StartProgram {name:"'+trace_index+'", program:"main"})'
+            +'-[:NEXT*]->(m:EndProgram {program:"main"}) RETURN m')
+        if len(result) == 0:
+            return False
+        return True

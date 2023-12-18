@@ -19,25 +19,6 @@ class BaseTraceMemory(BaseModel):
     current_program: str = ""
     chunk_size: int = 200
 
-    # def __init__(
-    #         self,
-    #         index_name: str,
-    #         redis_url: str,
-    #         embeddings: Embeddings,
-    #         embeddings_dim: int,
-    #         normalize: Optional[Callable[[Any], Any]] = _default_norm,
-    #         verbose: bool = True):
-    #     super().__init__(
-    #         index_name = index_name,
-    #         redis_url = redis_url,
-    #         embeddings = embeddings,
-    #         embeddings_dim = embeddings_dim,
-    #         graph_index = "trace_memory",
-    #         indexed_label = "Step",
-    #         normalize = normalize,
-    #         verbose = verbose,
-    #     )
-
     def clear_trace(self):
         """Method to clear the actions trace"""
         self.actions_trace = deque()
