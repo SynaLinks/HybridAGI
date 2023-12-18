@@ -1,0 +1,31 @@
+version: '3'
+services:
+  hybrid-agi-cli:
+    image: hybrid-agi-cli:0.0.201
+    working_dir: /HybridAGI
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hybrid-agi-cli
+    depends_on:
+      - falkordb
+      - redis-insight
+    ports:
+      - 8501:8501
+    volumes:
+      - ./archives:/archives
+      - ./documentation:/documentation
+      - ./programs:/programs
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: falkordb
+    ports:
+      - 6379:6379
+      - 7687:7687
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis-insight
+    depends_on:
+      - falkordb
+    ports:
+      - 8001:8001

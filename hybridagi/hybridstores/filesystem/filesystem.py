@@ -239,14 +239,23 @@ class FileSystem(BaseFileSystem):
                                 pages = loader.load_and_split()
                                 for idx, p in enumerate(pages):
                                     docs.append(p)
-                                    names.append(f"page_{idx}_"+path)
+                                    path = join(
+                                        [
+                                            dirpath.replace(folder, folder_name),
+                                            f"page_{idx}_"+filename,
+                                        ]
+                                    )
+                                    names.append(path)
                             else:
                                 f = open(source, "r")
                                 file_content = f.read()
                                 doc = Document(page_content=str(file_content))
                                 docs.append(doc)
                                 path = join(
-                                    [dirpath.replace(folder, folder_name), filename]
+                                    [
+                                        dirpath.replace(folder, folder_name),
+                                        filename,
+                                    ]
                                 )
                                 names.append(path)
                         except Exception:
