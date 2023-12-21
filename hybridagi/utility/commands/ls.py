@@ -1,4 +1,4 @@
-"""The ls command. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The ls command. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import List
 from .base import BaseShellCommand

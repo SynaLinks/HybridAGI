@@ -1,3 +1,5 @@
+"""The reader utility. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 from ..hybridstores.filesystem.filesystem import FileSystem
 
 class ReaderUtility():

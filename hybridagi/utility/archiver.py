@@ -1,3 +1,5 @@
+"""The archiver utility. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import os
 import zipfile
 from time import gmtime, strftime

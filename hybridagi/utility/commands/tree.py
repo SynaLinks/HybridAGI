@@ -1,10 +1,10 @@
-"""The tree command. Copyright (C) 2023 SynaLinks. License: GPLv3"""
+"""The tree command. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import List, Tuple
 from .base import BaseShellCommand
 from ...hybridstores.filesystem.context import FileSystemContext
 from ...hybridstores.filesystem.filesystem import FileSystem
-from ...hybridstores.filesystem.path import basename, join
+from ...hybridstores.filesystem.path import basename
 from ...parsers.path import PathOutputParser
 
 PIPE = "│"
