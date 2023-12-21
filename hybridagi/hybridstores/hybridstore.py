@@ -85,10 +85,12 @@ class BaseHybridStore(BaseModel):
         """Method to perform a similarity search in the hybridstore"""
         vector = self.normalize(np.array(self.embeddings.embed_query(query), dtype=np.float32))
         result = self.query(
-            'CALL db.idx.vector.query '+
-            '({type:"NODE", label:"'+self.indexed_label+'"'+
-            ', attribute:"embeddings_vector", query:vector32f('+str(list(vector))+
-            '), k:'+str(k)+'}) YIELD entity RETURN entity.name AS name')
+            'CALL db.idx.vector.queryNodes('+
+            '"'+self.indexed_label+'", '+
+            '"embeddings_vector", '+
+            str(k)+', '+
+            'vecf32('+str(list(vector))+
+            ')) YIELD node RETURN node.name AS name')
         final_result = []
         for record in result:
             if fetch_content:
@@ -113,7 +115,7 @@ class BaseHybridStore(BaseModel):
             vector = self.normalize(np.array(self.embeddings.embed_query(description), dtype=np.float32))
             self.query(
                 'MERGE (n:'+self.indexed_label+' {name:"'+content_index+'"'+
-                ', embeddings_vector:vector32f('+str(list(vector))+')})')
+                ', embeddings_vector:vecf32('+str(list(vector))+')})')
             self.set_content(content_index, text)
             if descriptions:
                 self.set_content_description(content_index, description)
@@ -230,16 +232,16 @@ class BaseHybridStore(BaseModel):
         """Method to delete an entry"""
         return self.client.delete(self.index_name+":content:"+content_index)
 
-    def query(self, query: str, params: Dict[str, Any] = {}) -> List:
+    def query(self, query: str) -> List:
         """Method to query the filesystem graph"""
-        return self.hybridstore.query(query, params = params)
+        return self.hybridstore.query(query)
 
     def initialize(self):
         """Method to initialize the vector index enabling similarity search"""
         try:
             self.query(
                 'CREATE VECTOR INDEX FOR (c:'+self.indexed_label+
-                ') ON (c.embeddings_vector) OPTIONS {dim:'+
+                ') ON (c.embeddings_vector) OPTIONS {dimension:'+
                 str(self.embeddings_dim)+', similarityFunction:"euclidean"}')
         except Exception:
             pass

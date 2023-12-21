@@ -17,7 +17,8 @@ from ..utility.commands import (
     MakeDirectory,
     Move,
     PrintWorkingDirectory,
-    Remove
+    Remove,
+    Tree,
 )
 
 class ShellTool(BaseTool):
@@ -43,6 +44,7 @@ class ShellTool(BaseTool):
             Move(filesystem = filesystem),
             PrintWorkingDirectory(filesystem = filesystem),
             Remove(filesystem = filesystem),
+            Tree(filesystem = filesystem),
         ]
         shell = ShellUtility(filesystem, commands)
 

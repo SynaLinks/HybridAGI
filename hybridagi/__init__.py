@@ -38,6 +38,7 @@ from .utility.commands import (
     Move,
     PrintWorkingDirectory,
     Remove,
+    Tree,
 )
 
 from .interpreter.graph_program_interpreter import GraphProgramInterpreter
@@ -85,4 +86,5 @@ __all__ = [
     "Move",
     "PrintWorkingDirectory",
     "Remove",
+    "Tree",
 ]
