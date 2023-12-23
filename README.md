@@ -5,6 +5,7 @@
 [![Documentation](https://img.shields.io/badge/Docs-Documentation-blue)](https://synalinks.github.io/documentation)
 ---
 
+
 HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you program its behavior using a **graph-based prompt programming** approach. This state-of-the-art feature allows the AGI to efficiently use any tool while controlling the long-term behavior of the agent.
 
 ## Key Features 🎉
@@ -109,7 +110,12 @@ If you found this repository usefull for your research, please consider citing u
 ```
 
 ## Get Involved 💬
-
 [![Discord](https://dcbadge.vercel.app/api/server/zM2rEfsqxj)](https://discord.gg/zM2rEfsqxj)
 
-Join our community of developers, researchers, and AI enthusiasts. Contribute to the project, provide feedback, and shape the future of Hybrid AGI.
+Become a part of our community of developers, researchers, and AI enthusiasts. Contribute to the project, share your feedback, and help shape the future of Hybrid AGI. We welcome and value your participation!
+
+## Support Our Work ❤️‍🔥
+
+<a href="https://www.buymeacoffee.com/synalinks" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
+We're a small team dedicated to advancing the future of AI through open-source research. Consider supporting our work by contributing the cost of a coffee or by sharing this repository on social media! Your support helps us continue our research and development. Additionally, feel free to check out our progress, findings, and code on GitHub. We're grateful for any support and collaboration from the community as we work towards shaping the future of AI. Thank you!
