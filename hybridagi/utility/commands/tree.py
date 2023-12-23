@@ -7,7 +7,6 @@ from ...hybridstores.filesystem.filesystem import FileSystem
 from ...hybridstores.filesystem.path import basename
 from ...parsers.path import PathOutputParser
 
-PIPE = "│"
 ELBOW = "└──"
 TEE = "├──"
 PIPE_PREFIX = "│   "
@@ -19,7 +18,7 @@ class Tree(BaseShellCommand):
         super().__init__(
             filesystem,
             "tree",
-            "display the directory structure"
+            "display the given directory structure",
         )
         self.path_parser = PathOutputParser()
 
@@ -33,13 +32,13 @@ class Tree(BaseShellCommand):
             path = ctx.working_directory
         if path.startswith("-"):
             option = args[0]
-            raise ValueError(f"Cannot tree: Option {option} not supported")
+            raise ValueError(f"Cannot use tree: Option {option} not supported")
         path = ctx.eval_path(path)
         if self.filesystem.exists(path):
             if not self.filesystem.is_folder(path):
-                raise ValueError(f"Cannot tree {path}: Not a directory")
+                raise ValueError(f"Cannot use tree {path}: Not a directory")
         else:
-            raise ValueError(f"Cannot tree {path}: No such file or directory")
+            raise ValueError(f"Cannot use tree {path}: No such file or directory")
         
         result_list.append(path)
         result_list, folder_count, file_count = self._get_tree(path, result_list, "", 0, 0)
@@ -78,13 +77,13 @@ class Tree(BaseShellCommand):
         return result, folder_count, file_count
 
     def _get_subdirectories(self, path: str) -> List[str]:
-        """Retrieve the content of the given folder."""
+        """Retrieve the folders of the given folder."""
         query = 'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n'
         result_query = self.filesystem.query(query)
         return sorted(record[0].properties["name"] for record in result_query)
 
     def _get_files(self, path: str) -> List[str]:
-        """Retrieve the content of the given folder."""
+        """Retrieve the files of the given folder."""
         query = 'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n'
         result_query = self.filesystem.query(query)
         return sorted(record[0].properties["name"] for record in result_query)
