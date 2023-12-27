@@ -1,12 +1,11 @@
 """The config store. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
-from pydantic.v1 import BaseModel
 import os
 from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 
-class Config(BaseModel):
+class Config():
     """Initialize the Config class"""
     def __init__(self):
         self.verbose = os.getenv("VERBOSE", "True") == "True"
