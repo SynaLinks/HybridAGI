@@ -21,6 +21,8 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
+    "arxiv",
+    "bs4",
     "pydantic",
     "python-dotenv",
     "coverage>=5.6",

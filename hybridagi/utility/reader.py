@@ -1,18 +1,21 @@
 """The reader utility. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+from pydantic.v1 import BaseModel
 from ..hybridstores.filesystem.filesystem import FileSystem
 
-class ReaderUtility():
+class ReaderUtility(BaseModel):
     """The reader utility"""
+    filesystem: FileSystem
+    current_consulted_document: str = ""
+    last_content_consulted: str = ""
+
     def __init__(
             self,
-            filesystem: FileSystem,
-            verbose: bool = True):
+            filesystem: FileSystem):
         """The reader constructor"""
-        self.filesystem = filesystem
-        self.current_consulted_document = ""
-        self.last_content_consulted = ""
-        self.verbose = verbose
+        super().__init__(
+            filesystem = filesystem
+        )
 
     def read_document(self, path:str) -> str:
         """
@@ -41,8 +44,9 @@ class ReaderUtility():
         else:
             self.current_consulted_document = ""
         content = str(self.filesystem.get_content(content_key))
+        metadata = self.filesystem.get_content_metadata(content_key)
         self.last_content_consulted = content_key
         if next_key != "":
-            return content + "\n\n[...]"
+            return content + "\n\n[...]" + (f"\n\n{metadata}" if metadata else "")
         else:
-            return content
+            return content + (f"\n\n{metadata}" if metadata else "")

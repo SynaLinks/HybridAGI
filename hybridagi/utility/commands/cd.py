@@ -7,14 +7,14 @@ from ...hybridstores.filesystem.filesystem import FileSystem
 from ...parsers.path import PathOutputParser
 
 class ChangeDirectory(BaseShellCommand):
+    path_parser: PathOutputParser = PathOutputParser()
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
-            filesystem,
-            "cd",
-            "change the current working directory"
+            filesystem = filesystem,
+            name = "cd",
+            description = "change the current working directory",
         )
-        self.path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to change directory"""

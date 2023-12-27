@@ -14,9 +14,10 @@ class FakeCommand(BaseShellCommand):
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
-            filesystem,
-            "mock",
-            "mock a unix-like command")
+            filesystem=filesystem,
+            name="mock",
+            description="mock a unix-like command",
+        )
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         return "Mock command executed"
@@ -43,7 +44,7 @@ class TestShellUtility(unittest.TestCase):
         # Register the mock command
         mock_command = FakeCommand(filesystem=self.filesystem)
         self.virtual_shell = ShellUtility(
-            self.filesystem,
+            filesystem=self.filesystem,
             commands=[mock_command]
         )
 

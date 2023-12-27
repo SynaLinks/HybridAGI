@@ -8,14 +8,14 @@ from ...hybridstores.filesystem.path import dirname
 from ...parsers.path import PathOutputParser
 
 class Move(BaseShellCommand):
+    path_parser: PathOutputParser = PathOutputParser()
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
-            filesystem,
-            "mv",
-            "move the target file or folder to destination"
+            filesystem = filesystem,
+            name = "mv",
+            description = "move the target file or folder to destination",
         )
-        self.path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to move a file or folder"""

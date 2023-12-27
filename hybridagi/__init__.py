@@ -25,10 +25,12 @@ from .utility.shell import ShellUtility
 from .utility.reader import ReaderUtility
 from .utility.archiver import ArchiverUtility
 from .utility.tester import TesterUtility
+from .utility.browser import BrowserUtility
 
 from .toolkits.filesystem_toolkit import FileSystemToolKit
 from .toolkits.program_memory_toolkit import ProgramMemoryToolKit
 from .toolkits.trace_memory_toolkit import TraceMemoryToolKit
+from .toolkits.web_toolkit import WebToolKit
 
 from .utility.commands import (
     BaseShellCommand,
@@ -73,8 +75,10 @@ __all__ = [
     "FileSystemToolKit",
     "ProgramMemoryToolKit",
     "TraceMemoryToolKit",
+    "WebToolKit",
 
     "TesterUtility",
+    "BrowserUtility",
     "ArchiverUtility",
     "ReaderUtility",
     "ShellUtility",

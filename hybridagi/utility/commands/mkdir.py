@@ -8,14 +8,14 @@ from ...hybridstores.filesystem.path import dirname
 from ...parsers.path import PathOutputParser
 
 class MakeDirectory(BaseShellCommand):
+    path_parser: PathOutputParser = PathOutputParser()
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
-            filesystem,
-            "mkdir",
-            "make a new directory"
+            filesystem = filesystem,
+            name = "mkdir",
+            description = "make a new directory",
         )
-        self.path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to create a directory"""

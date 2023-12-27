@@ -1,5 +1,6 @@
 # HybridAGI: The Programmable Neuro-Symbolic AGI
 ![Beta](https://img.shields.io/badge/Release-Beta-blue)
+![Coverage](coverage.svg)
 ![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 [![Documentation](https://img.shields.io/badge/Docs-Documentation-blue)](https://synalinks.github.io/documentation)
@@ -15,7 +16,7 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 - **Graph Program Interpreter:** We introduce a [revolutionary Agent](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
 
-- **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under *the license of your choice* while using the framework under GNU GPL.
+- **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under **the license of your choice** while using the framework under GNU GPL.
 
 ## Quickstart in 5 simple steps!
 

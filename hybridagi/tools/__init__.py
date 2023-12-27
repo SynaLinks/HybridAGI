@@ -10,6 +10,7 @@ from .upload import UploadTool
 from .shell import ShellTool
 from .write_files import WriteFilesTool
 from .content_search import ContentSearchTool
+from .browse_website import BrowseWebsiteTool
 
 __all__ = [
     "AskUserTool",
@@ -23,4 +24,5 @@ __all__ = [
     "ShellTool",
     "WriteFilesTool",
     "ContentSearchTool",
+    "BrowseWebsiteTool",
 ]

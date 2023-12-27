@@ -18,14 +18,13 @@ from hybridagi import (
 
 from hybridagi.toolkits import (
     FileSystemToolKit,
+    WebToolKit,
 )
 
 from hybridagi.tools import (
     AskUserTool,
     SpeakTool
 )
-
-from langchain.tools import DuckDuckGoSearchRun
 
 cfg = Config()
 
@@ -89,7 +88,6 @@ trace_memory.initialize()
 
 ask_user = AskUserTool()
 speak = SpeakTool()
-internet_search = DuckDuckGoSearchRun()
 
 tools = [
     Tool(
@@ -100,11 +98,6 @@ tools = [
         name=speak.name,
         func=speak.run,
         description=speak.description),
-    Tool(
-        name="InternetSearch",
-        func=internet_search.run,
-        description=internet_search.description
-    )
 ]
 
 toolkits = [
@@ -112,6 +105,10 @@ toolkits = [
         filesystem = filesystem,
         downloads_directory = cfg.downloads_directory,
     ),
+    WebToolKit(
+        filesystem = filesystem,
+        user_agent = cfg.user_agent,
+    )
 ]
 
 interpreter = GraphProgramInterpreter(

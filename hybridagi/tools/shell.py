@@ -46,7 +46,10 @@ class ShellTool(BaseTool):
             Remove(filesystem = filesystem),
             Tree(filesystem = filesystem),
         ]
-        shell = ShellUtility(filesystem, commands)
+        shell = ShellUtility(
+            filesystem = filesystem,
+            commands = commands,
+        )
 
         description = \
     f"""

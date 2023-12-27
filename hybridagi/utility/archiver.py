@@ -2,20 +2,14 @@
 
 import os
 import zipfile
+from pydantic.v1 import BaseModel
 from time import gmtime, strftime
 from ..hybridstores.filesystem.path import basename
 from ..hybridstores.filesystem.filesystem import FileSystem
 
-class ArchiverUtility():
-    def __init__(
-            self,
-            filesystem: FileSystem,
-            downloads_directory: str,
-            verbose: bool = True
-        ):
-        self.filesystem = filesystem
-        self.downloads_directory = downloads_directory
-        self.verbose = verbose
+class ArchiverUtility(BaseModel):
+    filesystem: FileSystem
+    downloads_directory: str
 
     def zip_and_download(self, path:str) -> str:
         """Method to convert into .zip and download to downloads folder"""
@@ -62,5 +56,5 @@ class ArchiverUtility():
             file_content = self.filesystem.get_document(document_path)
             zip_file.writestr(
                 document_path.replace(target_folder_path, ""),
-                file_content
+                file_content,
             )

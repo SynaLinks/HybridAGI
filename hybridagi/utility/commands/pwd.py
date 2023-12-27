@@ -9,9 +9,10 @@ class PrintWorkingDirectory(BaseShellCommand):
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
-            filesystem,
-            "pwd",
-            "print the current working directory")
+            filesystem = filesystem,
+            name = "pwd",
+            description = "print the current working directory",
+        )
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         return ctx.working_directory

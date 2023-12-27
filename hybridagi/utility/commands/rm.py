@@ -7,13 +7,14 @@ from ...hybridstores.filesystem.filesystem import FileSystem
 from ...parsers.path import PathOutputParser
 
 class Remove(BaseShellCommand):
+    path_parser: PathOutputParser = PathOutputParser()
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
-            filesystem,
-            "rm",
-            "remove the input file or empty folder")
-        self.path_parser = PathOutputParser()
+            filesystem = filesystem,
+            name = "rm",
+            description = "remove the input file or empty folder",
+        )
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to remove a file or empty folder"""

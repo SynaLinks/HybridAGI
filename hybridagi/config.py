@@ -1,11 +1,12 @@
 """The config store. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+from pydantic.v1 import BaseModel
 import os
 from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 
-class Config():
+class Config(BaseModel):
     """Initialize the Config class"""
     def __init__(self):
         self.verbose = os.getenv("VERBOSE", "True") == "True"
@@ -14,15 +15,15 @@ class Config():
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
-        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
+        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo-instruct")
         self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4-1106-preview")
 
         self.local_smart_llm_model_url = os.environ.get(
             "LOCAL_SMART_LLM_MODEL_URL",
-            "http://localhost:8010")
+            "http://localhost:8080")
         self.local_fast_llm_model_url = os.environ.get(
             "LOCAL_FAST_LLM_MODEL_URL",
-            "http://localhost:8010")
+            "http://localhost:8080")
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 

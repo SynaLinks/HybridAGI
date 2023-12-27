@@ -8,14 +8,14 @@ from ...hybridstores.filesystem.path import basename
 from ...parsers.path import PathOutputParser
 
 class ListDirectory(BaseShellCommand):
+    path_parser: PathOutputParser = PathOutputParser()
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
-            filesystem,
-            "ls",
-            "list the given directory"
+            filesystem = filesystem,
+            name = "ls",
+            description = "list the given directory"
         )
-        self.path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to list folder/directory"""
