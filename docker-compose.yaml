@@ -15,9 +15,9 @@ services:
     ports:
       - 8501:8501
     volumes:
-      - ./archives:/archives
-      - ./documentation:/documentation
-      - ./programs:/programs
+      - ./archives:/HybridAGI/archives
+      - ./documentation:/HybridAGI/documentation
+      - ./programs:/HybridAGI/programs
   falkordb:
     image: falkordb/falkordb:latest
     container_name: falkordb
