@@ -235,28 +235,28 @@ class FileSystem(BaseFileSystem):
                         source = os.path.join(dirpath, filename)
                         try:
                             if filename.endswith(".pdf"):
-                                loader = PyPDFLoader(filename, extract_image=True)
+                                loader = PyPDFLoader(source, extract_image=True)
                                 pages = loader.load_and_split()
-                                for idx, p in enumerate(pages):
-                                    docs.append(p)
+                                for idx, page in enumerate(pages):
                                     path = join(
                                         [
                                             dirpath.replace(folder, folder_name),
                                             f"page_{idx}_"+filename,
                                         ]
                                     )
+                                    docs.append(page)
                                     names.append(path)
                             else:
                                 f = open(source, "r")
                                 file_content = f.read()
                                 doc = Document(page_content=str(file_content))
-                                docs.append(doc)
                                 path = join(
                                     [
                                         dirpath.replace(folder, folder_name),
                                         filename,
                                     ]
                                 )
+                                docs.append(doc)
                                 names.append(path)
                         except Exception:
                             pass

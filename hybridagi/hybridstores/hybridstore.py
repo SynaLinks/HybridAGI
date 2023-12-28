@@ -145,7 +145,7 @@ class BaseHybridStore(BaseModel):
     def exists(self, index:str) -> bool:
         """Method to check if an entry is present in the hybridstore"""
         result = self.hybridstore.query(
-            'MATCH (n:'+self.indexed_label+' {name:"'+index+'"}) RETURN n')
+            'MATCH (n {name:"'+index+'"}) RETURN n')
         if len(result) > 0:
             return True
         return False

@@ -29,3 +29,21 @@ class TestFileSystem(unittest.TestCase):
             languages = ["plaintext"]
         )
 
+    def test_add_folder(self):
+        self.filesystem.add_folders(
+            ["tests/hybridstores/filesystem/test_folder"],
+            ["/home/user/TestFolder"]
+        )
+        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_1"))
+        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_1/test_file_1.txt"))
+        self.assertEqual(
+            "This is a first test", 
+            self.filesystem.get_document("/home/user/TestFolder/test_folder_1/test_file_1.txt")
+        )
+        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_2"))
+        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_2/test_file_2.txt"))
+        self.assertEqual(
+            "This is a second test", 
+            self.filesystem.get_document("/home/user/TestFolder/test_folder_2/test_file_2.txt")
+        )
+
