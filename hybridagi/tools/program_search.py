@@ -34,8 +34,8 @@ class ProgramSearchTool(BaseTool):
 
     def program_search(self, query: str) -> str:
         """Use the tool."""
-        result = self.program_memory.similarity_search(query, k = 20)
-        result_string = "Top-10 most relevant implemented programs:"
+        result = self.program_memory.similarity_search(query, k = 15)
+        result_string = "Top-5 most relevant implemented programs:"
         n = 0
         for program_name in result:
             if not self.program_memory.program_tester.is_protected(program_name):
@@ -46,7 +46,7 @@ class ProgramSearchTool(BaseTool):
                 else:
                     result_string += f"\n- {program_name}"
                 n += 1
-            if n >= 10:
+            if n >= 5:
                 break
         return result_string
 

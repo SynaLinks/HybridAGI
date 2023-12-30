@@ -14,7 +14,7 @@ class Config():
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
-        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo-instruct")
+        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-3.5-turbo")
         self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4-1106-preview")
 
         self.local_smart_llm_model_url = os.environ.get(
