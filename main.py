@@ -102,14 +102,14 @@ interpreter = GraphProgramInterpreter(
     debug = cfg.debug_mode
 )
 
-@app.post("/clean_database")
+@app.post("/clean-database")
 def clean_database():
     filesystem.clear()
     filesystem.initialize()
     program_memory.initialize()
     return "Successfully cleaned"
 
-@app.post("/load_programs")
+@app.post("/load-programs")
 def load_programs(names: List[str], programs: List[str]):
     try:
         program_memory.add_programs(names = names, programs = programs)
@@ -117,7 +117,7 @@ def load_programs(names: List[str], programs: List[str]):
     except Exception as err:
         return f"Error occured: {err}"
 
-@app.post("/run")
+@app.post("/run-interpreter")
 def run_interperter(objective: str):
     try:
         result = asyncio.run(interpreter.async_run(objective))
