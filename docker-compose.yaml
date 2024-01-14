@@ -1,12 +1,12 @@
 version: '3'
 services:
   hybrid-agi-cli:
-    image: hybrid-agi-cli:0.0.201
+    image: hybrid-agi:0.1.0
     working_dir: /HybridAGI
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hybrid-agi-cli
+    container_name: hybrid-agi
     env_file:
       - .env
     depends_on:
