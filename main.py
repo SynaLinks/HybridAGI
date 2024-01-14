@@ -105,24 +105,23 @@ interpreter = GraphProgramInterpreter(
 
 @app.post("/clean_database")
 def clean_database():
-    print(f"{Fore.GREEN}[*] Cleaning the hybrid database...{Style.RESET_ALL}")
     filesystem.clear()
     filesystem.initialize()
     program_memory.initialize()
-    print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
+    return "Successfully cleaned"
 
 @app.post("/load_programs")
 def load_programs(names: List[str], programs: List[str]):
     try:
         program_memory.add_programs(names = names, programs = programs)
-        return "Success"
+        return "Successfully loaded programs"
     except Exception as err:
-        return str(err)
+        return f"Error occured: {err}"
 
 @app.post("/run")
 def run_interperter(objective: str):
     try:
         result = asyncio.run(interpreter.async_run(objective))
-        print(f"{Fore.YELLOW}[*] {result}{Style.RESET_ALL}")
+        return result
     except Exception as err:
-        print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
+        return f"Error occured: {err}"
