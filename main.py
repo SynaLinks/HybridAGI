@@ -6,7 +6,6 @@ import numpy as np
 from colorama import Fore, Style
 from typing import List
 
-from langchain.tools import Tool
 from langchain_together import Together
 from langchain_together.embeddings import TogetherEmbeddings
 
@@ -22,11 +21,6 @@ from hybridagi import (
 from hybridagi.toolkits import (
     FileSystemToolKit,
     WebToolKit,
-)
-
-from hybridagi.tools import (
-    AskUserTool,
-    SpeakTool
 )
 
 from fastapi import FastAPI
@@ -80,19 +74,7 @@ trace_memory = TraceMemory(
     normalize = _normalize_vector)
 trace_memory.initialize()
 
-ask_user = AskUserTool()
-speak = SpeakTool()
-
-tools = [
-    Tool(
-        name=ask_user.name,
-        func=ask_user.run,
-        description=ask_user.description),
-    Tool(
-        name=speak.name,
-        func=speak.run,
-        description=speak.description),
-]
+tools = []
 
 toolkits = [
     FileSystemToolKit(
@@ -137,7 +119,7 @@ def load_programs(names: List[str], programs: List[str]):
     except Exception as err:
         return str(err)
 
-@app.post("/run_interperter")
+@app.post("/run")
 def run_interperter(objective: str):
     try:
         result = asyncio.run(interpreter.async_run(objective))
