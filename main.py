@@ -1,6 +1,4 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
-
-
 import asyncio
 import numpy as np
 from typing import List
@@ -23,8 +21,6 @@ from hybridagi.toolkits import (
 )
 
 from fastapi import FastAPI
-
-app = FastAPI()
 
 cfg = Config()
 
@@ -101,6 +97,8 @@ interpreter = GraphProgramInterpreter(
     verbose = cfg.verbose,
     debug = cfg.debug_mode
 )
+
+app = FastAPI()
 
 @app.post("/clean-database")
 def clean_database():

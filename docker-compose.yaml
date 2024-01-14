@@ -13,7 +13,7 @@ services:
       - falkordb
       - redis-insight
     ports:
-      - 8080:80
+      - 8000:8000
     volumes:
       - ./archives:/HybridAGI/archives
       - ./documentation:/HybridAGI/documentation
