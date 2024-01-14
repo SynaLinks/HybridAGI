@@ -2,25 +2,19 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.metadata]
-allow-direct-references = true
-allow-ambiguous-features = true
-
 [project]
 name = "hybridagi"
-version = "0.0.201"
+version = "0.1.0"
 authors = [
     {name = "SynaLinks", email = "author@example.com"},
 ]
 description = "The Programmable Neuro-Symbolic AGI"
 readme = "README.md"
 requires-python = ">=3.9"
-classifiers = [
-    "License :: OSI Approved :: GNU General Public License (GPL)",
-    "Programming Language :: Python :: 3.9",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-]
 dependencies = [
+    "langchain-community",
+    "langchain-together",
+    "fastapi[all]",
     "arxiv",
     "bs4",
     "pydantic",
@@ -30,10 +24,8 @@ dependencies = [
     "numpy",
     "redis>=4.5.2",
     "redisgraph",
-    "langchain>=0.0.348",
-    "openai",
+    "langchain>=0.1.0",
     "tiktoken",
-    "gpt4all",
     "pypdf",
     "rapidocr-onnxruntime",
     "text_generation",

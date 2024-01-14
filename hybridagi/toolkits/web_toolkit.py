@@ -6,11 +6,9 @@ from hybridagi.tools import (
     BrowseWebsiteTool,
 )
 
-from langchain.tools import (
-    Tool,
-    DuckDuckGoSearchResults,
-)
-from langchain.utilities import ArxivAPIWrapper
+from langchain.tools import Tool
+from langchain_community.tools import DuckDuckGoSearchResults
+from langchain_community.utilities import ArxivAPIWrapper
 
 class WebToolKit(BaseToolKit):
     filesystem: FileSystem

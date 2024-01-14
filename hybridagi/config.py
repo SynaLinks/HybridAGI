@@ -13,9 +13,15 @@ class Config():
 
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
-        self.openai_api_key = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
-        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "gpt-4-1106-preview")
-        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "gpt-4-1106-preview")
+        self.embeddings_model = os.getenv("EMBEDDINGS_MODEL", "togethercomputer/m2-bert-80M-8k-retrieval")
+
+        self.max_output_tokens = int(os.getenv("MAX_OUTPUT_TOKENS", 256))
+        self.top_p = float(os.getenv("TOP_P", 0.7))
+        self.top_k = int(os.getenv("TOP_K", 10))
+        self.repetition_penalty = float(os.getenv("REPETITION_PENALTY", 1))
+
+        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
+        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
 
         self.local_smart_llm_model_url = os.environ.get(
             "LOCAL_SMART_LLM_MODEL_URL",

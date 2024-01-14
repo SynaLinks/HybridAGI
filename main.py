@@ -1,11 +1,14 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+
 import asyncio
 import numpy as np
-import os
 from colorama import Fore, Style
+from typing import List
 
 from langchain.tools import Tool
+from langchain_together import Together
+from langchain_together.embeddings import TogetherEmbeddings
 
 from hybridagi.config import Config
 
@@ -26,41 +29,32 @@ from hybridagi.tools import (
     SpeakTool
 )
 
+from fastapi import FastAPI
+
+app = FastAPI()
+
 cfg = Config()
 
 def _normalize_vector(value):
     return np.add(np.divide(value, 2), 0.5)
 
-if cfg.private_mode:
-    from langchain.embeddings import GPT4AllEmbeddings
-    from langchain.llms import HuggingFaceTextGenInference
-    
-    embeddings = GPT4AllEmbeddings()
-    embeddings_dim = 384
+embeddings = TogetherEmbeddings(model=cfg.embeddings_model)
+embeddings_dim = 768
 
-    smart_llm = HuggingFaceTextGenInference(
-        inference_server_url=cfg.local_model_url,
-        max_new_tokens=1024,
-        top_k=10,
-        top_p=0.95,
-        typical_p=0.95,
-        temperature=0.01,
-        repetition_penalty=1.03)
-    fast_llm = smart_llm
-
-else:
-    from langchain.embeddings import OpenAIEmbeddings
-    from langchain.chat_models import ChatOpenAI
-    
-    embeddings = OpenAIEmbeddings()
-    embeddings_dim = 1536
-    
-    smart_llm = ChatOpenAI(
-        temperature = cfg.temperature,
-        model_name = cfg.smart_llm_model)
-    fast_llm = ChatOpenAI(
-        temperature = cfg.temperature,
-        model_name = cfg.fast_llm_model)
+smart_llm = Together(
+    model=cfg.smart_llm_model,
+    temperature=cfg.temperature,
+    max_tokens=cfg.max_output_tokens,
+    top_p=cfg.top_p,
+    top_k=cfg.top_k,
+)
+fast_llm = Together(
+    model=cfg.fast_llm_model,
+    temperature=cfg.temperature,
+    max_tokens=cfg.max_output_tokens,
+    top_p=cfg.top_p,
+    top_k=cfg.top_k,
+)
 
 filesystem = FileSystem(
     redis_url = cfg.redis_url,
@@ -127,44 +121,7 @@ interpreter = GraphProgramInterpreter(
     debug = cfg.debug_mode
 )
 
-BANNER = \
-f"""{Fore.BLUE}
-o  o o   o o--o  o--o  o-O-o o-o         O   o-o  o-O-o 
-|  |  \ /  |   | |   |   |   |  \       / \ o       |   
-O--O   O   O--o  O-Oo    |   |   O     o---o|  -o   |   
-|  |   |   |   | |  \    |   |  /      |   |o   |   |   
-o  o   o   o--o  o   o o-O-o o-o       o   o o-o  o-O-o
-    {Fore.GREEN}The Programmable Neuro-Symbolic AGI{Style.RESET_ALL}
-"""
-
-MENU = \
-f"""{Fore.YELLOW}[*] Please choose one of the following option:
-
-1 - Clean the hybrid vector/graph database
-2 - Load the library of Cypher programs
-3 - Load a folder into the hybrid database
-4 - Start HybridAGI (programs must have been loaded){Style.RESET_ALL}"""
-
-async def main():
-    print(BANNER)
-    while True:
-        print(MENU)
-        while True:
-            try:
-                choice = int(input("> "))
-                if choice < 5 and choice > 0:
-                    break
-            except ValueError:
-                pass
-        if choice == 1:
-            clean_database()
-        elif choice == 2:
-            load_programs()
-        elif choice == 3:
-            load_folder()
-        elif choice == 4:
-            await run_agent()
-
+@app.post("/clean_database")
 def clean_database():
     print(f"{Fore.GREEN}[*] Cleaning the hybrid database...{Style.RESET_ALL}")
     filesystem.clear()
@@ -172,45 +129,18 @@ def clean_database():
     program_memory.initialize()
     print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 
-def load_folder():
-    print(f"{Fore.GREEN}[*] Which folder do you want to load?{Style.RESET_ALL}")
-    folder_path = input("> ")
-    folder_name = os.path.basename(os.path.abspath(folder_path))
-    print(
-        f"{Fore.GREEN}[*] Are you sure about loading the folder named " \
-        + f"'{folder_name}'? [y/N]{Style.RESET_ALL}")
-    while True:
-        decision = input("> ").upper().strip()
-        if decision == "Y" or decision == "YES":
-            break
-        elif decision == "N" or decision == "NO":
-            return
-    print(
-        f"{Fore.GREEN}[*] Adding '{folder_name}' folder into the hybridstore..."+
-        f"this may take a while.{Style.RESET_ALL}"
-    )
+@app.post("/load_programs")
+def load_programs(names: List[str], programs: List[str]):
     try:
-        filesystem.add_folders(
-            [folder_path],
-            folder_names=[f"/home/user/{folder_name}"])
+        program_memory.add_programs(names = names, programs = programs)
+        return "Success"
     except Exception as err:
-        print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
+        return str(err)
 
-def load_programs():
-    print(f"{Fore.GREEN}[*] Loading programs...")
-    print(f"[*] This may take a while.{Style.RESET_ALL}")
-    program_memory.load_folders([cfg.library_directory])
-    print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
-
-async def run_agent():
-    message = "Please, write your objective then press [Enter]"
-    print(f"{Fore.GREEN}[*] {message}{Style.RESET_ALL}")
-    objective = input("> ")
+@app.post("/run_interperter")
+def run_interperter(objective: str):
     try:
-        result = await interpreter.async_run(objective)
+        result = asyncio.run(interpreter.async_run(objective))
         print(f"{Fore.YELLOW}[*] {result}{Style.RESET_ALL}")
     except Exception as err:
         print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
-
-if __name__ == "__main__":
-    asyncio.run(main())

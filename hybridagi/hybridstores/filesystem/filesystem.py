@@ -9,7 +9,7 @@ from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,
     Language,
 )
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.schema import Document
 from ..hybridstore import _default_norm
 
