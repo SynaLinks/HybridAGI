@@ -3,7 +3,6 @@
 
 import asyncio
 import numpy as np
-from colorama import Fore, Style
 from typing import List
 
 from langchain_together import Together
