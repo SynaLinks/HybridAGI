@@ -14,6 +14,7 @@ class Config():
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
         self.embeddings_model = os.getenv("EMBEDDINGS_MODEL", "togethercomputer/m2-bert-80M-8k-retrieval")
+        self.embeddings_dim = int(os.getenv("EMBEDDINGS_DIM", "786"))
 
         self.max_output_tokens = int(os.getenv("MAX_OUTPUT_TOKENS", 256))
         self.top_p = float(os.getenv("TOP_P", 0.7))
@@ -53,5 +54,3 @@ class Config():
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "./archives")
         self.documentation_directory = os.getenv("DOCUMENTATION_DIRECTORY", "./documentation")
         self.library_directory = os.getenv("LIBRARY_DIRECTORY", "./programs")
-
-        self.user_language = os.getenv("USER_LANGUAGE", "English")
