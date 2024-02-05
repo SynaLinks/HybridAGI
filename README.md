@@ -12,9 +12,13 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 - **Efficient Storage:** Thanks to an hybrid vector and graph database powered by FalkorDB enabling efficient storage of data you can inspect its long-term memory and known what's going on in a glance!
 
-- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI using Cypher](https://synalinks.github.io/documentation)!
+- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior enabling conditional loops and multi-output decisions. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI using Cypher](https://synalinks.github.io/documentation)!
 
 - **Graph Program Interpreter:** We introduce a [revolutionary Agent](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
+
+- **One Prompt At a Time:** Our interpreter focuses on the current node's prompt to predict tools input, eliminating role confusion. This allows for seamless integration of multiple role-based prompts in the same program, enhancing flexibility, adaptability and performances.
+
+- **Cheaper & Faster:** HybridAGI's symbolic system offloads planning capabilities, enabling the use of smaller open-source models. This results in a cost-effective, faster, and more sustainable solution. Guide the reasoning process of your agents efficiently and create better agents with fewer resources.
 
 - **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under **the license of your choice** while using the framework under GNU GPL.
 
@@ -22,7 +26,7 @@ HybridAGI is the first *Programmable LLM-based Autonomous Agent* that lets you p
 
 #### What you need to start?
 
-- An OpenAI API key or a functional text generation endpoint
+- A TogetherAI API key (get one at https://api.together.xyz/)
 - [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/products/docker-desktop/)
 
 ### Installation

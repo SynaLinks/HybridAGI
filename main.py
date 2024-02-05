@@ -1,8 +1,11 @@
 """The main program. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+
 import asyncio
 import numpy as np
-from typing import List
+import os
+from colorama import Fore, Style
 
+from langchain.tools import Tool
 from langchain_together import Together
 from langchain_together.embeddings import TogetherEmbeddings
 
@@ -20,15 +23,19 @@ from hybridagi.toolkits import (
     WebToolKit,
 )
 
-from fastapi import FastAPI
+from hybridagi.tools import (
+    AskUserTool,
+    SpeakTool
+)
 
 cfg = Config()
 
 def _normalize_vector(value):
     return np.add(np.divide(value, 2), 0.5)
 
-embeddings = TogetherEmbeddings(model=cfg.embeddings_model)
-embeddings_dim = 768
+embeddings = TogetherEmbeddings(
+        model=cfg.embeddings_model
+    )
 
 smart_llm = Together(
     model=cfg.smart_llm_model,
@@ -36,20 +43,23 @@ smart_llm = Together(
     max_tokens=cfg.max_output_tokens,
     top_p=cfg.top_p,
     top_k=cfg.top_k,
+    repetition_penalty = cfg.repetition_penalty,
 )
+
 fast_llm = Together(
-    model=cfg.fast_llm_model,
-    temperature=cfg.temperature,
-    max_tokens=cfg.max_output_tokens,
-    top_p=cfg.top_p,
-    top_k=cfg.top_k,
+    model = cfg.fast_llm_model,
+    temperature = cfg.temperature,
+    max_tokens = cfg.max_output_tokens,
+    top_p = cfg.top_p,
+    top_k = cfg.top_k,
+    repetition_penalty = cfg.repetition_penalty,
 )
 
 filesystem = FileSystem(
     redis_url = cfg.redis_url,
     index_name = cfg.memory_index,
     embeddings = embeddings,
-    embeddings_dim = embeddings_dim,
+    embeddings_dim = cfg.embeddings_dim,
     normalize = _normalize_vector)
 filesystem.initialize()
 
@@ -57,7 +67,7 @@ program_memory = ProgramMemory(
     redis_url = cfg.redis_url,
     index_name = cfg.memory_index,
     embeddings = embeddings,
-    embeddings_dim = embeddings_dim,
+    embeddings_dim = cfg.embeddings_dim,
     normalize = _normalize_vector)
 program_memory.initialize()
 
@@ -65,11 +75,23 @@ trace_memory = TraceMemory(
     redis_url = cfg.redis_url,
     index_name = cfg.memory_index,
     embeddings = embeddings,
-    embeddings_dim = embeddings_dim,
+    embeddings_dim = cfg.embeddings_dim,
     normalize = _normalize_vector)
 trace_memory.initialize()
 
-tools = []
+ask_user = AskUserTool()
+speak = SpeakTool()
+
+tools = [
+    Tool(
+        name=ask_user.name,
+        func=ask_user.run,
+        description=ask_user.description),
+    Tool(
+        name=speak.name,
+        func=speak.run,
+        description=speak.description),
+]
 
 toolkits = [
     FileSystemToolKit(
@@ -98,27 +120,90 @@ interpreter = GraphProgramInterpreter(
     debug = cfg.debug_mode
 )
 
-app = FastAPI()
+BANNER = \
+f"""{Fore.BLUE}
+o  o o   o o--o  o--o  o-O-o o-o         O   o-o  o-O-o 
+|  |  \ /  |   | |   |   |   |  \       / \ o       |   
+O--O   O   O--o  O-Oo    |   |   O     o---o|  -o   |   
+|  |   |   |   | |  \    |   |  /      |   |o   |   |   
+o  o   o   o--o  o   o o-O-o o-o       o   o o-o  o-O-o
+    {Fore.GREEN}The Programmable Neuro-Symbolic AGI{Style.RESET_ALL}
+"""
 
-@app.post("/clean-database")
+MENU = \
+f"""{Fore.YELLOW}[*] Please choose one of the following option:
+
+1 - Clean the hybrid vector/graph database
+2 - Load the library of Cypher programs
+3 - Load a folder into the hybrid database
+4 - Start HybridAGI (programs must have been loaded){Style.RESET_ALL}"""
+
+async def main():
+    print(BANNER)
+    while True:
+        print(MENU)
+        while True:
+            try:
+                choice = int(input("> "))
+                if choice < 5 and choice > 0:
+                    break
+            except ValueError:
+                pass
+        if choice == 1:
+            clean_database()
+        elif choice == 2:
+            load_programs()
+        elif choice == 3:
+            load_folder()
+        elif choice == 4:
+            await run_agent()
+
 def clean_database():
+    print(f"{Fore.GREEN}[*] Cleaning the hybrid database...{Style.RESET_ALL}")
     filesystem.clear()
     filesystem.initialize()
     program_memory.initialize()
-    return "Successfully cleaned"
+    print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
 
-@app.post("/load-programs")
-def load_programs(names: List[str], programs: List[str]):
+def load_folder():
+    print(f"{Fore.GREEN}[*] Which folder do you want to load?{Style.RESET_ALL}")
+    folder_path = input("> ")
+    folder_name = os.path.basename(os.path.abspath(folder_path))
+    print(
+        f"{Fore.GREEN}[*] Are you sure about loading the folder named " \
+        + f"'{folder_name}'? [y/N]{Style.RESET_ALL}")
+    while True:
+        decision = input("> ").upper().strip()
+        if decision == "Y" or decision == "YES":
+            break
+        elif decision == "N" or decision == "NO":
+            return
+    print(
+        f"{Fore.GREEN}[*] Adding '{folder_name}' folder into the hybridstore..."+
+        f"this may take a while.{Style.RESET_ALL}"
+    )
     try:
-        program_memory.add_programs(names = names, programs = programs)
-        return "Successfully loaded programs"
+        filesystem.add_folders(
+            [folder_path],
+            folder_names=[f"/home/user/{folder_name}"])
     except Exception as err:
-        return f"Error occured: {err}"
+        print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
 
-@app.post("/run-interpreter")
-def run_interperter(objective: str):
+def load_programs():
+    print(f"{Fore.GREEN}[*] Loading programs...")
+    print(f"[*] This may take a while.{Style.RESET_ALL}")
+    program_memory.load_folders([cfg.library_directory])
+    print(f"{Fore.GREEN}[*] Done.{Style.RESET_ALL}")
+
+async def run_agent():
+    message = "Please, write your objective then press [Enter]"
+    print(f"{Fore.GREEN}[*] {message}{Style.RESET_ALL}")
+    objective = input("> ")
     try:
-        result = asyncio.run(interpreter.async_run(objective))
-        return result
+        result = await interpreter.async_run(objective)
+        print(f"{Fore.YELLOW}[*] {result}{Style.RESET_ALL}")
     except Exception as err:
-        return f"Error occured: {err}"
+        print(f"{Fore.RED}[!] Error occured: {err}{Style.RESET_ALL}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
