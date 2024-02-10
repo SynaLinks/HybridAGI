@@ -24,11 +24,11 @@ Become the *first Prompt Programmers in history*; be a part of the AI revolution
 
 - **Use Open-Source Models:** HybridAGI's symbolic system offloads planning capabilities, enabling the use of smaller open-source LLM models. This results in a cost-effective, faster, and more sustainable solution. Guide the reasoning process of your agents efficiently and create better ones with fewer resources.
 
-- **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under the license of your choice while using the framework under GNU GPL.
+- **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to *release your Cypher programs under the **license of your choice*** while using the framework under GNU GPL.
 
 - **Do it Yourself:** The drawback to offloading the Agent planning capabilities to the symbolic components means that you have to build the algorithm yourself. Sure, you can emulate a React/MKRL Agent with a conditional loop and a decision... but where is the fun in that? You can find better, more specific to your use case, and more performant!
 
-Many people think prompt engineering is already a dead discipline. The truth is that it's just the beginning of the journey; we have only scratched the surface of what is possible. Our product, HybridAGI, opens up new possibilities by making it possible to build entire conversational applications using prompt programs only, so you can focus on what matters:
+Many people think prompt engineering is an already dead discipline. The truth is that it's just the beginning of the journey; we have only scratched the surface of what is possible. Our product, HybridAGI, opens up new possibilities by making it possible to build entire conversational applications using prompt programs only, so you can focus on what matters:
 
 *✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
