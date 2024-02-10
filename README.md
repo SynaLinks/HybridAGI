@@ -12,25 +12,25 @@ Become the *first Prompt Programmers in history*; be a part of the AI revolution
 
 ## Key Features 🎉
 
-**- For AI makers:** This framework is intended for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. This product requires some programming and prompt engineering knowledge to get the best out of it. It's a Build Yourself product where the focus is on human creativity rather than AI autonomy. If you are new to prompt engineering, start by looking at [this guide](https://www.promptingguide.ai/).
+- **For AI makers:** This framework is intended for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. This product requires some programming and prompt engineering knowledge to get the best out of it. It's a Build Yourself product where the focus is on human creativity rather than AI autonomy. If you are new to prompt engineering, start by looking at [this guide](https://www.promptingguide.ai/).
 
-**- Memory-Centric AGI:** Thanks to a hybrid vector and graph database powered by [FalkorDB](https://www.falkordb.com/) enabling efficient storage of data, you can inspect its long-term memory and know what's going on at a glance! The AGI remembers its programs, can execute, or modify them dynamically.
+- **Memory-Centric AGI:** Thanks to a hybrid vector and graph database powered by [FalkorDB](https://www.falkordb.com/) enabling efficient storage of data, you can inspect its long-term memory and know what's going on at a glance! The AGI remembers its programs, can execute, or modify them dynamically.
 
-**- Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior enabling conditional loops and multi-output decisions. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://synalinks.github.io/documentation/basics/graph-prompt-programming) using [Cypher](https://en.wikipedia.org/wiki/Cypher_(query_language))!
+- **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior enabling conditional loops and multi-output decisions. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://synalinks.github.io/documentation/basics/graph-prompt-programming) using [Cypher](https://en.wikipedia.org/wiki/Cypher_(query_language))!
 
-**- Graph Program Interpreter:** We introduce a revolutionary [LLM Agent as Graph Interpreter](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision-making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
+- **Graph Program Interpreter:** We introduce a revolutionary [LLM Agent as Graph Interpreter](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision-making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
 
-**- One Prompt At a Time:** Our interpreter focuses on the current node's prompt to predict tool input, eliminating role confusion. This allows for seamless integration of multiple role-based prompts in the same program, enhancing flexibility, adaptability, and performance.
+- **One Prompt At a Time:** Our interpreter focuses on the current node's prompt to predict tool input, eliminating role confusion. This allows for seamless integration of multiple role-based prompts in the same program, enhancing flexibility, adaptability, and performance.
 
-**- Use Open-Source Models:** HybridAGI's symbolic system offloads planning capabilities, enabling the use of smaller open-source LLM models. This results in a cost-effective, faster, and more sustainable solution. Guide the reasoning process of your agents efficiently and create better ones with fewer resources.
+- **Use Open-Source Models:** HybridAGI's symbolic system offloads planning capabilities, enabling the use of smaller open-source LLM models. This results in a cost-effective, faster, and more sustainable solution. Guide the reasoning process of your agents efficiently and create better ones with fewer resources.
 
-**- Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under the license of your choice while using the framework under GNU GPL.
+- **Free Software:** HybridAGI is a community-driven project, fostering collaboration, innovation, and shared ownership. The software is released under the GNU GPL license, inviting contributions from a diverse range of users and empowering the collective intelligence of the community. Its architecture allows you to release your Cypher programs under the license of your choice while using the framework under GNU GPL.
 
-**- Do it Yourself:** The drawback to offloading the Agent planning capabilities to the symbolic components means that you have to build the algorithm yourself. Sure, you can emulate a React/MKRL Agent with a conditional loop and a decision... but where is the fun in that? You can find better, more specific to your use case, and more performant!
+- **Do it Yourself:** The drawback to offloading the Agent planning capabilities to the symbolic components means that you have to build the algorithm yourself. Sure, you can emulate a React/MKRL Agent with a conditional loop and a decision... but where is the fun in that? You can find better, more specific to your use case, and more performant!
 
 Many people think prompt engineering is already a dead discipline. The truth is that it's just the beginning of the journey; we have only scratched the surface of what is possible. Our product, HybridAGI, opens up new possibilities by making it possible to build entire conversational applications using prompt programs only, so you can focus on what matters:
 
-*✨Finding the best prompt algorithm to fit your use case and quickly create AI that **works as expected**✨*
+*✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
 ## Quickstart in 5 simple steps!
 
@@ -132,9 +132,9 @@ Become a part of our community of developers, researchers, and AI enthusiasts. C
 
 ## Who we are? 🔥
 
-We're not based in Silicon Valley or part of a big company; we're a small, dedicated team from the south of France. Our focus is on delivering an AI product where the user maintains control. We're dissatisfied with the current trajectory of Agent-based products. Our expertise lies in human-robot interaction and building interactive systems that meet users' expectations. While we draw inspiration from cognitive sciences and symbolic AI, we aim to keep our concepts grounded in computer science for a wider audience.
+We're not based in Silicon Valley or part of a big company; we're a small, dedicated team from the south of France. Our focus is on delivering an AI product where the user maintains control. We're dissatisfied with the current trajectory of Agent-based products. We are expert in human-robot interaction and building interactive systems that behave as expected. While we draw inspiration from cognitive sciences and symbolic AI, we aim to keep our concepts grounded in computer science for a wider audience.
 
-Our mission extends beyond AI safety and performance; it's about shaping the world we want to inhabit. Even if programming becomes obsolete in 5 or 10 years, replaced by some magical prompt, we believe that traditional prompts are insufficient for preserving jobs. They're too simplistic and fail to accurately convey developers' intentions.
+Our mission extends beyond AI safety and performance; it's about shaping the world we want to live in. Even if programming becomes obsolete in 5 or 10 years, replaced by some magical prompt, we believe that traditional prompts are insufficient for preserving jobs. They're too simplistic and fail to accurately convey intentions.
 
 In contrast, programming each reasoning step demands expert knowledge in prompt engineering and programming. Surprisingly, it's enjoyable and not that difficult for programmers, you'll gain insight into how AI truly operates by controlling it, beeing able to enhance the sequence of action and decision. Natural language combined with algorithms opens up endless possibilities. We can't envision a world without it.
 
