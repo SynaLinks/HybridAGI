@@ -8,7 +8,7 @@
 
 HybridAGI is the *first Programmable LLM-based Autonomous Agent* that lets you program its behavior using a **graph-based prompt programming** approach. This state-of-the-art feature allows the AGI to efficiently use any tool while controlling the long-term behavior of the agent.
 
-Become the first Prompt Programmers in history; be a part of the AI revolution one prompt at a time!
+Become the *first Prompt Programmers in history*; be a part of the AI revolution one node at a time!
 
 ## Key Features 🎉
 
@@ -28,9 +28,9 @@ Become the first Prompt Programmers in history; be a part of the AI revolution o
 
 **- Do it Yourself:** The drawback to offloading the Agent planning capabilities to the symbolic components means that you have to build the algorithm yourself. Sure, you can emulate a React/MKRL Agent with a conditional loop and a decision... but where is the fun in that? You can find better, more specific to your use case, and more performant!
 
-Many people think prompt engineering is already a dead discipline. The truth is that it's just the beginning of the journey; we have only scratched the surface of what is possible. Our product, HybridAGI, opens up new possibilities by making it possible to build entire conversational applications using prompt only, so you can focus on what matters:
+Many people think prompt engineering is already a dead discipline. The truth is that it's just the beginning of the journey; we have only scratched the surface of what is possible. Our product, HybridAGI, opens up new possibilities by making it possible to build entire conversational applications using prompt programs only, so you can focus on what matters:
 
-**✨Finding the best prompt algorithm to fit your use case and quickly create AI that works as expected✨**
+*✨Finding the best prompt algorithm to fit your use case and quickly create AI that **works as expected**✨*
 
 ## Quickstart in 5 simple steps!
 
@@ -83,6 +83,8 @@ CREATE
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
+Then explore the curated [list of Cypher primitives](https://github.com/SynaLinks/primitives-pack) to speed up your development.
+
 ### Deploy your app
 
 Now it is time to deploy this app, just use the following command
@@ -128,9 +130,13 @@ If you found this repository usefull for your research, please consider citing u
 
 Become a part of our community of developers, researchers, and AI enthusiasts. Contribute to the project, share your feedback, and help shape the future of Hybrid AGI. We welcome and value your participation!
 
-## Who we are?
+## Who we are? 🔥
 
-We are not from the Sillicon Valley, nor a big company 
+We're not based in Silicon Valley or part of a big company; we're a small, dedicated team from the south of France. Our focus is on delivering an AI product where the user maintains control. We're dissatisfied with the current trajectory of Agent-based products. Our expertise lies in human-robot interaction and building interactive systems that meet users' expectations. While we draw inspiration from cognitive sciences and symbolic AI, we aim to keep our concepts grounded in computer science for a wider audience.
+
+Our mission extends beyond AI safety and performance; it's about shaping the world we want to inhabit. Even if programming becomes obsolete in 5 or 10 years, replaced by some magical prompt, we believe that traditional prompts are insufficient for preserving jobs. They're too simplistic and fail to accurately convey developers' intentions.
+
+In contrast, programming each reasoning step demands expert knowledge in prompt engineering and programming. Surprisingly, it's enjoyable and not that difficult for programmers, you'll gain insight into how AI truly operates by controlling it, beeing able to enhance the sequence of action and decision. Natural language combined with algorithms opens up endless possibilities. We can't envision a world without it.
 
 ## Support Our Work ❤️‍🔥
 
