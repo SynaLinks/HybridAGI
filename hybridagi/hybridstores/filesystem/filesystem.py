@@ -1,8 +1,8 @@
 import os
-from typing import Optional, List, Callable, Any, Dict, Union
+from typing import Optional, List, Callable, Any, Dict, Union, Tuple
 
 from .context import FileSystemContext
-from .path import join
+from .path import join, basename
 from .base import BaseFileSystem
 from langchain.schema.embeddings import Embeddings
 from langchain.text_splitter import (
@@ -261,3 +261,28 @@ class FileSystem(BaseFileSystem):
                         except Exception:
                             pass
         self.add_documents(names, docs)
+
+    def list_folder(
+            self,
+            path: str) -> Tuple[List[str], List[str]]:
+        """Returns the files and folders of the given directory if it exists"""
+        if self.filesystem.exists(path):
+            if self.filesystem.is_folder(path):
+                files = []
+                result_query = self.filesystem.query(
+                    'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n'
+                )
+                for record in result_query:
+                    document_name = record[0].properties["name"]
+                    files.append(basename(document_name))
+                
+                folders = []
+                result_query = self.filesystem.query(
+                    'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n'
+                )
+                for record in result_query:
+                    folder_name = record[0].properties["name"]
+                    folders.append(basename(folder_name))
+                
+                return files, folders
+        return [], []
