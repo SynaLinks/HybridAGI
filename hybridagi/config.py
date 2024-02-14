@@ -21,8 +21,8 @@ class Config():
         self.top_k = int(os.getenv("TOP_K", 10))
         self.repetition_penalty = float(os.getenv("REPETITION_PENALTY", 1))
 
-        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
-        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
+        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "mistralai/Mixtral-8x7B-Instruct-v0.1")
+        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "mistralai/Mixtral-8x7B-Instruct-v0.1")
 
         self.local_smart_llm_model_url = os.environ.get(
             "LOCAL_SMART_LLM_MODEL_URL",
