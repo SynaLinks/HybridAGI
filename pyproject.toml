@@ -12,8 +12,9 @@ description = "The Programmable Neuro-Symbolic AGI"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+    "langchain-mistralai",
     "langchain-community",
-    "langchain-together",
+    "langchain",
     "arxiv",
     "bs4",
     "pydantic",
@@ -22,11 +23,9 @@ dependencies = [
     "colorama",
     "numpy",
     "redis>=4.5.2",
-    "redisgraph",
-    "langchain>=0.1.0",
+    "falkordb",
     "tiktoken",
     "pypdf",
     "rapidocr-onnxruntime",
-    "text_generation",
     "duckduckgo-search",
 ]

@@ -6,28 +6,27 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hybrid-agi
+    container_name: hybrid-agi-cli
     env_file:
       - .env
     depends_on:
-      - falkordb
-      - redis-insight
+      - hybrid-agi-db
+      - hybrid-agi-db-browser
     ports:
       - 8000:8000
     volumes:
       - ./archives:/HybridAGI/archives
       - ./documentation:/HybridAGI/documentation
       - ./programs:/HybridAGI/programs
-  falkordb:
-    image: falkordb/falkordb:latest
-    container_name: falkordb
+  hybrid-agi-db:
+    image: falkordb/falkordb:edge
+    container_name: hybrid-agi-db
     ports:
       - 6379:6379
-      - 7687:7687
-  redis-insight:
-    image: redislabs/redisinsight:latest
-    container_name: redis-insight
+  hybrid-agi-db-browser:
+    image: falkordb/falkordb-browser:edge
+    container_name: hybrid-agi-db-browser
     depends_on:
-      - falkordb
+      - hybrid-agi-db
     ports:
       - 8001:8001

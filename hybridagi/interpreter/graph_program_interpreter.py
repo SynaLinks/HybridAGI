@@ -4,7 +4,7 @@ from collections import deque
 from typing import Dict, List, Optional, Iterable, Callable
 from colorama import Fore, Style
 
-from redisgraph import Node
+from falkordb import Node
 from ..hybridstores.hybridstore import KnowledgeGraph
 
 from langchain.tools import BaseTool, Tool

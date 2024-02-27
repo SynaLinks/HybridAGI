@@ -32,11 +32,11 @@ Many people think prompt engineering is an already dead discipline. The truth is
 
 *✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
-## Quickstart in 5 simple steps!
+## Chat Demo: Quickstart in 5 simple steps (recommended)!
 
 #### What you need to start?
 
-- A TogetherAI API key (get one at https://api.together.xyz/)
+- A MistralAI API key (get one at https://mistral.ai/)
 - [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/products/docker-desktop/)
 
 ### Installation
@@ -67,6 +67,7 @@ Note that the folders `archives`, `documentation` and `programs` are shared with
 
 Start with a simple echo test, create a `main.cypher` file inside the `programs` folder:
 
+main.cypher:
 ```javascript
 // Nodes declaration
 CREATE
@@ -85,7 +86,7 @@ Learn more about Graph-based Prompt Programming by reading our [documentation](h
 
 Then explore the curated [list of Cypher primitives](https://github.com/SynaLinks/primitives-pack) to speed up your development.
 
-### Deploy your app
+### Deploy your chat app
 
 Now it is time to deploy this app, just use the following command
 
@@ -93,9 +94,17 @@ Now it is time to deploy this app, just use the following command
 docker-compose up
 ```
 
+## CLI Demo
+
+To use the CLI demo, rename the `.env.template` file into `.env`, replace `your-api-key` with your actual MistralAI API key and use the following command:
+
+```
+docker compose run -it hybrid-agi-cli
+```
+
 ### Inspect the database
 
-Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `falkordb` and port `6379`.
+Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `hybrid-agi-db` and port `6379`.
 
 ## Credits 👏
 

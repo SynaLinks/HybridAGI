@@ -6,8 +6,9 @@ import os
 from colorama import Fore, Style
 
 from langchain.tools import Tool
-from langchain_together import Together
-from langchain_together.embeddings import TogetherEmbeddings
+
+from langchain_mistralai import MistralAIEmbeddings
+from langchain_mistralai.chat_models import ChatMistralAI
 
 from hybridagi.config import Config
 
@@ -33,26 +34,22 @@ cfg = Config()
 def _normalize_vector(value):
     return np.add(np.divide(value, 2), 0.5)
 
-embeddings = TogetherEmbeddings(
-        model=cfg.embeddings_model
-    )
+embeddings = MistralAIEmbeddings(
+    model=cfg.embeddings_model
+)
 
-smart_llm = Together(
-    model=cfg.smart_llm_model,
+smart_llm = ChatMistralAI(
+    model = cfg.smart_llm_model,
     temperature=cfg.temperature,
     max_tokens=cfg.max_output_tokens,
     top_p=cfg.top_p,
-    top_k=cfg.top_k,
-    repetition_penalty = cfg.repetition_penalty,
 )
 
-fast_llm = Together(
+fast_llm = ChatMistralAI(
     model = cfg.fast_llm_model,
     temperature = cfg.temperature,
     max_tokens = cfg.max_output_tokens,
     top_p = cfg.top_p,
-    top_k = cfg.top_k,
-    repetition_penalty = cfg.repetition_penalty,
 )
 
 filesystem = FileSystem(

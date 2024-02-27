@@ -1,6 +1,5 @@
-archives/datasets/*.txt
-archives/*.zip
-.zip
+*.cypher
+*.zip
 htmlcov/
 .env
 .chainlit/.*.db

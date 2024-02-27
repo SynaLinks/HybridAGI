@@ -1,6 +1,5 @@
 from pydantic.v1 import BaseModel
 from langchain.base_language import BaseLanguageModel
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from ..parsers.reasoner import ReasonerOutputParser
 from ..hybridstores.trace_memory.trace_memory import TraceMemory
@@ -24,37 +23,21 @@ class BaseReasoner(BaseModel):
                 prompt: PromptTemplate,
                 use_smart_llm: bool = False,
                 **args,
-            ):
+            ) -> str:
         if use_smart_llm:
-            chain = LLMChain(
-                llm = self.smart_llm,
-                prompt = prompt,
-                verbose = self.debug,
-            )
+            chain = prompt | self.smart_llm
         else:
-            chain = LLMChain(
-                llm = self.fast_llm,
-                prompt = prompt,
-                verbose = self.debug,
-            )
-        return self.output_parser.parse(chain.run(**args))
+            chain = prompt | self.fast_llm
+        return self.output_parser.parse(chain.invoke(input=args).content)
 
     async def async_predict(
                 self,
                 prompt: str,
                 use_smart_llm: bool = False,
                 **args,
-            ):
+            ) -> str:
         if use_smart_llm:
-            chain = LLMChain(
-                llm = self.smart_llm,
-                prompt = prompt,
-                verbose = self.debug,
-            )
+            chain = prompt | self.smart_llm
         else:
-            chain = LLMChain(
-                llm = self.fast_llm,
-                prompt = prompt,
-                verbose = self.debug,
-            )
-        return self.output_parser.parse(await chain.arun(**args))
+            chain = prompt | self.fast_llm
+        return self.output_parser.parse((await chain.ainvoke(input=args)).content)
