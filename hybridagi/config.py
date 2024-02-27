@@ -13,23 +13,16 @@ class Config():
 
         self.private_mode = os.getenv("PRIVATE_MODE", "False") == "True"
 
-        self.embeddings_model = os.getenv("EMBEDDINGS_MODEL", "togethercomputer/m2-bert-80M-8k-retrieval")
-        self.embeddings_dim = int(os.getenv("EMBEDDINGS_DIM", "768"))
+        self.embeddings_model = os.getenv("EMBEDDINGS_MODEL", "mistral-embed")
+        self.embeddings_dim = int(os.getenv("EMBEDDINGS_DIM", "1024"))
 
         self.max_output_tokens = int(os.getenv("MAX_OUTPUT_TOKENS", 256))
         self.top_p = float(os.getenv("TOP_P", 0.7))
         self.top_k = int(os.getenv("TOP_K", 10))
         self.repetition_penalty = float(os.getenv("REPETITION_PENALTY", 1))
 
-        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "mistralai/Mixtral-8x7B-Instruct-v0.1")
-        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "mistralai/Mixtral-8x7B-Instruct-v0.1")
-
-        self.local_smart_llm_model_url = os.environ.get(
-            "LOCAL_SMART_LLM_MODEL_URL",
-            "http://localhost:8080")
-        self.local_fast_llm_model_url = os.environ.get(
-            "LOCAL_FAST_LLM_MODEL_URL",
-            "http://localhost:8080")
+        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "open-mixtral-8x7b")
+        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "open-mixtral-8x7b")
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
@@ -45,7 +38,7 @@ class Config():
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36"
             " (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36")
         
-        self.redis_url = os.getenv("REDIS_URL", "redis://falkordb:6379")
+        self.redis_url = os.getenv("REDIS_URL", "redis://hybrid-agi-db:6379")
         self.memory_index = os.getenv("MEMORY_INDEX", "hybrid-agi")
 
         self.fast_llm_max_token = os.getenv("FAST_LLM_MAX_TOKEN", "4000")
