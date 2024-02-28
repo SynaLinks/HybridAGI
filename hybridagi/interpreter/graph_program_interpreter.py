@@ -1,5 +1,6 @@
 """The graph program interpreter. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
+import random
 from collections import deque
 from typing import Dict, List, Optional, Iterable, Callable
 from colorama import Fore, Style
@@ -265,6 +266,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
             'MATCH (n:Decision {name:"'+purpose+'"})-[r]->() RETURN type(r)')
         for record in result:
             options.append(record[0])
+        random.shuffle(options)
         decision = self.perform_decision(purpose, question, options)
         result = self.get_current_program().query(
             'MATCH (:Decision {name:"'+purpose+'"})-[:'+decision+']->(n) RETURN n')
