@@ -10,7 +10,9 @@ TRACE_MEMORY_TEMPLATE = \
 """The Objective is from the perspective of the User
 Objective: {objective}
 Note: {note}
-{actions_trace}"""
+The trace of your actions
+{actions_trace}
+Remember that the objective is to {objective}"""
 
 class BaseTraceMemory(BaseModel):
     objective: str = "N/A"
