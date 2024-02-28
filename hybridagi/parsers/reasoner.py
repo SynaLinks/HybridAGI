@@ -12,9 +12,8 @@ class ReasonerOutputParser(BaseOutputParser):
         output = output.replace("\n```\n```","```").strip()
         match = re.search(r"\nAction|\nDecision|\nStart|\nEnd", output)
         if match:
-            return output[:match.start()]
-        else:
-            return output
+            output = output[:match.start()]
+        return output.strip()
 
     def get_format_instructions(self) -> str:
         """Returns the formating instructions."""
