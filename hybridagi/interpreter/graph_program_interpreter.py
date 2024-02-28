@@ -143,12 +143,16 @@ class GraphProgramInterpreter(RankedActionReasoner):
 
     def call_program_tool(self, program_name: str):
         program_name = self.program_name_parser.parse(program_name)
-        if not self.program_memory.exists(program_name):
-            return f"Error while calling '{program_name}': This program does not exist"
+        try:
+            exists = self.program_memory.exists(program_name)
+            if not exists:
+                return f"Error while calling '{program_name}': This program does not exist"
+        except Exception:
+            return "Invalid program name: Please correct yourself"
         if self.program_memory.program_tester.is_protected(program_name):
             return f"Error while calling '{program_name}': Trying to call a protected program"
         self.call_program_by_name(program_name)
-        return f"Successfully called '{program_name}' program"        
+        return f"Successfully called '{program_name}' program"
 
     def plannify_tool(self, program: str):
         file_parser = FileOutputParser()
