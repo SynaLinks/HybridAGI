@@ -48,7 +48,7 @@ jobs:
       - name: Verify that Redis is up
         run: redis-cli ping
       - name: Load FalkorDB module into Redis
-        run: redis-cli MODULE LOAD ../FalkorDB/bin/linux-x64-release/src/falkordb.so
+        run: redis-cli MODULE LOAD /home/runner/work/HybridAGI/FalkorDB/bin/linux-x64-release/src/falkordb.so
       - name: Run the tests
         run: |
           python3 test.py
