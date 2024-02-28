@@ -3,7 +3,7 @@ import numpy as np
 from hybridagi import FileSystem
 from hybridagi.tools import ContentSearchTool
 
-from langchain.embeddings import GPT4AllEmbeddings
+from langchain_community.embeddings import GPT4AllEmbeddings
 
 def _normalize_vector(value):
     return np.add(np.divide(value, 2), 0.5)

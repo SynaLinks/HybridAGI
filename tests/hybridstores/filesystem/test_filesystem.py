@@ -1,5 +1,5 @@
 import unittest
-from langchain.embeddings import FakeEmbeddings
+from langchain_community.embeddings import FakeEmbeddings
 
 from hybridagi import FileSystem
 

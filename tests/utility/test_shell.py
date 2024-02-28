@@ -8,7 +8,7 @@ from hybridagi import (
     ShellUtility
 )
 
-from langchain.embeddings import FakeEmbeddings
+from langchain_community.embeddings import FakeEmbeddings
 
 class FakeCommand(BaseShellCommand):
 

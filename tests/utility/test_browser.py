@@ -6,7 +6,7 @@ from hybridagi import (
     BrowserUtility,
 )
 
-from langchain.embeddings import FakeEmbeddings
+from langchain_community.embeddings import FakeEmbeddings
 
 class TestBrowserUtility(unittest.TestCase):
 

@@ -5,7 +5,7 @@ from hybridagi import (
     FileSystem
 )
 
-from langchain.embeddings import FakeEmbeddings
+from langchain_community.embeddings import FakeEmbeddings
 
 class TestRemoveDirectory(unittest.TestCase):
     def setUp(self):
