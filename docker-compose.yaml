@@ -24,7 +24,7 @@ services:
     ports:
       - 6379:6379
   hybrid-agi-db-browser:
-    image: falkordb/falkordb-browser:edge
+    image: redislabs/redisinsight:1.14.0
     container_name: hybrid-agi-db-browser
     depends_on:
       - hybrid-agi-db
