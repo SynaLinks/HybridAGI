@@ -21,8 +21,8 @@ class Config():
         self.top_k = int(os.getenv("TOP_K", 10))
         self.repetition_penalty = float(os.getenv("REPETITION_PENALTY", 1))
 
-        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "open-mixtral-8x7b")
-        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "open-mixtral-8x7b")
+        self.fast_llm_model = os.getenv("FAST_LLM_MODEL", "open-mistral-7b")
+        self.smart_llm_model = os.getenv("SMART_LLM_MODEL", "open-mistral-7b")
 
         self.temperature = float(os.getenv("TEMPERATURE", "0.5"))
 
