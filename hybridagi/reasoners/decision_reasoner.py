@@ -9,15 +9,17 @@ DECISION_TEMPLATE = \
 """{context}
 Decision Purpose: {purpose}
 Decision: {question}
+Decision Outputs: {choice}
 
 Please ensure to use the following format to Answer:
 
 Step 1: First reasoning step to answer to the Decision
 Step 2: Second reasoning step to answer to the Decision
 ... and so on (max 5 reasoning steps)
-Final Step (must be {choice}):...
+Final Step (MUST be between {choice}):...
+Decision Answer (must contains only one word between {choice}):...
 
-Please, always use the above format to answer"""
+Always use the above format to answer"""
 
 DECISION_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "question", "choice"],
