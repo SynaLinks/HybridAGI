@@ -13,7 +13,7 @@ class ReasonerOutputParser(BaseOutputParser):
         match = re.search(r"Action Input:", output)
         if match:
             output = output[match.end():]
-        match = re.search(r"\Explanation:|\nAnswer|\nAction|\nDecision|\nStart|\nEnd", output)
+        match = re.search(r"\nExplanation:|\nAnswer|\nAction|\nDecision|\nStart|\nEnd", output)
         if match:
             output = output[:match.start()]
         return output.strip()
