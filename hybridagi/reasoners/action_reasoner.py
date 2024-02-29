@@ -14,8 +14,8 @@ Action Input Prompt: {tool_prompt}
 
 Please ensure to use the following format to Answer:
 
-Thinking: Your reasoning to successfully infer the action input.
-Action Input: The input of the action that follow the action prompt.
+Thought: Your reasoning to infer the action input in a step by step way to be sure to have the right answer.
+Action Input: The input of the action that follow the above action prompt.
 
 Please, ensure to always use the above format to answer"""
 
