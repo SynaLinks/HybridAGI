@@ -136,8 +136,8 @@ f"""{Fore.YELLOW}[*] Please choose one of the following option:
 4 - Start HybridAGI (programs must have been loaded){Style.RESET_ALL}"""
 
 async def main():
-    print(BANNER)
     while True:
+        print(BANNER)
         print(MENU)
         while True:
             try:
