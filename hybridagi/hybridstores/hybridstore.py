@@ -142,10 +142,14 @@ class BaseHybridStore(BaseModel):
         """Method to remove a graph"""
         return self.client.graph(self.index_name+":graph:"+graph_index).delete()
 
-    def exists(self, index:str) -> bool:
+    def exists(self, index:str, label:str = "") -> bool:
         """Method to check if an entry is present in the hybridstore"""
-        result = self.hybridstore.query(
-            'MATCH (n {name:"'+index+'"}) RETURN n')
+        if label:
+            result = self.hybridstore.query(
+                'MATCH (n:'+label+' {name:"'+index+'"}) RETURN n')
+        else:
+            result = self.hybridstore.query(
+                'MATCH (n {name:"'+index+'"}) RETURN n')
         if len(result) > 0:
             return True
         return False

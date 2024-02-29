@@ -145,11 +145,10 @@ class GraphProgramInterpreter(RankedActionReasoner):
     def call_program_tool(self, program_name: str):
         program_name = self.program_name_parser.parse(program_name)
         try:
-            exists = self.program_memory.exists(program_name)
-            if not exists:
-                return f"Error while calling '{program_name}': This program does not exist"
+            if not self.program_memory.exists(program_name):
+                return f"Error while calling '{program_name}': This program does not exist, verify its name"
         except Exception:
-            return "Invalid program name: Please correct yourself"
+            return "Error while calling program: Invalid program name, please correct it"
         if self.program_memory.program_tester.is_protected(program_name):
             return f"Error while calling '{program_name}': Trying to call a protected program"
         self.call_program_by_name(program_name)

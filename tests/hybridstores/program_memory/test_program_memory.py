@@ -23,6 +23,7 @@ class TestProgramMemory(unittest.TestCase):
         self.program_memory.initialize()
 
     def test_add_program(self):
+        self.assertFalse(self.program_memory.exists("test_program"))
         self.program_memory.add_programs(
             ["test_program.cypher"],
             ["CREATE (start:Control {name:'Start'}), (end:Control {name:'End'}), (start)-[:NEXT]->(end)"],

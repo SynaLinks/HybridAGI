@@ -23,11 +23,13 @@ class TestFileSystem(unittest.TestCase):
         self.filesystem.initialize()
 
     def test_add_document(self):
+        self.assertFalse(self.filesystem.exists("/home/user/text.txt"))
         self.filesystem.add_documents(
             ["/home/user/text.txt"],
             ["This is a document"],
             languages = ["plaintext"]
         )
+        self.assertTrue(self.filesystem.exists("/home/user/text.txt"))
 
     def test_add_folder(self):
         self.filesystem.add_folders(
