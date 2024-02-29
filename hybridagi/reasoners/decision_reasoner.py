@@ -13,10 +13,8 @@ Decision Outputs: {choice}
 
 Please ensure to use the following format to Answer:
 
-Step 1: First reasoning step to answer to the Decision
-Step 2: Second reasoning step to answer to the Decision
-... and so on (max 5 reasoning steps)
-Final Step (MUST be only ONE word between {choice}):...
+Thinking: Your reasoning to answer the decision
+Final Decision (MUST be only ONE word between {choice}):...
 
 Please, ensure to always use the above format to answer"""
 

@@ -73,6 +73,14 @@ class TestGraphProgramInterpreter(unittest.TestCase):
         self.interpreter.start("Test")
         self.assertEqual(self.interpreter.call_program_tool(program_name), f"Error while calling '{program_name}': This program does not exist, verify its name")
 
+    def test_call_protected_program(self):
+        self.program_memory.add_programs(
+            ["main.cypher"],
+            ["CREATE (start:Control {name:'Start'}), (end:Control {name:'End'}), (start)-[:NEXT]->(end)"],
+        )
+        self.interpreter.start("main")
+        self.assertEqual(self.interpreter.call_program_tool("main"), "Error while calling 'main': Trying to call a protected program")
+
 
 if __name__ == "__main__":
     unittest.main()

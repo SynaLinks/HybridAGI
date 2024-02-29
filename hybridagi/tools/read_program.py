@@ -8,9 +8,10 @@ from langchain.callbacks.manager import (
 )
 from langchain.tools import BaseTool
 from ..hybridstores.program_memory.program_memory import ProgramMemory
-
+from ..parsers.program_name import ProgramNameOutputParser
 class ReadProgramTool(BaseTool):
     program_memory: ProgramMemory
+    program_name_parser: ProgramNameOutputParser = ProgramNameOutputParser()
 
     def __init__(
             self,
@@ -36,11 +37,18 @@ class ReadProgramTool(BaseTool):
             query:str,
             run_manager: Optional[CallbackManagerForToolRun] = None
         ) -> str:
-        program = self.program_memory.get_content(query.strip('"'))
+        program_name = self.program_name_parser.parse(query)
+        program = self.program_memory.get_content(program_name)
         if program:
-            return program
+            result = \
+"""
+{query}.cypher
+```cypher
+{program}
+```"""
+            return result
         else:
-            return "Nothing found, please ensure the name is correct"
+            return "Nothing found, please ensure that the name is correct"
 
     def _arun(
             self,
