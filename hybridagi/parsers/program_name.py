@@ -10,7 +10,7 @@ class ProgramNameOutputParser(BaseOutputParser):
         """Fix and validate the given Cypher query."""
         output = output.replace(".cypher", "")
         output = re.sub('(?!^)([A-Z]+)', r'_\1', output).lower()
-        return output
+        return output.strip()
 
     def get_format_instructions(self) -> str:
         """Returns the formating instructions"""
