@@ -23,7 +23,6 @@ from ..utility.commands import (
 
 class ShellTool(BaseTool):
     shell: ShellUtility
-
     class Config:
         """Configuration for this pydantic object."""
         extra = Extra.forbid

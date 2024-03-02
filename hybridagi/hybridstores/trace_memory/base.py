@@ -14,13 +14,15 @@ The Objective is from the perspective of the User
 Objective: {objective}
 Note: {note}
 
-### Past Actions
+### Past Action
 
 {actions_trace}
 
 ### Current Action
+
 Remember that the objective is to {objective}.
-Always refer to you past actions to known what to do or answer."""
+Note: {note}
+Always reflect to you past actions to known what to do or answer."""
 
 class BaseTraceMemory(BaseModel):
     objective: str = "N/A"

@@ -21,7 +21,7 @@ class FileOutputParser(BaseOutputParser):
         matches = re.finditer(PATTERN, output, re.DOTALL)
 
         for match in matches:
-            filenames.append(match.group('filename'))
+            filenames.append(match.group('filename').replace("\_", "_"))
             contents.append(match.group('content').strip())
             languages.append(match.group('lang'))
 
