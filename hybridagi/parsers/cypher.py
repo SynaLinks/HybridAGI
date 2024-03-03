@@ -9,24 +9,19 @@ class CypherOutputParser(BaseOutputParser):
 
     def parse(self, output:str) -> str:
         """Fix and validate the given Cypher query."""
-        self.validate(output)
-        return self.fix(output)
-
-    def fix(self, output: str) -> str:
-        """Fix RedisGraph Cypher query."""
-        # Remove any leading whitespace or newline characters
-        output = output.strip()
-        #Remove any trailing punctuation marks or quotes
-        while output and output[-1] in [",", ".", ";", '"', "`", "'"]:
-            output = output[:-1]
-        return output
-
-    def validate(self, output:str) -> str:
-        """Validate the given Cypher query."""
         if not isinstance(output, str):
             raise ValueError("The Cypher query must be a string")
         if not output:
             raise ValueError("The Cypher query cannot be empty")
+        return self.fix(output)
+
+    def fix(self, output: str) -> str:
+        """Fix RedisGraph Cypher query."""
+        # Remove any leading whitespace or newline characters or trailing punctuaction
+        output = output.strip()
+        output = output.strip("\"'`")
+        output = output.rstrip(".,;")
+        return output
 
     def get_format_instructions(self) -> str:
         """Returns the formating instructions."""

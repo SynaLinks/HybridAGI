@@ -12,7 +12,7 @@ class FileOutputParser(BaseOutputParser):
     The Output Parser for the files
     """
     def parse(self, output:str) -> List[Tuple[str, str, str]]:
-        """Fix and validate the given Cypher query."""
+        """Fix and validate the output."""
         filenames = []
         contents = []
         languages = []
@@ -21,7 +21,9 @@ class FileOutputParser(BaseOutputParser):
         matches = re.finditer(PATTERN, output, re.DOTALL)
 
         for match in matches:
-            filenames.append(match.group('filename').replace("\_", "_"))
+            filename = match.group('filename').replace("\_", "_")
+            filename = filename.strip(".'\"")
+            filenames.append(filename)
             contents.append(match.group('content').strip())
             languages.append(match.group('lang'))
 
@@ -43,7 +45,7 @@ CONTENT
 ```
 Where the following tokens must be replaced such that:
 FILENAME is the lowercase file name including the file extension.
-LANG is the markup code block language for the content's language
+LANG is the markup code block language for the content's language (use plaintext for txt files)
 and CONTENT its content.
 """
         return instructions

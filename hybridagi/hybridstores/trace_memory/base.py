@@ -7,22 +7,19 @@ from typing import Iterable
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 TRACE_MEMORY_TEMPLATE = \
-"""
-### User defined objective
+"""### User defined objective
 
 The Objective is from the perspective of the User
 Objective: {objective}
 Note: {note}
 
-### Past Action
+### Past Actions
 
 {actions_trace}
 
 ### Current Action
 
-Remember that the objective is to {objective}.
-Note: {note}
-Always reflect to you past actions to known what to do or answer."""
+Always reflect on your past actions to known what to do or answer."""
 
 class BaseTraceMemory(BaseModel):
     objective: str = "N/A"

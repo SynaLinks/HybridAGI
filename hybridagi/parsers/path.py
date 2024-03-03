@@ -7,7 +7,7 @@ class PathOutputParser(BaseOutputParser):
     The Output Parser for the paths
     """
     def parse(self, output:str) -> str:
-        """Fix and validate the given Cypher query."""
+        """Fix and validate the given path."""
         return self.fix_path(output)
 
     def get_format_instructions(self) -> str:
@@ -16,9 +16,10 @@ class PathOutputParser(BaseOutputParser):
         return instructions
 
     def fix_path(self, path):
-        path = path.replace('"', "").replace("\_", "_")
         path = path.strip()
+        path = path.replace("\_", "_")
+        path = path.strip("\"'")
+        path = path.rstrip(",.;")
         if len(path) > 1:
-            if path[len(path)-1] == "/":
-                path = path[:len(path)-1]
+            path = path.rstrip("/")
         return path

@@ -77,7 +77,7 @@ CONTENT
 ```
 Where the following tokens must be replaced such that:
 FILENAME is the lowercase file name including the file extension.
-LANG is the markup code block language for the content's language
+LANG is the markup code block language for the content's language (use plaintext for txt files)
 and CONTENT its content.
 """
         self.assertEqual(instructions, expected_instructions)

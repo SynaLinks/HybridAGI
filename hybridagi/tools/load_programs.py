@@ -9,10 +9,12 @@ from langchain.callbacks.manager import (
 from langchain.tools import BaseTool
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..parsers.file import FileOutputParser
+from ..parsers.cypher import CypherOutputParser
 
 class LoadProgramsTool(BaseTool):
     program_memory: ProgramMemory
-    file_parser = FileOutputParser()
+    file_parser: FileOutputParser = FileOutputParser()
+    cypher_parser: CypherOutputParser = CypherOutputParser()
 
     def __init__(
             self,
@@ -54,7 +56,7 @@ class LoadProgramsTool(BaseTool):
         )
         self.program_memory.add_programs(
             filenames,
-            contents)
+            [self.cypher_parser.parse(c) for c in contents])
         if len(filenames) == 1:
             program_name = filenames[0].replace(".cypher", "")
             return f"Successfully loaded '{program_name}' program"

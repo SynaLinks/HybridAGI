@@ -21,6 +21,7 @@ from ..parsers.file import FileOutputParser
 from ..reasoners.ranked_action_reasoner import RankedActionReasoner
 
 from ..parsers.program_name import ProgramNameOutputParser
+from ..parsers.cypher import CypherOutputParser
 
 class GraphProgramInterpreter(RankedActionReasoner):
     """LLM based interpreter for graph programs"""
@@ -43,6 +44,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
     verbose: bool = True
     debug: bool = False
     program_name_parser: ProgramNameOutputParser = ProgramNameOutputParser()
+    cypher_parser: CypherOutputParser = CypherOutputParser()
     
     def __init__(
             self,
@@ -159,6 +161,7 @@ class GraphProgramInterpreter(RankedActionReasoner):
         filenames, contents, _ = file_parser.parse(program)
         program_name = self.program_name_parser.parse(filenames[0])
         program = contents[0]
+        program = self.cypher_parser.parse(program)
         if len(filenames) > 1:
             return f"Error occured while loading '{program_name}': "+\
                 "More than one Cypher program detected"
