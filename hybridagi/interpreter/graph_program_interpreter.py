@@ -141,8 +141,8 @@ class GraphProgramInterpreter(RankedActionReasoner):
             post_action_callback = post_action_callback,
         )
     
-    def predict_tool(self, prediction: str):
-        return prediction
+    def predict_tool(self, _: str):
+        return "" # To avoid the prediction to appear twice in the trace
 
     def call_program_tool(self, program_name: str):
         program_name = self.program_name_parser.parse(program_name)

@@ -13,10 +13,11 @@ Decision Outputs: {choice}
 
 Please ensure to use the following format to Answer:
 
-Thought: Your reasoning to answer the decision in a step by step manner to be sure to have the right answer according to the prompt.
+Purpose: {purpose}
+Thought: Your reasoning to answer '{question}' in a step by step manner to be sure to have the right answer.
 Final Decision (MUST be only ONE word between {choice}):...
 
-Please, ensure to always use the above format to answer"""
+Please, ensure to always use the above format to answer, make sure to always finish with the Final Decision"""
 
 DECISION_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "question", "choice"],

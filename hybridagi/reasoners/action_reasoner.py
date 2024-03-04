@@ -10,14 +10,17 @@ TOOL_INPUT_TEMPLATE = \
 """{context}
 Action Purpose: {purpose}
 Action: {tool_name}
-Action Input Prompt: {tool_prompt}
+
+## Action Input Prompt
+{tool_prompt}
 
 Please ensure to use the following format to Answer:
 
+Purpose: {purpose}
 Thought: Your reasoning to infer the action input in a step by step way to be sure to have the right answer.
-Action Input: The input of the action that follow the above action prompt.
+Action Input: The input of the action that follow the above Action Input Prompt.
 
-Please, ensure to always use the above format to answer"""
+Please, ensure to always use the above format to answer, make sure to always finish with the Action Input"""
 
 TOOL_INPUT_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "tool_name", "tool_prompt"],
