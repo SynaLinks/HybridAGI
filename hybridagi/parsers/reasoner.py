@@ -10,7 +10,7 @@ class ReasonerOutputParser(BaseOutputParser):
     def parse(self, output: str) -> str:
         """Fix and validate the output"""
         output = output.replace("\n```\n```","```").strip()
-        match = re.search(r"\nAction Input:|\nFinal Answer:", output)
+        match = re.search(r"\nFinal Answer:", output)
         if match:
             output = output[match.end():]
         match = re.search(r"\nExplanation:|\nAnswer|\nAction|\nDecision|\nStart|\nEnd", output)

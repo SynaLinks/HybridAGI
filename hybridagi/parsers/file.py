@@ -28,26 +28,8 @@ class FileOutputParser(BaseOutputParser):
             languages.append(match.group('lang'))
 
         if len(filenames) == 0:
-            instructions = self.get_format_instructions()
             raise ValueError(
-                f"Error while parsing the Input: Invalid format. {instructions}"
+                "Error while parsing the Input: Invalid format."\
+                +" Please make sure that the file has a name and the format is correct."
             )
         return filenames, contents, languages
-
-    def get_format_instructions(self) -> str:
-        """Returns the formating instructions"""
-        instructions = \
-"""
-The Input should follow the following format:
-
-FILENAME
-```LANG
-CONTENT
-```
-
-Where the following tokens must be replaced such that:
-FILENAME is the lowercase file name including the file extension.
-LANG is the markup code block language for the content's language (use plaintext for txt files)
-and CONTENT its content. Make sure to follow the above format
-"""
-        return instructions

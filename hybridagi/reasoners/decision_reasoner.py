@@ -10,17 +10,13 @@ DECISION_TEMPLATE = \
 
 ## Current Decision
 
-Decision Purpose: {purpose}
-Decision: {question}
-Decision Outputs: {choice}
-
 Please ensure to use the following format to Answer:
 
-Purpose: {purpose} by analyzing your past actions.
+Purpose: {purpose} by analyzing your past actions observations.
 Thought: Your reasoning to answer '{question}' in a step by step manner to be sure to have the right answer.
-Final Decision (MUST be only ONE word between {choice}):...
+Final Answer (MUST be only ONE word between {choice}):...
 
-Please, ensure to always use the above format to answer, make sure to always finish with the Final Decision.
+Please, ensure to always use the above format to answer, make sure to always finish with the Final Answer.
 Always reflect on your past actions to know what to answer."""
 
 DECISION_PROMPT = PromptTemplate(

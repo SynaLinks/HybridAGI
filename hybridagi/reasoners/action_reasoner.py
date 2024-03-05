@@ -22,7 +22,7 @@ Action: {tool_name}
 Please ensure to use the following format to Answer:
 
 Purpose: {purpose}
-Thought: Your reasoning to infer the answer in a step by step way to be sure to have the right answer.
+Thought: Your reasoning to infer the answer in a step by step way to be sure to have the right answer in the right format.
 Final Answer: The content of your answer.
 
 Please, ensure to always use the above format to answer, make sure to always finish with the Final Answer.
