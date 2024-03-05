@@ -1,86 +1,18 @@
 """The decision reasoner. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import asyncio
-from typing import List, Optional, Callable
-from langchain.prompts import PromptTemplate
-from .base import BaseReasoner
+from typing import List
 
-DECISION_TEMPLATE = \
-"""{context}
+from .decision_reasoner import DecisionReasoner, DECISION_PROMPT
 
-## Current Decision
-
-Decision Purpose: {purpose}
-Decision: {question}
-Decision Outputs: {choice}
-
-Please ensure to use the following format to Answer:
-
-Purpose: {purpose} by analyzing your past actions.
-Thought: Your reasoning to answer '{question}' in a step by step manner to be sure to have the right answer.
-Final Decision (MUST be only ONE word between {choice}):...
-
-Please, ensure to always use the above format to answer, make sure to always finish with the Final Decision.
-Always reflect on your past actions to know what to answer."""
-
-DECISION_PROMPT = PromptTemplate(
-    input_variables = ["context", "purpose", "question", "choice"],
-    template = DECISION_TEMPLATE
-)
-
-class DecisionReasoner(BaseReasoner):
-    """LLM reasoner that can make explicit decision"""
-    max_decision_attemps: int = 5
-
-    pre_decision_callback: Optional[
-        Callable[
-            [str, str, List[str]],
-            None
-        ]
-    ] = None
-    post_decision_callback: Optional[
-        Callable[
-            [str, str, List[str], str],
-            None
-        ]
-    ] = None
-
-    def get_decision_prompt_without_context(
-            self,
-            purpose: str,
-            question: str,
-            choice: str,
-        ) -> str:
-        """Returns the decision prompt without context"""
-        return DECISION_TEMPLATE.format(
-            context = "",
-            purpose = purpose,
-            question = question,
-            choice = choice)
-
-    def get_decision_context(
-            self,
-            purpose: str,
-            question: str,
-            choice: str,
-        ) -> str:
-        """Returns the decision context"""
-        decision_prompt = self.get_decision_prompt_without_context(
-            purpose = purpose,
-            question = question,
-            choice = choice,
-        )
-        context = self.trace_memory.get_context(
-            decision_prompt,
-            self.fast_llm_max_token,
-        )
-        return context
+class VoteDecisionReasoner(DecisionReasoner):
 
     def perform_decision(
             self,
-            purpose:str, 
+            purpose:str,
             question: str,
-            options: List[str]
+            options: List[str],
+            nb_vote: int = 5,
         ) -> str:
         """Method to perform a decision"""
         if self.pre_decision_callback is not None:
@@ -90,8 +22,9 @@ class DecisionReasoner(BaseReasoner):
                 options,
             )
         choice = " or ".join(options)
-        attemps = 0
-        while attemps < self.max_decision_attemps:
+        results = {o:0 for o in options}
+
+        def get_prediction():
             context = self.get_decision_context(
                 purpose = purpose,
                 question = question,
@@ -109,13 +42,18 @@ class DecisionReasoner(BaseReasoner):
             decision = result.split()[-1].upper()
             decision = decision.strip(".")
             if decision in options:
-                break
-            attemps += 1
-        if decision not in options:
-            raise ValueError(
-                f"Failed to decide after {attemps} attemps."+
-                f" Got {result} should finish with {choice},"+
-                " please verify your prompts or programs.")
+                results[decision] += 1
+
+        for _ in range(nb_vote):
+            get_prediction()
+
+        results_scores = zip(results.keys(), results.values())
+        sorted_results = sorted(
+            results_scores,
+            key=lambda x: x[1],
+            reverse=True)
+        best_decision, _ = sorted_results[0]
+        decision = best_decision
         self.trace_memory.commit_decision(
             purpose = purpose,
             question = question,
@@ -135,7 +73,8 @@ class DecisionReasoner(BaseReasoner):
             self,
             purpose:str, 
             question: str,
-            options: List[str]
+            options: List[str],
+            nb_vote: int = 5,
         ) -> str:
         """Method to perform a decision"""
         if self.pre_decision_callback is not None:
@@ -147,8 +86,9 @@ class DecisionReasoner(BaseReasoner):
                 )
             )
         choice = " or ".join(options)
-        attemps = 0
-        while attemps < self.max_decision_attemps:
+        results = {o:0 for o in options}
+
+        async def get_prediction():
             context = self.get_decision_context(
                 purpose = purpose,
                 question = question,
@@ -166,13 +106,19 @@ class DecisionReasoner(BaseReasoner):
             decision = result.split()[-1].upper()
             decision = decision.strip(".")
             if decision in options:
-                break
-            attemps += 1
-        if decision not in options:
-            raise ValueError(
-                f"Failed to decide after {attemps} attemps."+
-                f" Got {result} should finish with {choice},"+
-                " please verify your prompts or programs.")
+                results[decision] += 1
+        
+        tasks = [get_prediction() for _ in range(nb_vote)]
+        await asyncio.gather(*tasks)
+
+        results_scores = zip(results.keys(), results.values())
+        sorted_results = sorted(
+            results_scores,
+            key=lambda x: x[1],
+            reverse=True)
+        best_decision, _ = sorted_results[0]
+        decision = best_decision
+        
         self.trace_memory.commit_decision(
             purpose = purpose,
             question = question,

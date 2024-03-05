@@ -1,0 +1,16 @@
+langchain-mistralai
+langchain-community
+langchain
+arxiv
+bs4
+pydantic
+python-dotenv
+coverage>=5.6
+colorama
+numpy
+redis>=4.5.2
+falkordb
+tiktoken
+pypdf
+rapidocr-onnxruntime
+duckduckgo-search

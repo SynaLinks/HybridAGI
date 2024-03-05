@@ -152,3 +152,7 @@ In contrast, programming each reasoning step demands expert knowledge in prompt 
 <a href="https://www.buymeacoffee.com/synalinks" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
 We're a small team dedicated to advancing the future of AI through open-source research. Consider supporting our work by contributing the cost of a coffee or by sharing this repository on social media! Your support helps us continue our research and development. Additionally, feel free to check out our progress, findings, and code on GitHub. We're grateful for any support and collaboration from the community as we work towards shaping the future of AI. Thank you!
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=SynaLinks/HybridAGI&type=Date)](https://star-history.com/#SynaLinks/HybridAGI&Date)

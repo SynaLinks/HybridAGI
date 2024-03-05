@@ -11,17 +11,13 @@ Action: {tool_name}
 Action Input Prompt: {tool_prompt}
 Action Input: {tool_input}
 
-Evaluation: Please, evaluate the quality of the above Action Input
-It is always better when less assumption are made.
-
 Please ensure to use the following format to Answer:
 
-Step 1: First reasoning step to evaluate the above Action Input
-Step 2: Second reasoning step to evaluate the above Action Input
-... and so on (max 5 reasoning steps)
-Final Step (must be a score between 0.0 and 1.0):...
+Purpose: Evaluate the quality of the above Action Input
+Thought: Your reasoning to infer the score in a step by step way to be sure to have the right answer.
+Final Score (must be a score between 0.0 and 1.0):...
 
-Please, always use the above format to answer"""
+Please, ensure to always use the above format to answer, make sure to always finish you answer with the Final Score"""
 
 EVALUATION_PROMPT = PromptTemplate(
     input_variables = [

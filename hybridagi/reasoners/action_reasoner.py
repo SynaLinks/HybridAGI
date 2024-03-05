@@ -4,30 +4,36 @@ import asyncio
 from typing import Dict, Optional, Callable
 from langchain.prompts import PromptTemplate
 from langchain.tools import BaseTool
-from .decision_reasoner import DecisionReasoner
+from .vote_decision_reasoner import VoteDecisionReasoner
 
 TOOL_INPUT_TEMPLATE = \
 """{context}
+
+## Current Action
+
 Action Purpose: {purpose}
 Action: {tool_name}
 
-## Action Input Prompt
+### Instructions for the content of the your Answer
 {tool_prompt}
+
+### Intructions on how to Answer
 
 Please ensure to use the following format to Answer:
 
 Purpose: {purpose}
-Thought: Your reasoning to infer the action input in a step by step way to be sure to have the right answer.
-Action Input: The input of the action that follow the above Action Input Prompt.
+Thought: Your reasoning to infer the answer in a step by step way to be sure to have the right answer.
+Final Answer: The content of your answer.
 
-Please, ensure to always use the above format to answer, make sure to always finish with the Action Input"""
+Please, ensure to always use the above format to answer, make sure to always finish with the Final Answer.
+Always reflect on your past actions to know what to answer."""
 
 TOOL_INPUT_PROMPT = PromptTemplate(
     input_variables = ["context", "purpose", "tool_name", "tool_prompt"],
     template = TOOL_INPUT_TEMPLATE
 )
 
-class ActionReasoner(DecisionReasoner):
+class ActionReasoner(VoteDecisionReasoner):
     """LLM reasoner that can use tools to act"""
     tools_map: Dict[str, BaseTool] = {}
 

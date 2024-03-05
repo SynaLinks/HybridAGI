@@ -64,6 +64,7 @@ class ShellTool(BaseTool):
         )
         
     def execute(self, command: str) -> str:
+        command = command.strip("`")
         s = shlex.shlex(command, punctuation_chars=True)
         args = list(s)
         for symbol in ["|", "||", "&", "&&", ">", ">>", "<", "<<", ";"]:

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
 
 [project]
@@ -11,21 +11,7 @@ authors = [
 description = "The Programmable Neuro-Symbolic AGI"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "langchain-mistralai",
-    "langchain-community",
-    "langchain",
-    "arxiv",
-    "bs4",
-    "pydantic",
-    "python-dotenv",
-    "coverage>=5.6",
-    "colorama",
-    "numpy",
-    "redis>=4.5.2",
-    "falkordb",
-    "tiktoken",
-    "pypdf",
-    "rapidocr-onnxruntime",
-    "duckduckgo-search",
-]
+dynamic = ["dependencies"]
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]

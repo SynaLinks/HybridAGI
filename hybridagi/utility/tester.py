@@ -62,9 +62,9 @@ class TesterUtility(BaseModel):
             self.program_memory.playground.query(program)
         except Exception as err:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': {err}. "+\
+                f"Error while loading '{program_name}': {err}. "+\
                 "Please change your program")
-        self.program_name = self.program_name
+        self.program_name = program_name
 
     def check_protected_program(self, program_name: str):
         """Check if the system try to modify a protected program"""
