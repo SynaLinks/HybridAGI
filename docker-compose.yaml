@@ -12,8 +12,7 @@ services:
     depends_on:
       - hybrid-agi-db
       - hybrid-agi-db-browser
-    ports:
-      - 8000:8000
+      - hybrid-agi-sandbox
     volumes:
       - ./archives:/HybridAGI/archives
       - ./documentation:/HybridAGI/documentation
@@ -30,3 +29,12 @@ services:
       - hybrid-agi-db
     ports:
       - 8001:8001
+  hybrid-agi-sandbox:
+    image: hybrid-agi-sandbox
+    working_dir: /Workspace
+    build:
+      context: ./sandbox
+      dockerfile: Dockerfile
+    container_name: hybrid-agi-sandbox
+    ports:
+      - 8000:8000

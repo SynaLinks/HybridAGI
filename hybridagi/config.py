@@ -47,3 +47,5 @@ class Config():
         self.downloads_directory = os.getenv("DOWNLOADS_DIRECTORY", "./archives")
         self.documentation_directory = os.getenv("DOCUMENTATION_DIRECTORY", "./documentation")
         self.library_directory = os.getenv("LIBRARY_DIRECTORY", "./programs")
+
+        self.sandbox_url = os.getenv("SANDBOX_URL", "http://hybrid-agi-sandbox:8000")

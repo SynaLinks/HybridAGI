@@ -22,6 +22,7 @@ from hybridagi import (
 from hybridagi.toolkits import (
     FileSystemToolKit,
     WebToolKit,
+    CodeToolKit,
 )
 
 from hybridagi.tools import (
@@ -98,7 +99,10 @@ toolkits = [
     WebToolKit(
         filesystem = filesystem,
         user_agent = cfg.user_agent,
-    )
+    ),
+    CodeToolKit(
+        sandbox_url = cfg.sandbox_url,
+    ),
 ]
 
 interpreter = GraphProgramInterpreter(
