@@ -32,7 +32,7 @@ Many people think prompt engineering is an already dead discipline. The truth is
 
 *✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
-## Chat Demo: Quickstart in 5 simple steps (recommended)!
+## Chat Demo: Quickstart in 5 simple steps !
 
 #### What you need to start?
 
@@ -145,6 +145,26 @@ Learn more about Graph-based Prompt Programming by reading our [documentation](h
 
 Then explore the curated [list of Cypher primitives](https://github.com/SynaLinks/primitives-pack) to speed up your development.
 
+### Deploy your chat app
+
+Now it is time to deploy this app, just use the following command
+
+```shell
+docker-compose up
+```
+
+## CLI Demo (use asyncio to speed-up inference)
+
+To use the CLI demo, rename the `.env.template` file into `.env`, replace `your-api-key` with your actual MistralAI API key and use the following command:
+
+```
+docker compose run -it hybrid-agi-cli
+```
+
+### Inspect the database
+
+Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `hybrid-agi-db` and port `6379`.
+
 ## Available Tools 🛠️
 
 | Tool         | Description                               |
@@ -170,26 +190,6 @@ Then explore the curated [list of Cypher primitives](https://github.com/SynaLink
 | `InternetSearch` | Perform a DuckDuckGo search |
 | `BrowseWebsite` | Browse a website chunk by chunk (use multiple times to scroll) |
 | `Arxiv` | Perform a search on [Arxiv](https://arxiv.org/) |
-
-### Deploy your chat app
-
-Now it is time to deploy this app, just use the following command
-
-```shell
-docker-compose up
-```
-
-## CLI Demo
-
-To use the CLI demo, rename the `.env.template` file into `.env`, replace `your-api-key` with your actual MistralAI API key and use the following command:
-
-```
-docker compose run -it hybrid-agi-cli
-```
-
-### Inspect the database
-
-Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `hybrid-agi-db` and port `6379`.
 
 ## Credits 👏
 
