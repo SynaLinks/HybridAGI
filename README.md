@@ -74,17 +74,102 @@ CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
 (echo_objective:Action {
-  name:"Reformulate the Objective",
-  tool:"Speak",
-  prompt:"Please reformulate the objective using other words"}),
+    name:"Reformulate the Objective",
+    tool:"Speak",
+    prompt:"Please reformulate the objective using other words"
+}),
 // Structure declaration
 (start)-[:NEXT]->(echo_objective),
+(echo_objective)-[:NEXT]->(end)
+```
+
+You can also describe conditional loops or multi-output choices using decision nodes!
+
+clarify_objective.cypher:
+```javascript
+// @desc: Clarify the objective if needed
+CREATE
+// Nodes declaration
+(start:Control {name:"Start"}),
+(end:Control {name:"End"}),
+(is_anything_unclear:Decision {
+    name:"Find out if there is anything unclear in the Objective", 
+    question:"Is the Objective unclear?"
+}),
+(ask_question:Action {
+    name:"Ask question to clarify the objective",
+    tool:"AskUser",
+    prompt:"Pick one question to clarify the Objective"
+}),
+(refine_objective:Action {
+    name:"Clarify the given objective",
+    tool:"UpdateObjective", 
+    prompt:"The refined Objective"
+}),
+// Structure declaration
+(start)-[:NEXT]->(is_anything_unclear),
+(ask_question)-[:NEXT]->(refine_objective),
+(refine_objective)-[:NEXT]->(is_anything_unclear)
+// The outgoing edges of decision nodes give
+// the possible answers to the system
+(is_anything_unclear)-[:YES]->(ask_question),
+(is_anything_unclear)-[:NO]->(end),
+// Decisions can have multiple arbitrary outcomes
+(is_anything_unclear)-[:MAYBE]->(ask_question)
+```
+
+And obvisouly, you can call other programs using Program nodes!
+
+main.cypher:
+```javascript
+// Nodes declaration
+CREATE
+(start:Control {name:"Start"}),
+(end:Control {name:"End"}),
+(clarify_objective:Program {
+    name:"Clarify the objective if needed",
+    program:"clarify_objective"
+}),
+(echo_objective:Action {
+    name:"Reformulate the Objective",
+    tool:"Speak",
+    prompt:"Please reformulate the objective using other words"
+}),
+// Structure declaration
+(start)-[:NEXT]->(clarify_objective),
+(clarify_objective)-[:NEXT]->(echo_objective),
 (echo_objective)-[:NEXT]->(end)
 ```
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
 Then explore the curated [list of Cypher primitives](https://github.com/SynaLinks/primitives-pack) to speed up your development.
+
+## Available Tools 🛠️
+
+| Tool         | Description                               |
+|--------------|:------------------------------------------:|
+| `WriteFiles` | Write into files, or override if existing |
+| `AppendFiles`|  Append data to files, or create if non-existing |
+| `ReadFile` | Read data chunk by chunk (use multiple times to scroll) |
+| `Shell` | Replicate unix commands to navigate inside the hybrid database: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`, `tree`] |
+| `RemoteShell` | Allow remote command execution inside a sandbox container |
+| `Upload` | Archive and upload the target folder or file to the User |
+| `ContentSearch` | Perform a similarity based search and fetch the content |
+| `ReadProgram` | Read a program based on its name |
+| `ProgramSearch` | Perform a similarity based search and list the top-5 most relevant |
+| `LoadPrograms` | Load programs, override if existing |
+| `CallProgram` | Call a program based on its name |
+| `UpdateObjective` | Update the long-term objective |
+| `UpdateNote` | Update the note (used as reminder) |
+| `Predict` | Populate the prompt with intermediary data for reasoning |
+| `RevertTrace` | Remove from the trace the N last steps |
+| `ClearTrace` | Clear the trace from the prompt |
+| `AskUser` | Ask a question to the user |
+| `Speak` | Tell something to the User |
+| `InternetSearch` | Perform a DuckDuckGo search |
+| `BrowseWebsite` | Browse a website chunk by chunk (use multiple times to scroll) |
+| `Arxiv` | Perform a search on [Arxiv](https://arxiv.org/) |
 
 ### Deploy your chat app
 
