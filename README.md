@@ -197,6 +197,7 @@ HybridAGI is made possible by the following open-source tools:
 
 - [LangChain framework](https://www.langchain.com/)
 - [FalkorDB database](https://www.falkordb.com/)
+- [MistralAI](https://mistral.ai)
 
 ## Contributors 🔥
 
