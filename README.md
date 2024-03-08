@@ -195,9 +195,9 @@ Open your browser at `http://localhost:8001` and connect to an existing database
 
 HybridAGI is made possible by the following open-source tools:
 
-- [LangChain framework](https://www.langchain.com/)
-- [FalkorDB database](https://www.falkordb.com/)
-- [MistralAI](https://mistral.ai)
+- [LangChain](https://www.langchain.com/) framework
+- [FalkorDB](https://www.falkordb.com/) database
+- [MistralAI](https://mistral.ai) models
 
 ## Contributors 🔥
 
