@@ -1,9 +1,8 @@
 """The reader utility. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
-from pydantic.v1 import BaseModel
 from ..hybridstores.filesystem.filesystem import FileSystem
 
-class ReaderUtility(BaseModel):
+class ReaderUtility():
     """The reader utility"""
     filesystem: FileSystem
     current_consulted_document: str = ""

@@ -1,8 +1,7 @@
 """The program tester. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import List
-from pydantic.v1 import BaseModel
-from ..hybridstores.program_memory.base import BaseProgramMemory
+from ..hybridstores.program_memory.program_memory import ProgramMemory
 
 RESERVED_NAMES = [
     "main",
@@ -27,9 +26,9 @@ FORBIDDEN_COMMANDS = [
     "RETURN",
 ]
 
-class TesterUtility(BaseModel):
+class TesterUtility():
     """The class to make some verification to graph programs"""
-    program_memory: BaseProgramMemory
+    program_memory: ProgramMemory
     program_name: str = ""
 
     class Config:

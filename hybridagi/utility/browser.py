@@ -2,14 +2,13 @@
 
 import re
 from typing import Tuple, Dict, Any, List
-from pydantic.v1 import BaseModel
 import requests
 from bs4 import BeautifulSoup
 from langchain.schema import Document
 from ..hybridstores.filesystem.filesystem import FileSystem
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-class BrowserUtility(BaseModel):
+class BrowserUtility():
     filesystem: FileSystem
     user_agent: str
     current_consulted_url: str = ""

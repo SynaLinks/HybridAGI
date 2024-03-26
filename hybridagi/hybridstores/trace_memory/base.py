@@ -82,7 +82,8 @@ class BaseTraceMemory(BaseModel):
         encoding = tiktoken.get_encoding("cl100k_base")
         num_tokens = len(encoding.encode(prompt))
         context = self.get_current_trace(
-            max_total_tokens-num_tokens)
+            max_total_tokens-num_tokens
+        )
         return context
 
     def update_trace(self, description: str):

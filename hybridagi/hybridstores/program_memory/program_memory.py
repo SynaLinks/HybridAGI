@@ -1,35 +1,39 @@
-"""The program memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
-
+import uuid
 import os
-from typing import List, Optional, Callable, Any
-from langchain.schema.embeddings import Embeddings
-from .base import BaseProgramMemory, _default_norm
-from ...utility.tester import TesterUtility
+from typing import List, Dict
+from ..hybridstore import HybridStore
+from ...embeddings.base import BaseEmbeddings
 
-class ProgramMemory(BaseProgramMemory):
-    """The Program Memory"""
+class ProgramMemory(HybridStore):
+
     def __init__(
             self,
             index_name: str,
-            redis_url: str,
-            embeddings: Embeddings,
-            embeddings_dim: int,
-            normalize: Optional[Callable[[Any], Any]] = _default_norm,
-            verbose: bool = True):
-        """The program memory constructor"""
+            embeddings: BaseEmbeddings,
+            graph_index: str = "program_memory",
+            hostname: int = "localhost",
+            port: int = 6379,
+            username: str = "",
+            password: str = "",
+            indexed_label: str = "Content",
+            wipe_on_start: bool = False,
+            ):
         super().__init__(
             index_name = index_name,
-            redis_url = redis_url,
+            graph_index = graph_index,
             embeddings = embeddings,
-            embeddings_dim = embeddings_dim,
-            normalize = normalize,
-            verbose = verbose)
-        self.playground = self.create_graph("playground")
-        self.program_tester = TesterUtility(program_memory = self)
+            hostname = hostname,
+            port = port,
+            username = username,
+            password = password,
+            indexed_label = indexed_label,
+            wipe_on_start = wipe_on_start,
+        )
 
-    def load_folders(
+    def from_folders(
             self,
-            folders: List[str]):
+            folders: List[str],
+        ):
         """Method to load a library of programs, no check performed"""
         names = []
         programs = []
@@ -44,7 +48,95 @@ class ProgramMemory(BaseProgramMemory):
                             programs.append(open(source, "r").read())
                         except Exception:
                             pass
-        self.add_programs(names = names, programs = programs)
+        self.add_texts(texts = programs, ids = names)
+
+    def add_texts(
+            self,
+            texts: List[str],
+            ids: List[str] = [],
+            descriptions: List[str] = [],
+            metadatas: List[Dict[str, str]] = [],
+        ):
+        """Method to add programs"""
+        indexes = []
+        dependencies = {}
+        for idx, text in enumerate(texts):
+            content_index = str(uuid.uuid4().hex) if not ids else ids[idx]
+            if descriptions:
+                description = descriptions[idx]
+            else:
+                description = ""
+                for line in text.split("\n"):
+                    if line.startswith("// @desc:"):
+                        description = line.replace("// @desc:", "").strip()
+                        break
+                    elif line.startswith("//"):
+                        pass
+                    elif not line:
+                        pass
+                    else:
+                        break
+            graph_program = self.get_graph(content_index)
+            try:
+                graph_program.delete()
+            except Exception:
+                pass
+            try:
+                graph_program.query(text)
+            except Exception as e:
+                raise RuntimeError(f"{content_index}: {e}")
+            params = {"index": content_index}
+            self.hybridstore.query(
+                'MERGE (n:Program {name:$index})',
+                params = params,
+            )
+            metadata = {} if not metadatas else metadatas[idx]
+            if description:
+                vector = self.embeddings.embed_text(description)
+            else:
+                vector = self.embeddings.embed_text(text)
+            params = {"index": content_index, "vector": vector.tolist()}
+            self.hybridstore.query(
+               'MERGE (n:'+self.indexed_label+' {name:$index, embeddings_vector:vecf32($vector)})',
+               params = params,
+            )
+            self.set_content(content_index, text)
+            if description:
+                self.set_content_description(content_index, description)
+            if metadata:
+                self.set_content_metadata(content_index, metadata)
+            params = {"index": content_index}
+            self.hybridstore.query(
+                "MATCH (p:Program {name:$index}), (c:Content {name:$index}) MERGE (p)-[:CONTAINS]->(c)",
+                params = params,
+            )
+            indexes.append(content_index)
+            result = graph_program.query(
+                'MATCH (n:Program) RETURN n.program AS program'
+            )
+            if len(result.result_set) > 0:
+                dependencies[content_index] = []
+                for record in result.result_set:
+                    dependencies[content_index].append(record[0])
+        for index, dependency_list in dependencies.items():
+            for dependency in dependency_list:
+                params = {"index": index, "dependency": dependency}
+                self.hybridstore.query(
+                    "MATCH (p:Program {name:$index}), (d:Program {name:$dependency}) MERGE (p)-[:DEPENDS_ON]->(d)",
+                    params = params,
+                )
+        return indexes
+
+    def depends_on(self, source: str, target: str):
+        """Method to check if a program depend on another"""
+        params = {"source": source, "target": target}
+        result = self.hybridstore.query(
+            "MATCH (n:Program {name:$source})-[r:DEPENDS_ON*]->(m:Program {name:$target}) RETURN r",
+            params = params,
+        )
+        if len(result.result_set) > 0:
+            return True
+        return False
 
     def get_program_names(self):
         """Method to get the program names"""

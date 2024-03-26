@@ -1,15 +1,24 @@
 """The base class for shell commands. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import abc
-from pydantic.v1 import BaseModel
 from typing import List
 from ...hybridstores.filesystem.context import FileSystemContext
 from ...hybridstores.filesystem.filesystem import FileSystem
 
-class BaseShellCommand(BaseModel):
+class BaseShellCommand():
     filesystem: FileSystem
     name: str = ""
     description: str = ""
+
+    def __init__(
+            self,
+            name: str,
+            description: str,
+            filesystem: FileSystem,
+        ):
+        self.name = name,
+        self.description = description,
+        self.filesystem = filesystem,
 
     @abc.abstractmethod
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:

@@ -1,175 +1,101 @@
-import os
-from typing import Optional, List, Callable, Any, Dict, Union, Tuple
+from ..hybridstore import HybridStore
+from typing import List, Dict, Optional
+from .path import dirname
+# TODO replace langchain with llama-index or custom implementation
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.schema import Document
 
 from .context import FileSystemContext
-from .path import join, basename
-from .base import BaseFileSystem
-from langchain.schema.embeddings import Embeddings
-from langchain.text_splitter import (
-    RecursiveCharacterTextSplitter,
-    Language,
-)
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.schema import Document
-from ..hybridstore import _default_norm
+from ...embeddings.base import BaseEmbeddings
 
-class FileSystem(BaseFileSystem):
-    """The File System"""
+class FileSystem(HybridStore):
+
     def __init__(
-            self,
-            redis_url: str,
-            index_name: str,
-            embeddings: Embeddings,
-            embeddings_dim: int,
-            context: Optional[FileSystemContext] = None,
-            normalize: Optional[Callable[[Any], Any]] = _default_norm,
-            chunk_size: int = 1500,
-            chunk_overlap: int = 0,
-            verbose: bool = True):
-        """The file system constructor"""
+        self,
+        index_name: str,
+        embeddings: BaseEmbeddings,
+        context: Optional[FileSystemContext] = None,
+        graph_index: str = "filesystem",
+        hostname: str = "localhost",
+        port: int = 6379,
+        username: str = "",
+        password: str = "",
+        indexed_label: str = "Content",
+        wipe_on_start: bool = False,
+        chunk_size: int = 1024,
+        chunk_overlap: int = 0,
+    ):
         super().__init__(
-            redis_url = redis_url,
             index_name = index_name,
+            graph_index = graph_index,
             embeddings = embeddings,
-            embeddings_dim = embeddings_dim,
-            normalize = normalize,
-            verbose = verbose)
+            hostname = hostname,
+            port = port,
+            username = username,
+            password = password,
+            indexed_label = indexed_label,
+            wipe_on_start = wipe_on_start, 
+        )
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self.context = context if context else FileSystemContext()
-    
-    def add_documents(
+
+    def add_texts(
             self,
-            paths: List[str],
-            texts: List[Union[str,Document]],
-            languages: List[str] = [],
-            metadatas: List[Dict[str, Any]] = [],
-        ):
-        """Method to add documents"""
-        assert(len(texts) == len(paths))
-        if languages:
-            assert(len(texts) == len(languages))
+            texts: List[str],
+            ids: List[str] = [],
+            descriptions: List[str] = [],
+            metadatas: List[Dict[str, str]] = [],
+        ) -> List[str]:
+        """Method to add texts"""
+        assert(len(texts) == len(ids))
         for idx, text in enumerate(texts):
-            path = paths[idx]
-            language = languages[idx] if languages else ""
+            path = ids[idx]
             metadata = metadatas[idx] if metadatas else {}
             if self.exists(path):
                 self.remove_documents([path])
-            if language not in [e.value for e in Language]:
-                text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=self.chunk_size,
-                    chunk_overlap=self.chunk_overlap)
-            else:
-                text_splitter = \
-                RecursiveCharacterTextSplitter.from_language(
-                    language=language,
-                    chunk_size=self.chunk_size,
-                    chunk_overlap=self.chunk_overlap)
+            text_splitter = \
+            RecursiveCharacterTextSplitter(
+                chunk_size=self.chunk_size,
+                chunk_overlap=self.chunk_overlap,
+            )
             if isinstance(text, Document):
-                    sub_docs = text_splitter.split_documents(
-                        [text]
-                    )
+                sub_docs = text_splitter.split_documents(
+                    [text]
+                )
             elif isinstance(text, str):
                 sub_docs = text_splitter.split_documents(
                     [Document(page_content=text, metadata=metadata)]
                 )
             subdocs_texts = [d.page_content for d in sub_docs]
             subdocs_metadatas = [d.metadata for d in sub_docs]
-            keys = self.add_texts(
+            indexes = super().add_texts(
                 texts = subdocs_texts,
                 metadatas = subdocs_metadatas,
             )
-            if len(keys) > 0:
+            if len(indexes) > 0:
                 self.create_document(path)
-                for i, key in enumerate(keys):
-                    self.query(
+                for i, key in enumerate(indexes):
+                    self.hybridstore.query(
                         'MATCH (n:Document {name:"'+path+'"}),'+
                         ' (m:Content {name:"'+key+'"}) MERGE (n)-[:CONTAINS]->(m)')
                     if i > 0:
-                        self.query(
-                            'MATCH (n:Content {name:"'+keys[i-1]+'"}),'+
+                        self.hybridstore.query(
+                            'MATCH (n:Content {name:"'+indexes[i-1]+'"}),'+
                             ' (m:Content {name:"'+key+'"}) MERGE (n)-[:NEXT]->(m)')
-                self.query(
+                self.hybridstore.query(
                     'MATCH (n:Document {name:"'+path+'"}),'+
-                    ' (m:Content {name:"'+keys[0]+'"}) MERGE (n)-[:BOF]->(m)')
-                self.query(
+                    ' (m:Content {name:"'+indexes[0]+'"}) MERGE (n)-[:BOF]->(m)')
+                self.hybridstore.query(
                     'MATCH (n:Document {name:"'+path+'"}),'+
-                    ' (m:Content {name:"'+keys[-1]+'"}) MERGE (n)-[:EOF]->(m)')
-    
-    def append_documents(
-                self,
-                paths: List[str],
-                texts: List[Union[str,Document]],
-                languages: List[str] = [],
-                metadatas: List[Dict[str, Any]] = [],
-            ):
-        """Method to append documents"""
-        assert(len(texts) == len(paths))
-        if languages:
-            assert(len(texts) == len(languages))
-        for idx, text in enumerate(texts):
-            path = paths[idx]
-            language = languages[idx] if languages else ""
-            metadata = metadatas[idx] if metadatas else {}
-            if not self.exists(path):
-                self.add_documents(
-                    [path],
-                    [text],
-                    [language])
-            else:
-                if language not in [e.value for e in Language]:
-                    text_splitter = RecursiveCharacterTextSplitter(
-                        chunk_size=self.chunk_size,
-                        chunk_overlap=self.chunk_overlap)
-                else:
-                    text_splitter = \
-                    RecursiveCharacterTextSplitter.from_language(
-                        language=language,
-                        chunk_size=self.chunk_size,
-                        chunk_overlap=self.chunk_overlap)
-                if isinstance(text, Document):
-                    sub_docs = text_splitter.split_documents(
-                        [text]
-                    )
-                elif isinstance(text, str):
-                    sub_docs = text_splitter.split_documents(
-                        [Document(page_content=text, metadata=metadata)]
-                    )
-                else:
-                    raise ValueError("Parameter texts should be a string or Document")
-                subdocs_texts = [d.page_content for d in sub_docs]
-                subdocs_metadatas = [d.metadata for d in sub_docs]
-                keys = self.add_texts(
-                    texts = subdocs_texts,
-                    metadatas = subdocs_metadatas,
-                )
-                eof = self.get_end_of_file(path)
-                if len(keys) > 0:
-                    for i, key in enumerate(keys):
-                        self.query(
-                            'MERGE (n:Content {name:"'+key+'"})')
-                        self.query(
-                            'MATCH (n:Document {name:"'+path+'"}),'+
-                            ' (m:Content {name:"'+key+'"}) MERGE (n)-[:CONTAINS]->(m)')
-                        if i > 0:
-                            self.query(
-                                'MATCH (n:Content {name:"'+keys[i-1]+'"}),'+
-                                ' (m:Content {name:"'+key+'"}) MERGE (n)-[:NEXT]->(m)')
-                    self.query(
-                        'MATCH (n:Content {name:"'+eof+'"}),'+
-                        ' (m:Content {name:"'+keys[0]+'"}) MERGE (n)-[:NEXT]->(m)')
-                    self.query(
-                        'MATCH (n:Document {name:"'+path+'"})-[r:EOF]->() DELETE r')
-                    self.query(
-                        'MATCH (n:Document {name:"'+path+'"}),'+
-                        ' (m:Content {name:"'+keys[-1]+'"}) MERGE (n)-[:EOF]->(m)')
-    
+                    ' (m:Content {name:"'+indexes[-1]+'"}) MERGE (n)-[:EOF]->(m)')
+        return indexes
+
     def get_document(self, path:str) -> str:
         """
         Method to get the full document.
         Do not use it for the LLM tools as it can exceed the max token.
         """
-        if self.exists(path):
+        if self.exists(path, label = "Document"):
             if self.is_folder(path):
                 return "Cannot read directory."
         else:
@@ -178,111 +104,110 @@ class FileSystem(BaseFileSystem):
         bof = self.get_beginning_of_file(path)
         eof = self.get_end_of_file(path)
         if bof == eof:
-            result = self.query(
+            result = self.hybridstore.query(
                 'MATCH (n:Content {name:"'+bof+'"}) RETURN n')
-            content_key = result[0][0].properties["name"]
+            content_key = result.result_set[0][0].properties["name"]
             content = self.get_content(content_key)
             text = content
         else:
-            result = self.query(
+            result = self.hybridstore.query(
                 'MATCH path=(:Content {name:"'+bof+'"})'+
                 '-[:NEXT*]->(:Content {name:"'+eof+'"}) RETURN nodes(path)')
             all_content = []
-            for node in result[0][0]:
+            for node in result.result_set[0][0]:
                 content_key = node.properties["name"]
                 content = self.get_content(content_key)
                 all_content.append(content)
             text = "\n".join(all_content)
         return text
 
+    def create_document(self, path:str):
+        """Method to create a document (no check performed)"""
+        self.hybridstore.query('MERGE (:Document {name: "'+path+'" })')
+        parent_folder = dirname(path)
+        while not parent_folder:
+            self.hybridstore.query(
+            'MATCH (n:Folder {name:"'+parent_folder+'"}),'+
+            ' (m:Document {name:"'+path+'"}) MERGE (n)-[:CONTAINS]->(m)')
+            parent_folder = dirname(path)
+        self.hybridstore.query(
+            'MATCH (n:Folder {name:"'+parent_folder+'"}),'+
+            ' (m:Document {name:"'+path+'"}) MERGE (n)-[:CONTAINS]->(m)')
+
     def remove_documents(self, paths: List[str]):
         for path in paths:
             indexes = []
-            result = self.query(
+            result = self.hybridstore.query(
                 'MATCH (c:Content)<-[:CONTAINS]-(d:Document {name:"'+
                 path+'"}) RETURN c.name AS name')
-            for record in result:
+            for record in result.result_set:
                 indexes.append(record[0])
-            self.query(
+            self.hybridstore.query(
                 'MATCH (c:Content)<-[:CONTAINS]-(d:Document {name:"'+
                 path+'"}) DELETE c, d')
-            self.remove_texts(indexes)     
-            
-    def add_folders(
-            self,
-            folders: List[str],
-            folder_names: List[str] = []):
-        """Method to add folders"""
-        names = []
-        docs = []
-        for i, folder in enumerate(folders):
-            if folder_names is None:
-                folder_name = os.path.basename(folder)
-            else:
-                folder_name = folder_names[i]
-            folder_name = self.context.eval_path(folder_name)
-            self.create_folder(folder_name)
-            for dirpath, dirnames, filenames in os.walk(folder):
-                if dirpath.find("__") > 0 or dirpath.find(".git") > 0:
-                    continue
-                for dir_name in dirnames:
-                    if not dir_name.startswith("__") \
-                            and not dir_name.startswith(".git"):
-                        path = join([dirpath.replace(folder, folder_name), dir_name])
-                        self.create_folder(path)
-                for filename in filenames:
-                    if not filename.startswith(".") and not filename.endswith(".zip"):
-                        source = os.path.join(dirpath, filename)
-                        try:
-                            if filename.endswith(".pdf"):
-                                loader = PyPDFLoader(source, extract_image=True)
-                                pages = loader.load_and_split()
-                                for idx, page in enumerate(pages):
-                                    path = join(
-                                        [
-                                            dirpath.replace(folder, folder_name),
-                                            f"page_{idx}_"+filename,
-                                        ]
-                                    )
-                                    docs.append(page)
-                                    names.append(path)
-                            else:
-                                f = open(source, "r")
-                                file_content = f.read()
-                                doc = Document(page_content=str(file_content))
-                                path = join(
-                                    [
-                                        dirpath.replace(folder, folder_name),
-                                        filename,
-                                    ]
-                                )
-                                docs.append(doc)
-                                names.append(path)
-                        except Exception:
-                            pass
-        self.add_documents(names, docs)
 
-    def list_folder(
-            self,
-            path: str) -> Tuple[List[str], List[str]]:
-        """Returns the files and folders of the given directory if it exists"""
-        if self.filesystem.exists(path):
-            if self.filesystem.is_folder(path):
-                files = []
-                result_query = self.filesystem.query(
-                    'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n'
-                )
-                for record in result_query:
-                    document_name = record[0].properties["name"]
-                    files.append(basename(document_name))
-                
-                folders = []
-                result_query = self.filesystem.query(
-                    'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n'
-                )
-                for record in result_query:
-                    folder_name = record[0].properties["name"]
-                    folders.append(basename(folder_name))
-                
-                return files, folders
-        return [], []
+    def create_folder(self, path:str):
+        """Method to create a folder (no check performed)"""
+        self.hybridstore.query('MERGE (n:Folder {name:"'+path+'"})')
+        parent_folder = dirname(path)
+        self.hybridstore.query(
+            'MATCH (n:Folder {name:"'+parent_folder+'"}),'+
+            ' (m:Folder {name:"'+path+'"}) MERGE (n)-[:CONTAINS]->(m)')
+
+    def is_folder(self, path:str) -> bool:
+        """Method to check if a folder at path is present in the hybridstore"""
+        result = self.hybridstore.query('MATCH (n:Folder {name:"'+path+'"}) RETURN n')
+        if len(result.result_set) > 0:
+            return True
+        return False
+
+    def is_empty(self, path:str) -> bool:
+        """Method to check if a folder at path is empty in the hybridstore"""
+        result = self.hybridstore.query(
+            'MATCH (n:Folder {name:"'+path+'"})-[:CONTAINS]->(:Document) RETURN n')
+        if len(result.result_set) == 0:
+            return True
+        return False
+
+    def is_file(self, path:str) -> bool:
+        """Method to check if a file at path is present in the hybridstore"""
+        result = self.hybridstore.query('MATCH (n:Document {name:"'+path+'"}) RETURN n')
+        if len(result.result_set) > 0:
+            return True
+        return False
+
+    def is_beginning_of_file(self, content_index:str) -> bool:
+        """Returns True if the content is the beginning of the file"""
+        result = self.hybridstore.query(
+            'MATCH (n:Content {name:"'+content_index+'"})<-[:BOF]-() RETURN n')
+        if len(result.result_set) > 0:
+            return True
+        return False
+
+    def is_end_of_file(self, content_index:str) -> bool:
+        """Returns True if the content is the end of the file"""
+        result = self.hybridstore.query(
+            'MATCH (n:Content {name:"'+content_index+'"})<-[:EOF]-() RETURN n')
+        if len(result.result_set) > 0:
+            return True
+        return False
+    
+    def get_beginning_of_file(self, path: str) -> str:
+        """Method to return the BOF content index"""
+        result = self.hybridstore.query(
+            'MATCH (:Document {name:"'+path+'"})-[:BOF]->(n:Content) RETURN n')
+        return result.result_set[0][0].properties["name"]
+
+    def get_end_of_file(self, path: str) -> str:
+        """Method to return the EOF content index"""
+        result = self.hybridstore.query(
+            'MATCH (:Document {name:"'+path+'"})-[:EOF]->(n:Content) RETURN n')
+        return result.result_set[0][0].properties["name"]
+
+    def get_next(self, content_index: str) -> str:
+        """Method to return the next content index"""
+        result = self.hybridstore.query(
+            'MATCH (:Content {name:"'+content_index+'"})-[:NEXT]->(n:Content) RETURN n')
+        if len(result) > 0:
+            return result.result_set[0][0].properties["name"]
+        return ""

@@ -1,77 +1,164 @@
-import unittest
-from langchain_community.embeddings import FakeEmbeddings
-from hybridagi import BaseHybridStore
+from hybridagi import HybridStore
+from hybridagi import FakeEmbeddings
 
-class TestBaseHybridStore(unittest.TestCase):
-    def setUp(self):
-        # Initialize a Redis client and the RedisGraphHybridStore
-        self.redis_url = "redis://localhost:6379"
-        self.index_name = "test"
-        self.verbose = False
-        self.embeddings = FakeEmbeddings(size=512)
-        self.embeddings_dim = 512
-        # Set up the RedisGraphHybridStore
-        self.hybridstore = BaseHybridStore(
-            redis_url = self.redis_url,
-            index_name = self.index_name,
-            embeddings = self.embeddings,
-            embeddings_dim = self.embeddings_dim,
-            graph_index = "hybridstore",
-            verbose = self.verbose)
-        self.hybridstore.clear()
+def test_add_texts():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    text = "This the a test text"
+    text_name = "test_text"
 
-    def test_constructor(self):
-        self.assertEqual(self.index_name, self.hybridstore.index_name)
-        self.assertEqual(self.verbose, self.hybridstore.verbose)
+    rm.add_texts(
+        texts = [text],
+        ids = [text_name]
+    )
+    assert rm.get_content("test_text") == text
 
-    def test_create_graph(self):
-        graph = self.hybridstore.create_graph("test_graph")
-        self.assertEqual(graph.name, "test_graph")
-        self.assertEqual(graph._graph.name, "test:graph:test_graph")
-        self.assertEqual(graph.index_name, "test")
-        
-    def test_graph_query(self):
-        graph = self.hybridstore.create_graph("test_graph")
-        graph.query("RETURN 1")
+def test_add_two_texts():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    text1 = "This the a test text 1"
+    text_name1 = "test_text_1"
+    text2 = "This the a test text 2"
+    text_name2 = "test_text_2"
 
-    def test_set_content(self):
-        text = "This is a content"
-        self.assertTrue(self.hybridstore.set_content("test_index", text))
-        self.assertTrue(self.hybridstore.exists("test_index"))
+    rm.add_texts(
+        texts = [text1, text2],
+        ids = [text_name1, text_name2]
+    )
+    assert rm.get_content(text_name1) == text1
+    assert rm.get_content(text_name2) == text2
 
-    def test_set_and_retreive_content(self):
-        text = "This is a content"
-        self.hybridstore.set_content("test_index", text)
-        self.assertEqual(text, self.hybridstore.get_content("test_index"))
+def test_remove_texts():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    text = "This the a test text"
+    text_name = "test_text"
 
-    def test_set_content_description(self):
-        text = "This is a content"
-        description = "This is a content description"
-        self.hybridstore.set_content("test_index", text)
-        self.assertTrue(self.hybridstore.set_content_description("test_index", description))
+    rm.add_texts(
+        texts = [text],
+        ids = [text_name]
+    )
+    assert rm.exists(text_name)
+    rm.remove_texts([text_name])
+    assert not rm.exists(text_name)
 
-    def test_set_and_retreive_content_description(self):
-        text = "This is a content"
-        description = "This is a content description"
-        self.hybridstore.set_content("test_index", text)
-        self.hybridstore.set_content_description("test_index", description)
-        self.assertEqual(description, self.hybridstore.get_content_description("test_index"))
+def test_get_graph():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    g = rm.get_graph("test_graph")
+    assert g.name == "test:graph:test_graph"
 
-    def test_set_content_metadata(self):
-        text = "This is a content"
-        metadata = {"metadata": "this is a content metadata"}
-        self.hybridstore.set_content("test_index", text)
-        self.assertTrue(self.hybridstore.set_content_metadata("test_index", metadata))
+def test_graph_query():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    g = rm.get_graph("test_graph")
+    g.query("RETURN 1")
 
-    def test_set_and_retreive_content_metadata(self):
-        text = "This is a content"
-        metadata = {"metadata": "this is a content metadata"}
-        self.hybridstore.set_content("test_index", text)
-        self.hybridstore.set_content_metadata("test_index", metadata)
-        self.assertEquals(metadata, self.hybridstore.get_content_metadata("test_index"))
+def test_set_content():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    assert rm.set_content("test_index", "This is a test text")
 
-    def test_delete_content(self):
-        text = "This is a content"
-        self.hybridstore.set_content("test_index", text)
-        self.hybridstore.delete_content("test_index")
-        self.assertEqual(None, self.hybridstore.get_content("test_index"))
+def test_set_and_retreive_content():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    assert rm.set_content("test_index", "This is a test text")
+    assert rm.get_content("test_index") == "This is a test text"
+
+def test_set_content_description():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    assert not rm.set_content_description("test_index", "This is a description")
+    assert rm.set_content("test_index", "This is a test text")
+    assert rm.set_content_description("test_index", "This is a description")
+
+def test_set_and_retreive_content_description():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    assert not rm.set_content_description("test_index", "This is a description")
+    assert rm.set_content("test_index", "This is a test text")
+    assert rm.set_content_description("test_index", "This is a description")
+
+def test_set_content_metadata():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    metadata = {"metadata": "this is a content metadata"}
+    assert not rm.set_content_metadata("test_index", metadata) 
+    assert rm.set_content("test_index", "This is a test text")
+    assert rm.set_content_metadata("test_index", metadata)
+
+def test_set_and_retreive_content_metadata():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    metadata = {"metadata": "this is a content metadata"}
+    assert rm.set_content("test_index", "This is a test text")
+    assert rm.set_content_metadata("test_index", metadata)
+    assert rm.get_content_metadata("test_index") == metadata
+
+def test_delete_content():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    assert not rm.delete_content("test_index")
+    assert rm.set_content("test_index", "This is a test text")
+    assert rm.delete_content("test_index")
+    assert not rm.exists("test_index")

@@ -1,6 +1,5 @@
 # HybridAGI: The Programmable Neuro-Symbolic AGI for people who want AI to behave as expected
 ![Beta](https://img.shields.io/badge/Release-Beta-blue)
-![Coverage](coverage.svg)
 ![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 [![Documentation](https://img.shields.io/badge/Docs-Documentation-blue)](https://synalinks.github.io/documentation)
@@ -11,6 +10,8 @@ HybridAGI is the *first Programmable LLM-based Autonomous Agent* that lets you p
 Become the *first Prompt Programmers in history*; be a part of the AI revolution one node at a time!
 
 ## Key Features 🎉
+
+- **Automatic prompt optimization & finetuning:** Thanks to the new integration of DSPy, HybridAGI can now self-refine its own prompt automatically. This new feature helps the system optimize itself based on the examples you provide. Use the LLM as a tutor and train your AI in a self-supervised fashion with ease.
 
 - **For AI makers:** This framework is intended for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. This product requires some programming and prompt engineering knowledge to get the best out of it. It's a Build Yourself product where the focus is on human creativity rather than AI autonomy. If you are new to prompt engineering, start by looking at [this guide](https://www.promptingguide.ai/).
 
@@ -32,40 +33,9 @@ Many people think prompt engineering is an already dead discipline. The truth is
 
 *✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
-## Chat Demo: Quickstart in 5 simple steps !
+## HybridAGI DSL
 
-#### What you need to start?
-
-- A MistralAI API key (get one at https://mistral.ai/)
-- [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/products/docker-desktop/)
-
-### Installation
-
-First, clone the chat repository with:
-
-```shell
-git clone https://github.com/SynaLinks/HybridAGI-chat
-cd HybridAGI-chat
-```
-
-### Directory hierarchy
-
-Then you should open the repository folder in your favorite IDE ([VSCodium](https://vscodium.com/) with the Neo4J plugin is a good start). 
-
-```shell
-📦HybridAGI-chat
-┣ 📂archives  # This is where the AGI will save its uploaded work
-┣ 📂documentation # This is where you can put your pdf and documents
-┣ 📂programs # This is where you should put your Cypher programs
-┣ 📂src # The source code of the UI
-... the license and other files related to deployment
-```
-
-Note that the folders `archives`, `documentation` and `programs` are shared with the application container, you can edit them and reload your programs/documentation without restarting the application container.
-
-### Echo test program
-
-Start with a simple echo test, create a `main.cypher` file inside the `programs` folder:
+Like any programming language, it starts with a main prompt program...
 
 main.cypher:
 ```javascript
@@ -143,61 +113,42 @@ CREATE
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
-Then explore the curated [list of Cypher primitives](https://github.com/SynaLinks/primitives-pack) to speed up your development.
-
-### Deploy your chat app
-
-Now it is time to deploy this app, just use the following command
-
-```shell
-docker-compose up
-```
-
-## CLI Demo (use asyncio to speed-up inference)
-
-To use the CLI demo, rename the `.env.template` file into `.env`, replace `your-api-key` with your actual MistralAI API key and use the following command:
+### Install
 
 ```
-docker compose run -it hybrid-agi-cli
+git clone 
+virtualenv venv
+source venv/bin/activate
+poetry install
 ```
 
-### Inspect the database
+### Run the tests
+
+Use the following command to run the tests:
+```
+poetry run pytest -vv
+```
+
+### Setup the Knowledge Base
+
+Setup the knowledge base & sandbox using docker
+
+```
+docker compose up
+```
 
 Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `hybrid-agi-db` and port `6379`.
 
-## Available Tools 🛠️
+### Examples
 
-| Tool         | Description                               |
-|--------------|:------------------------------------------:|
-| `WriteFiles` | Write into files, or override if existing |
-| `AppendFiles`|  Append data to files, or create if non-existing |
-| `ReadFile` | Read data chunk by chunk (use multiple times to scroll) |
-| `Shell` | Replicate unix commands to navigate inside the hybrid database: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`, `tree`] |
-| `RemoteShell` | Allow remote command execution inside a sandbox container |
-| `Upload` | Archive and upload the target folder or file to the User |
-| `ContentSearch` | Perform a similarity based search and fetch the content |
-| `ReadProgram` | Read a program based on its name |
-| `ProgramSearch` | Perform a similarity based search and list the top-5 most relevant |
-| `LoadPrograms` | Load programs, override if existing |
-| `CallProgram` | Call a program based on its name |
-| `UpdateObjective` | Update the long-term objective |
-| `UpdateNote` | Update the note (used as reminder) |
-| `Predict` | Populate the prompt with intermediary data for reasoning |
-| `RevertTrace` | Remove from the trace the N last steps |
-| `ClearTrace` | Clear the trace from the prompt |
-| `AskUser` | Ask a question to the user |
-| `Speak` | Tell something to the User |
-| `InternetSearch` | Perform a DuckDuckGo search |
-| `BrowseWebsite` | Browse a website chunk by chunk (use multiple times to scroll) |
-| `Arxiv` | Perform a search on [Arxiv](https://arxiv.org/) |
+See the [examples](examples/) to learn how to train your own HybridAGI.
 
 ## Credits 👏
 
 HybridAGI is made possible by the following open-source tools:
 
-- [LangChain](https://www.langchain.com/) framework
+- [DSPy](https://dspy-docs.vercel.app/) framework
 - [FalkorDB](https://www.falkordb.com/) database
-- [MistralAI](https://mistral.ai) models
 
 ## Contributors 🔥
 

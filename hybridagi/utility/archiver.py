@@ -2,12 +2,11 @@
 
 import os
 import zipfile
-from pydantic.v1 import BaseModel
 from time import gmtime, strftime
 from ..hybridstores.filesystem.path import basename
 from ..hybridstores.filesystem.filesystem import FileSystem
 
-class ArchiverUtility(BaseModel):
+class ArchiverUtility():
     filesystem: FileSystem
     downloads_directory: str
 

@@ -1,11 +1,10 @@
 """The shell utility. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 from typing import List, Dict
-from pydantic.v1 import BaseModel
 from ..hybridstores.filesystem.filesystem import FileSystem
 from .commands.base import BaseShellCommand
 
-class ShellUtility(BaseModel):
+class ShellUtility():
     """The shell for the filesystem"""
     filesystem: FileSystem
     commands_map: Dict[str, BaseShellCommand] = {}
