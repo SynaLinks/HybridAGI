@@ -2,7 +2,7 @@ import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory
-from hybridagi.tools import PredictTool
+from hybridagi.tools import PredictTool, DuckDuckGoSearchTool
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
@@ -14,7 +14,7 @@ embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence
 
 dspy.settings.configure(lm=student_llm)
 
-model_path = "simple_qa.json"
+model_path = "optional_websearch_qa.json"
 
 class Score(BaseModel):
     score: float
@@ -50,12 +50,24 @@ program_memory.add_texts(
 CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
+(is_websearch_needed:Decision {
+    name:"Check if searching for information online is needed to answer",
+    question:"Is searching online needed?"
+}),
+(websearch:Action {
+    name: "Perform a duckduckgo search",
+    tool: "DuckDuckGoSearchTool",
+    prompt: "Infer the search query to answer the given question"
+}),
 (answer:Action {
     name:"Answer the objective's question",
     tool:"Predict",
     prompt:"You are an helpfull assistant, answer the given question"
 }),
-(start)-[:NEXT]->(answer),
+(start)-[:NEXT]->(is_websearch_needed),
+(is_websearch_needed)-[:YES]->(websearch),
+(is_websearch_needed)-[:NO]->(answer),
+(websearch)-[:NEXT]->(answer),
 (answer)-[:NEXT]->(end)
 """,
     ],
@@ -85,10 +97,9 @@ testset = [
     dspy.Example(objective="How can individuals prepare themselves for a future where AI plays a more prominent role in the workforce?").with_inputs("objective"),
 ]
 
-print("Initializing the graph interpreter...")
-
 tools = [
     PredictTool(),
+    DuckDuckGoSearchTool(),
 ]
 
 print("Optimizing underlying prompts...")
@@ -112,9 +123,9 @@ print("Evaluate optimized model")
 evaluate = dspy.evaluate.Evaluate(
     devset = testset, 
     metric = program_success_metric,
-    num_threads = 1,
-    display_progress = True,
-    display_table = 0,
+    num_threads=1,
+    display_progress=True,
+    display_table=0,
 )
 
 eval_score = evaluate(compiled_prompt_opt)

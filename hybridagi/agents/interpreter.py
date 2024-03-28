@@ -16,10 +16,10 @@ class DecisionSignature(dspy.Signature):
     answer = dspy.OutputField(desc="Final answer (must be only ONE word between the possible answers)")
 
 class FinishSignature(dspy.Signature):
-    """Generate the final answer if the objective is a question or a summary of the previous actions"""
+    """Generate the final answer if the objective is a question or a summary of the previous actions otherwise"""
     trace = dspy.InputField(desc="Previous actions")
     objective = dspy.InputField(desc="Long-term objective")
-    answer = dspy.OutputField(desc="Final answer if the objective is a question or a summary of the previous actions")
+    answer = dspy.OutputField(desc="Final answer if the objective is a question or a summary of the previous actions otherwise")
 
 class GraphProgramInterpreter(dspy.Module):
     """The graph program interpreter (aka the reasoning module of HybridAGI)"""
@@ -174,8 +174,12 @@ class GraphProgramInterpreter(dspy.Module):
             stop = self.stop,
         )
         answer = prediction.answer
+        answer = answer.split()[0]
         answer = answer.upper()
-        # TODO maybe adding dspy assertions
+        dspy.Assert(
+            answer in options,
+            "Should be only one word between the possible answers",
+        )
         params = {"purpose": purpose}
         result = self.get_current_program().query(
             'MATCH (:Decision {name:$purpose})-[:'+answer+']->(n) RETURN n',
@@ -298,6 +302,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.program_trace.append(str(call_program))
 
     def stop(self):
+        """Stop the interpreter"""
         self.current_hop = 0
         self.objective = "N/A"
         self.program_trace = []

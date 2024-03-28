@@ -4,8 +4,8 @@ from .hybridstores.filesystem.filesystem import FileSystem
 from .hybridstores.program_memory.program_memory import ProgramMemory
 
 from .retrievers.base import BaseRetriever
-from .retrievers.document_retriever import DocumentRetriever
-from .retrievers.program_retriever import ProgramRetriever
+from .retrievers.document import DocumentRetriever
+from .retrievers.program import ProgramRetriever
 
 from .embeddings.base import BaseEmbeddings
 from .embeddings.fake import FakeEmbeddings

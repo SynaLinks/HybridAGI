@@ -1,20 +1,22 @@
 import dspy
 from .base import BaseTool
 from typing import Optional
+from duckduckgo_search import DDGS
 
-class PredictSignature(dspy.Signature):
-    """Answer as best as possible according to the provided instructions"""
+class DuckDuckGoSearchSignature(dspy.Signature):
+    """Infer a duckduckgo search query to answer question"""
     trace = dspy.InputField(desc = "Previous actions")
     objective = dspy.InputField(desc = "Long-term objective")
     purpose = dspy.InputField(desc = "Short-term purpose")
     prompt = dspy.InputField(desc = "Task specific instructions")
-    answer = dspy.OutputField(desc = "Answer that follow the task specific instructions")
+    query = dspy.OutputField(desc = "The duckduckgo search query")
 
-class PredictTool(BaseTool):
+class DuckDuckGoSearchTool(BaseTool):
 
-    def __init__(self):
-        super().__init__(name = "Predict")
-        self.predict = dspy.Predict(PredictSignature)
+    def __init__(self, k: int = 3):
+        super().__init__(name = "DuckDuckGoSearch")
+        self.predict = dspy.Predict(DuckDuckGoSearchSignature)
+        self.k = k
     
     def forward(
             self,
@@ -24,6 +26,7 @@ class PredictTool(BaseTool):
             prompt: str,
             disable_inference: bool = False,
             stop: Optional[str] = None,
+            k: Optional[int] = None,
         ) -> dspy.Prediction:
         if not disable_inference:
             pred = self.predict(
@@ -33,10 +36,15 @@ class PredictTool(BaseTool):
                 prompt = prompt,
                 stop = stop,
             )
+            query = pred.query
+            result = DDGS().text(query, max_results=k if k else self.k)
             return dspy.Prediction(
-                answer = pred.answer
+                query = query,
+                results = result,
             )
         else:
+            result = DDGS().text(prompt, max_results=k if k else self.k)
             return dspy.Prediction(
-                answer = prompt
+                query = prompt,
+                results = result,
             )
