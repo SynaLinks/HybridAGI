@@ -6,10 +6,10 @@ from ..retrievers.document import DocumentRetriever
 
 class DocumentSearchSignature(dspy.Signature):
     """Infer a search query to retrieve documents to answer question"""
-    trace = dspy.InputField(desc = "Previous actions")
-    objective = dspy.InputField(desc = "Long-term objective")
-    purpose = dspy.InputField(desc = "Short-term purpose")
-    prompt = dspy.InputField(desc = "Task specific instructions")
+    objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
+    context = dspy.InputField(desc = "The previous actions (what you have done)")
+    purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
+    prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     query = dspy.OutputField(desc = "The similarity based search query")
 
 class DocumentSearchTool(BaseTool):
@@ -41,21 +41,19 @@ class DocumentSearchTool(BaseTool):
     
     def forward(
             self,
-            trace: str,
+            context: str,
             objective: str,
             purpose: str,
             prompt: str,
             disable_inference: bool = False,
-            stop: Optional[str] = None,
             k: Optional[int] = None,
         ) -> dspy.Prediction:
         if not disable_inference:
             pred = self.predict(
                 objective = objective,
+                context = context,
                 purpose = purpose,
-                trace = trace,
                 prompt = prompt,
-                stop = stop,
             )
             query = pred.query
             result = self.retriever(query)

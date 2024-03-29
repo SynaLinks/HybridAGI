@@ -1,6 +1,5 @@
 import abc
 import dspy
-from typing import Optional
 
 class BaseTool(dspy.Module):
 
@@ -15,6 +14,5 @@ class BaseTool(dspy.Module):
             purpose: str,
             prompt: str,
             disable_inference: bool = False,
-            stop: Optional[str] = None,
         ) -> dspy.Prediction:
         pass

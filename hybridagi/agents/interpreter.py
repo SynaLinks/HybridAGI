@@ -7,17 +7,17 @@ from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 
 class DecisionSignature(dspy.Signature):
-    """Answer the assessed question without additional details"""
-    trace = dspy.InputField(desc="The previous actions")
-    purpose = dspy.InputField(desc="The purpose of the question")
-    question = dspy.InputField(desc="The question to assess")
-    options = dspy.InputField(desc="The possible answers to the assessed question")
-    answer = dspy.OutputField(desc=f"Answer to the assessed question (only ONE word) without additional details")
+    """Answer the assessed question by analyzing the previous actions"""
+    context = dspy.InputField(desc="The previous actions (what you have done)")
+    purpose = dspy.InputField(desc="The purpose of the question (what you have to do now)")
+    question = dspy.InputField(desc="The question to assess (the question you have to answer)")
+    options = dspy.InputField(desc="The possible answers to the assessed question (the possible solutions to the above question)")
+    answer = dspy.OutputField(desc="The right answer to the assessed question (only ONE word between the above possible answers) without additonnal details")
 
 class FinishSignature(dspy.Signature):
     """Generate the final answer if the objective is a question or a summary of the previous actions otherwise"""
-    trace = dspy.InputField(desc="Previous actions")
-    objective = dspy.InputField(desc="Long-term objective")
+    trace = dspy.InputField(desc="The previous actions (what you have done)")
+    objective = dspy.InputField(desc="Long-term objective (what you tried to accomplish)")
     answer = dspy.OutputField(desc="Final answer if the objective is a question or a summary of the previous actions otherwise")
 
 class GraphProgramInterpreter(dspy.Module):
@@ -141,11 +141,10 @@ class GraphProgramInterpreter(dspy.Module):
             trace = "Nothing done yet"
         prediction = self.tools[tool](
             objective = self.objective,
+            context = trace,
             purpose = purpose,
-            trace = trace,
             prompt = prompt,
             disable_inference = disable_inference,
-            stop = self.stop,
         )
         action = AgentAction(
             hop = self.current_hop,
@@ -165,18 +164,16 @@ class GraphProgramInterpreter(dspy.Module):
             trace = "Nothing done yet"
         possible_answers = " or ".join(options)
         prediction = self.decision(
-            trace = trace,
+            context = trace,
             purpose = purpose,
             question = question,
             options = possible_answers,
-            stop = self.stop,
         )
         answer = prediction.answer.strip()
         dspy.Suggest(
             len(answer.split()) == 1,
             f"The Answer should be only ONE word between {possible_answers}"
         )
-        print(answer)
         answer = answer.strip(".:;,")
         answer = answer.upper()
         params = {"purpose": purpose}

@@ -5,10 +5,10 @@ from duckduckgo_search import DDGS
 
 class DuckDuckGoSearchSignature(dspy.Signature):
     """Infer a duckduckgo search query to answer question"""
-    trace = dspy.InputField(desc = "Previous actions")
-    objective = dspy.InputField(desc = "Long-term objective")
-    purpose = dspy.InputField(desc = "Short-term purpose")
-    prompt = dspy.InputField(desc = "Task specific instructions")
+    objective = dspy.InputField(desc = "What you are doing")
+    context = dspy.InputField(desc = "What you have done")
+    purpose = dspy.InputField(desc = "What you have to do now")
+    prompt = dspy.InputField(desc = "How to do it")
     query = dspy.OutputField(desc = "The duckduckgo search query")
 
 class DuckDuckGoSearchTool(BaseTool):
@@ -20,21 +20,19 @@ class DuckDuckGoSearchTool(BaseTool):
     
     def forward(
             self,
-            trace: str,
+            context: str,
             objective: str,
             purpose: str,
             prompt: str,
             disable_inference: bool = False,
-            stop: Optional[str] = None,
             k: Optional[int] = None,
         ) -> dspy.Prediction:
         if not disable_inference:
             pred = self.predict(
                 objective = objective,
+                context = context,
                 purpose = purpose,
-                trace = trace,
                 prompt = prompt,
-                stop = stop,
             )
             query = pred.query
             result = DDGS().text(query, max_results=k if k else self.k)

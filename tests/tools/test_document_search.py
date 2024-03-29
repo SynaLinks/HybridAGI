@@ -31,12 +31,11 @@ def test_document_search():
     )
 
     prediction = tool(
-        trace = "Nothing done yet",
         objective = "test objective",
+        context = "Nothing done yet",
         purpose = "test purpose",
         prompt = "test prompt",
         disable_inference = False,
-        stop = None,
     )
 
     assert prediction.query == "test prediction"
@@ -69,12 +68,11 @@ def test_document_search_without_inference():
     )
 
     prediction = tool(
-        trace = "Nothing done yet",
         objective = "test objective",
+        context = "Nothing done yet",
         purpose = "test purpose",
         prompt = "test prompt",
         disable_inference = True,
-        stop = None,
     )
 
     assert prediction.query == "test prompt"

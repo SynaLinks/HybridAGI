@@ -1,5 +1,4 @@
 import dspy
-from hybridagi import FakeEmbeddings
 from dspy.utils.dummies import DummyLM
 from hybridagi.tools import PredictTool
 
@@ -10,12 +9,11 @@ def test_predict_tool():
     tool = PredictTool()
     
     prediction = tool(
-        trace = "Nothing done yet",
         objective = "test objective",
+        context = "Nothing done yet",
         purpose = "test purpose",
         prompt = "test prompt",
         disable_inference = False,
-        stop = None,
     )
     assert prediction.answer == "test prediction"
 
@@ -26,12 +24,11 @@ def test_predict_tool_without_inference():
     tool = PredictTool()
     
     prediction = tool(
-        trace = "Nothing done yet",
         objective = "test objective",
+        context = "Nothing done yet",
         purpose = "test purpose",
         prompt = "test prompt",
         disable_inference = True,
-        stop = None,
     )
     assert prediction.answer == "test prompt"
 
