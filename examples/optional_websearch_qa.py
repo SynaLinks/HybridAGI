@@ -7,8 +7,8 @@ from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
 print("Loading LLM & embeddings models...")
-student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024)
-teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024)
+student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
+teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -56,7 +56,7 @@ CREATE
 }),
 (websearch:Action {
     name: "Perform a duckduckgo search",
-    tool: "DuckDuckGoSearchTool",
+    tool: "DuckDuckGoSearch",
     prompt: "Infer the search query to answer the given question"
 }),
 (answer:Action {
@@ -123,14 +123,14 @@ print("Evaluate optimized model")
 evaluate = dspy.evaluate.Evaluate(
     devset = testset, 
     metric = program_success_metric,
-    num_threads=1,
-    display_progress=True,
-    display_table=0,
+    num_threads = 1,
+    display_progress = True,
+    display_table = 0,
 )
 
 eval_score = evaluate(compiled_prompt_opt)
 
 print(f"Score: {eval_score}")
 
-print(f"Save optimized model to {model_path}")
+print(f"Save optimized model to '{model_path}'")
 compiled_prompt_opt.save(model_path)

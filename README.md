@@ -11,7 +11,7 @@ Become the *first Prompt Programmers in history*; be a part of the AI revolution
 
 ## Key Features 🎉
 
-- **Automatic prompt optimization & finetuning:** Thanks to the new integration of DSPy, HybridAGI can now self-refine its own prompt automatically. This new feature helps the system optimize itself based on the examples you provide. Use the LLM as a tutor and train your AI in a self-supervised fashion with ease.
+- **Automatic prompt optimization & finetuning:** Thanks to the integration of DSPy, HybridAGI can now self-refine its own prompt automatically. This new feature helps the system optimize itself based on the examples you provide. You can even use the LLM as a tutor and train your AI in a self-supervised fashion with ease. See the [examples](examples) for more information.
 
 - **For AI makers:** This framework is intended for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. This product requires some programming and prompt engineering knowledge to get the best out of it. It's a Build Yourself product where the focus is on human creativity rather than AI autonomy. If you are new to prompt engineering, start by looking at [this guide](https://www.promptingguide.ai/).
 
@@ -19,7 +19,7 @@ Become the *first Prompt Programmers in history*; be a part of the AI revolution
 
 - **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior enabling conditional loops and multi-output decisions. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://synalinks.github.io/documentation/basics/graph-prompt-programming) using [Cypher](https://en.wikipedia.org/wiki/Cypher_(query_language))!
 
-- **Graph Program Interpreter:** We introduce a revolutionary [LLM Agent as Graph Interpreter](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision-making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
+- **Graph Program Interpreter:** We introduce a revolutionary [LLM Agent as Graph Interpreter](hybridagi/agents/interpreter.py) that leverages probabilistic decision-making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
 
 - **One Prompt At a Time:** Our interpreter focuses on the current node's prompt to predict tool input, eliminating role confusion. This allows for seamless integration of multiple role-based prompts in the same program, enhancing flexibility, adaptability, and performance.
 
@@ -33,7 +33,7 @@ Many people think prompt engineering is an already dead discipline. The truth is
 
 *✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
-## HybridAGI DSL
+## The Domain Specific Language (DSL) of HybridAGI
 
 Like any programming language, it starts with a main prompt program...
 
@@ -113,20 +113,15 @@ CREATE
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
-### Install
 
-```
-git clone 
+### Install from source
+
+```bash
+git clone https://github.com/SynaLinks/HybridAGI.git
+cd HybridAGI
 virtualenv venv
 source venv/bin/activate
 poetry install
-```
-
-### Run the tests
-
-Use the following command to run the tests:
-```
-poetry run pytest -vv
 ```
 
 ### Setup the Knowledge Base
@@ -139,9 +134,12 @@ docker compose up
 
 Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `hybrid-agi-db` and port `6379`.
 
-### Examples
+### Run the tests
 
-See the [examples](examples/) to learn how to train your own HybridAGI.
+Use the following command to run the tests:
+```
+poetry run pytest -vv
+```
 
 ## Credits 👏
 

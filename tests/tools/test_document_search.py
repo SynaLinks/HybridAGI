@@ -1,6 +1,8 @@
+import dspy
 from hybridagi import FakeEmbeddings
 from hybridagi import FileSystem
 from hybridagi.tools import DocumentSearchTool
+from dspy.utils.dummies import DummyLM
 
 def test_document_search():
     emb = FakeEmbeddings(dim=250)
@@ -9,6 +11,14 @@ def test_document_search():
         index_name = "test",
         embeddings = emb,
         wipe_on_start = True,
+    )
+
+    text = "This is a test text"
+    text_name = "test_text"
+
+    memory.add_texts(
+        texts = [text],
+        ids = [text_name]
     )
 
     answers = ["test prediction"]
@@ -25,11 +35,12 @@ def test_document_search():
         objective = "test objective",
         purpose = "test purpose",
         prompt = "test prompt",
-        disable_inference = True,
+        disable_inference = False,
         stop = None,
     )
 
     assert prediction.query == "test prediction"
+    assert len(prediction.passages) == 1
 
 def test_document_search_without_inference():
     emb = FakeEmbeddings(dim=250)
@@ -40,7 +51,7 @@ def test_document_search_without_inference():
         wipe_on_start = True,
     )
 
-    text = "This the a test text"
+    text = "This is a test text"
     text_name = "test_text"
 
     memory.add_texts(
@@ -67,3 +78,4 @@ def test_document_search_without_inference():
     )
 
     assert prediction.query == "test prompt"
+    assert len(prediction.passages) == 1

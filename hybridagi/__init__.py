@@ -20,7 +20,6 @@ from .utility.shell import ShellUtility
 from .utility.reader import ReaderUtility
 from .utility.archiver import ArchiverUtility
 from .utility.tester import TesterUtility
-from .utility.browser import BrowserUtility
 
 from .utility.commands import (
     BaseShellCommand,
@@ -57,7 +56,6 @@ __all__ = [
     SentenceTransformerEmbeddings,
 
     TesterUtility,
-    BrowserUtility,
     ArchiverUtility,
     ReaderUtility,
     ShellUtility,

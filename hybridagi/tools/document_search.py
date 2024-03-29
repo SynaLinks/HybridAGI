@@ -27,6 +27,7 @@ class DocumentSearchTool(BaseTool):
         ):
         super().__init__(name = "DocumentSearch")
         self.predict = dspy.Predict(DocumentSearchSignature)
+        self.k = k
         self.retriever = DocumentRetriever(
             index_name = index_name,
             embeddings = embeddings,

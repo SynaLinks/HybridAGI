@@ -121,5 +121,5 @@ eval_score = evaluate(compiled_prompt_opt)
 
 print(f"Score: {eval_score}")
 
-print(f"Save optimized model to {model_path}")
+print(f"Save optimized model to '{model_path}'")
 compiled_prompt_opt.save(model_path)

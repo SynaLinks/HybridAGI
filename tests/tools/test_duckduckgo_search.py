@@ -1,4 +1,5 @@
 import dspy
+import time
 from dspy.utils.dummies import DummyLM
 from hybridagi.tools import DuckDuckGoSearchTool
 
@@ -7,7 +8,7 @@ def test_duckduckgo_search_tool():
     dspy.settings.configure(lm=DummyLM(answers=answers))
 
     tool = DuckDuckGoSearchTool()
-    
+    time.sleep(1)
     prediction = tool(
         trace = "Nothing done yet",
         objective = "test objective",
@@ -20,11 +21,12 @@ def test_duckduckgo_search_tool():
     assert len(prediction.results) > 0
 
 def test_duckduckgo_search_tool_without_inference():
+    
     answers = ["test prediction"]
     dspy.settings.configure(lm=DummyLM(answers=answers))
 
     tool = DuckDuckGoSearchTool()
-    
+    time.sleep(1)
     prediction = tool(
         trace = "Nothing done yet",
         objective = "test objective",

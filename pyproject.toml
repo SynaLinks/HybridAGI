@@ -8,15 +8,15 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 python-dotenv = ">=1.0.1"
-sentence-transformers = "^2.6.0"
-faiss-gpu = "^1.7.2"
-duckduckgo-search = "^5.1.0"
+sentence-transformers = ">=2.6.0"
+faiss-gpu = ">=1.7.2"
+duckduckgo-search = ">=5.2.1"
 langchain = ">=0.1.13"
-falkordb = "^1.0.3"
+falkordb = ">=1.0.3"
 dspy = {git = "https://github.com/stanfordnlp/dspy.git"}
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.1.1"
+pytest = ">=8.1.1"
 
 [build-system]
 requires = ["poetry-core"]

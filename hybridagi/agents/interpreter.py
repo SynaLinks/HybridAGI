@@ -7,13 +7,12 @@ from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 
 class DecisionSignature(dspy.Signature):
-    """Make a decision according to the question and possible answers"""
-    trace = dspy.InputField(desc="Previous actions")
-    objective = dspy.InputField(desc="Long-term objective")
-    purpose = dspy.InputField(desc="Short-term purpose")
-    question = dspy.InputField(desc="Question to answer")
-    options = dspy.InputField(desc="Possible answers")
-    answer = dspy.OutputField(desc="Final answer (must be only ONE word between the possible answers)")
+    """Answer the assessed question without additional details"""
+    trace = dspy.InputField(desc="The previous actions")
+    purpose = dspy.InputField(desc="The purpose of the question")
+    question = dspy.InputField(desc="The question to assess")
+    options = dspy.InputField(desc="The possible answers to the assessed question")
+    answer = dspy.OutputField(desc=f"Answer to the assessed question (only ONE word) without additional details")
 
 class FinishSignature(dspy.Signature):
     """Generate the final answer if the objective is a question or a summary of the previous actions otherwise"""
@@ -50,7 +49,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.stop = stop
         # DSPy reasoners
         self.tools = {tool.name: tool for tool in tools}
-        self.decision = dspy.ChainOfThought(DecisionSignature)
+        self.decision = dspy.TypedChainOfThought(DecisionSignature)
         self.finish = dspy.ChainOfThought(FinishSignature)
         super().__init__()
 
@@ -168,18 +167,18 @@ class GraphProgramInterpreter(dspy.Module):
         prediction = self.decision(
             trace = trace,
             purpose = purpose,
-            objective = self.objective,
             question = question,
             options = possible_answers,
             stop = self.stop,
         )
-        answer = prediction.answer
-        answer = answer.split()[0]
-        answer = answer.upper()
-        dspy.Assert(
-            answer in options,
-            "Should be only one word between the possible answers",
+        answer = prediction.answer.strip()
+        dspy.Suggest(
+            len(answer.split()) == 1,
+            f"The Answer should be only ONE word between {possible_answers}"
         )
+        print(answer)
+        answer = answer.strip(".:;,")
+        answer = answer.upper()
         params = {"purpose": purpose}
         result = self.get_current_program().query(
             'MATCH (:Decision {name:$purpose})-[:'+answer+']->(n) RETURN n',
