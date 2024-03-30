@@ -132,7 +132,7 @@ class GraphProgramInterpreter(dspy.Module):
         if tool not in self.tools:
             raise ValueError(f"Invalid tool: '{tool}' does not exist, should be one of {list(self.tools.keys())}")
         if len(self.agent_state.program_trace) > 0:
-            trace = "\n".join(self.agent_state.program_trace)
+            trace = "\n".join(self.agent_state.program_trace[-self.num_history:])
         else:
             trace = "Nothing done yet"
         prediction = self.tools[tool](
@@ -158,7 +158,7 @@ class GraphProgramInterpreter(dspy.Module):
     def decide(self, purpose: str, question:str, options: List[str]) -> AgentDecision:
         """The method to make a decision"""
         if len(self.agent_state.program_trace) > 0:
-            trace = "\n".join(self.agent_state.program_trace)
+            trace = "\n".join(self.agent_state.program_trace[-self.num_history:])
         else:
             trace = "Nothing done yet"
         possible_answers = " or ".join(options)
