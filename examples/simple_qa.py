@@ -23,11 +23,11 @@ class AssessProgramSuccess(dspy.Signature):
     """Assess the success of the trace according to the objective"""
     assessed_trace = dspy.InputField(desc="The trace to assess")
     assessed_question = dspy.InputField(desc="The question to be assessed")
-    score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0 without additonal details")
+    score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0 without additional details")
 
 def program_success_metric(example, pred, trace=None):
     objective = example.objective
-    sucessfull = f"How well does the program trace reflect the achievement of its intended objective: {objective}?"
+    sucessfull = f"How well does the program trace reflect the achievement of its intended objective: {objective}"
     with dspy.context(lm=teacher_llm):
         result = dspy.TypedPredictor(AssessProgramSuccess)(
             assessed_trace = pred.program_trace,

@@ -16,6 +16,14 @@ from .parsers.path import PathOutputParser
 from .parsers.file import FileOutputParser
 from .parsers.reasoner import ReasonerOutputParser
 
+from .types.actions import (
+    AgentAction,
+    AgentDecision,
+    ProgramCall,
+    ProgramEnd,
+)
+from .types.state import AgentState
+
 from .utility.shell import ShellUtility
 from .utility.reader import ReaderUtility
 from .utility.archiver import ArchiverUtility
@@ -50,6 +58,12 @@ __all__ = [
     ProgramRetriever,
 
     GraphProgramInterpreter,
+
+    AgentAction,
+    AgentDecision,
+    ProgramCall,
+    ProgramEnd,
+    AgentState,
 
     BaseEmbeddings,
     FakeEmbeddings,

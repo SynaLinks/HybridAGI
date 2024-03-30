@@ -1,8 +1,22 @@
 import uuid
 import os
-from typing import List, Dict
+from falkordb import Node, Graph
+from typing import List, Dict, Optional, Tuple
 from ..hybridstore import HybridStore
 from ...embeddings.base import BaseEmbeddings
+
+RESERVED_NAMES = [
+    "main",
+    "playground",
+    "filesystem",
+    "program_memory",
+    "trace_memory",
+    "\u006D\u0061\u0069\u006E",
+    "\u0070\u006C\u0061\u0079\u0067\u0072\u006F\u0075\u006E\u0064",
+    "\u0066\u0069\u006C\u0065\u0073\u0079\u0073\u0074\u0065\u006D",
+    "\u0070\u0072\u006F\u0067\u0072\u0061\u006D\u005F\u006D\u0065\u006D\u006F\u0072\u0079",
+    "\u0074\u0072\u0061\u0063\u0065\u005F\u006D\u0065\u006D\u006F\u0072\u0079",
+]
 
 class ProgramMemory(HybridStore):
 
@@ -141,7 +155,44 @@ class ProgramMemory(HybridStore):
     def get_program_names(self):
         """Method to get the program names"""
         program_names = []
-        result = self.query("MATCH (n:Program) RETURN n.name AS name")
+        result = self.hybridstore.query("MATCH (n:Program) RETURN n.name AS name")
         for record in result:
             program_names.append(record[0])
         return program_names
+
+    def is_protected(self, program_name: str):
+        if program_name in RESERVED_NAMES:
+            return True
+        else:
+            if self.depends_on("main", program_name):
+                return True
+        return False
+
+    def get_next_node(self, node: Node, program: Graph) -> Optional[Node]:
+        """Method to get the next node"""
+        try:
+            name = node.properties["name"]
+        except ValueError:
+            raise ValueError("Invalid node: missing required 'name' parameter")
+        params = {"name": name}
+        result = program.query(
+            'MATCH ({name:$name})-[:NEXT]->(m) RETURN m',
+            params=params,
+        )
+        if len(result.result_set) > 0:
+            return result.result_set[0][0]
+        return None
+
+    def get_starting_node(self, program_name: str) -> Node:
+        """Method to get the starting node of the given program"""
+        program = self.get_graph(program_name)
+        result = program.query(
+            'MATCH (n:Control {name:"Start"}) RETURN n')
+        if len(result.result_set) == 0:
+            raise RuntimeError("No entry point detected,"+
+                " please make sure you loaded the programs.")
+        if len(result.result_set) > 1:
+            raise RuntimeError("Multiple entry point detected,"+
+                " please correct your programs.")
+        starting_node = result.result_set[0][0]
+        return starting_node

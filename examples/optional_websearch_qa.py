@@ -23,11 +23,11 @@ class AssessProgramSuccess(dspy.Signature):
     """Assess the success of the trace according to the objective"""
     assessed_trace = dspy.InputField(desc="The trace to assess")
     assessed_question = dspy.InputField(desc="The question to be assessed")
-    score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0 without additonal details")
+    score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0 without additional details")
 
 def program_success_metric(example, pred, trace=None):
     objective = example.objective
-    sucessfull = f"How well does the program trace reflect the achievement of its intended objective: {objective}?"
+    sucessfull = f"How well does the program trace reflect the achievement of its intended objective: {objective}"
     with dspy.context(lm=teacher_llm):
         result = dspy.TypedPredictor(AssessProgramSuccess)(
             assessed_trace = pred.program_trace,
@@ -77,24 +77,24 @@ CREATE
 )
 
 dataset = [
-    dspy.Example(objective="What is the city of the spacial and robotics industry in France?").with_inputs("objective"),
-    dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
-    dspy.Example(objective="What is prompt self-refinement?").with_inputs("objective"),
-    dspy.Example(objective="How might advancements in artificial intelligence impact the future job market?").with_inputs("objective"),
-    dspy.Example(objective="What ethical considerations should be taken into account regarding the integration of AI into various job sectors?").with_inputs("objective"),
-    dspy.Example(objective="What are some potential societal implications of widespread automation driven by AI?").with_inputs("objective"),
-    dspy.Example(objective="How might AI influence the skills and competencies that are in demand in the job market?").with_inputs("objective"),
-    dspy.Example(objective="How can governments and policymakers ensure that the benefits of AI are distributed equitably across society, particularly in terms of employment opportunities?").with_inputs("objective"),
-    dspy.Example(objective="What measures can be taken to ensure that AI technologies are used responsibly in the context of employment and recruitment?").with_inputs("objective"),
-    dspy.Example(objective="How might AI assist in addressing challenges related to workplace diversity, equity, and inclusion?").with_inputs("objective"),
+    dspy.Example(objective="What is the capital of France?").with_inputs("objective"),
+    dspy.Example(objective="Who is the current president of the United States?").with_inputs("objective"),
+    dspy.Example(objective="What is the square root of 64?").with_inputs("objective"),
+    dspy.Example(objective="What is the weather like in London today?").with_inputs("objective"),
+    dspy.Example(objective="What is the chemical symbol for gold?").with_inputs("objective"),
+    dspy.Example(objective="What is the latest news about space exploration?").with_inputs("objective"),
+    dspy.Example(objective="What is the largest planet in our solar system?").with_inputs("objective"),
+    dspy.Example(objective="Who won the Nobel Prize for Literature last year?").with_inputs("objective"),
+    dspy.Example(objective="What is the value of pi up to two decimal places?").with_inputs("objective"),
+    dspy.Example(objective="What is the current population of China?").with_inputs("objective"),
 ]
 
 testset = [
-    dspy.Example(objective="What are the risks and benefits associated with the use of AI in performance evaluation and decision-making processes within organizations?").with_inputs("objective"),
-    dspy.Example(objective="What are the potential effects of AI on job mobility and geographical distribution of employment opportunities?").with_inputs("objective"),
-    dspy.Example(objective="What are the negative implications of AI for the gig economy and freelance work?").with_inputs("objective"),
-    dspy.Example(objective="What are some potential industries or professions that could be significantly affected by AI in the coming years? list 5 of them").with_inputs("objective"),
-    dspy.Example(objective="How can individuals prepare themselves for a future where AI plays a more prominent role in the workforce?").with_inputs("objective"),
+    dspy.Example(objective="What is the tallest mountain in the world?").with_inputs("objective"),
+    dspy.Example(objective="Who is the richest person in the world currently?").with_inputs("objective"),
+    dspy.Example(objective="What is the formula for calculating the area of a circle?").with_inputs("objective"),
+    dspy.Example(objective="What is the latest news about COVID-19 vaccines?").with_inputs("objective"),
+    dspy.Example(objective="What is the chemical formula for water?").with_inputs("objective"),
 ]
 
 tools = [
