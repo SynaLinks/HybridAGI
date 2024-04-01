@@ -4,4 +4,3 @@ FalkorDB
 sentence-transformers
 faiss-gpu
 duckduckgo_search
-langchain

@@ -172,9 +172,9 @@ class GraphProgramInterpreter(dspy.Module):
             options = possible_answers,
         )
         answer = self.decision_parser.parse(prediction.answer, options=options)
-        dspy.Suggest(
+        dspy.Assert(
             answer in options,
-            f"Got '{answer}' The Answer should be only ONE word between {possible_answers}"
+            f"The Answer should be only ONE word between {possible_answers}"
         )
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(

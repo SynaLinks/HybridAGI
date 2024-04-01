@@ -101,7 +101,9 @@ CREATE
 (is_answer_known)-[:YES]->(answer),
 (is_answer_known)-[:NO]->(websearch),
 (websearch)-[:NEXT]->(answer_web),
-(answer_web)-[:NEXT]->(save_answer)
+(answer_web)-[:NEXT]->(save_answer),
+(save_answer)-[:NEXT]->(end),
+(answer)-[:NEXT]->(end)
 """,
     ],
     ids = [

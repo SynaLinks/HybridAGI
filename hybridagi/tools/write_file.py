@@ -11,8 +11,8 @@ class WriteFileSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc="The name of the file to write into")
-    content = dspy.OutputField(desc="The content to write into the file")
+    filename = dspy.OutputField(desc = "The name of the file to write into")
+    content = dspy.OutputField(desc = "The content to write into the file")
 
 class WriteFileTool(BaseTool):
 

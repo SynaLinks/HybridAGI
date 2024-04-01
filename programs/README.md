@@ -1,1 +1,0 @@
-This is where the Cypher programs are located

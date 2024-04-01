@@ -9,7 +9,7 @@ class DuckDuckGoSearchSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The DuckDuckGo search query (ONE sentence only)")
+    query = dspy.OutputField(desc = "The DuckDuckGo search query (ONE question only)")
 
 class DuckDuckGoSearchTool(BaseTool):
 
@@ -34,7 +34,7 @@ class DuckDuckGoSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = pred.query
+            query = pred.query.strip("\"").strip()
             result = DDGS().text(query, max_results=k if k else self.k)
             return dspy.Prediction(
                 query = query,
