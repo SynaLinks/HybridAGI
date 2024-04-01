@@ -14,7 +14,6 @@ from .embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from .parsers.cypher import CypherOutputParser
 from .parsers.path import PathOutputParser
 from .parsers.file import FileOutputParser
-from .parsers.reasoner import ReasonerOutputParser
 
 from .types.actions import (
     AgentAction,
@@ -46,7 +45,6 @@ __all__ = [
     CypherOutputParser,
     PathOutputParser,
     FileOutputParser,
-    ReasonerOutputParser,
 
     HybridStore,
     FileSystemContext,

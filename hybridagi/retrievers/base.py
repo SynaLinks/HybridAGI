@@ -23,6 +23,11 @@ class BaseRetriever(dspy.Retrieve):
         self.graph_index = graph_index
         self.embeddings = embeddings
         self.indexed_label = indexed_label
+        self.port = port
+        self.hostname = hostname
+        self.username = username
+        self.password = password
+        self.indexed_label = indexed_label
         try:
             self.client = FalkorDB(
                 hostname,

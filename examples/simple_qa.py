@@ -101,13 +101,13 @@ optimizer = BootstrapFewShot(
     **config,
 )
 
-compiled_prompt_opt = optimizer.compile(
-    GraphProgramInterpreter(program_memory = program_memory, tools = tools),
+interpreter = GraphProgramInterpreter(program_memory = program_memory, tools = tools)
+
+compiled_interpreter = optimizer.compile(
+    interpreter,
     trainset=dataset,
     valset=testset,
 )
-
-print("Evaluate optimized model")
 
 evaluate = dspy.evaluate.Evaluate(
     devset = testset, 
@@ -117,9 +117,13 @@ evaluate = dspy.evaluate.Evaluate(
     display_table = 0,
 )
 
-eval_score = evaluate(compiled_prompt_opt)
+print("Evaluate baseline model")
+baseline_score = evaluate(interpreter)
+print("Evaluate optimized model")
+eval_score = evaluate(compiled_interpreter)
 
+print(f"Baseline: {baseline_score}")
 print(f"Score: {eval_score}")
 
 print(f"Save optimized model to '{model_path}'")
-compiled_prompt_opt.save(model_path)
+compiled_interpreter.save(model_path)

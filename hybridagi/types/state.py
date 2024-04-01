@@ -40,4 +40,4 @@ class AgentState():
         self.current_hop = 0
         self.program_trace = []
         self.program_stack = deque()
-        self.filesystem_context = FileSystemContext()
+        self.context = FileSystemContext()

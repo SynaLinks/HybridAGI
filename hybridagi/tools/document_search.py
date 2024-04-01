@@ -1,4 +1,5 @@
 import dspy
+import copy
 from .base import BaseTool
 from typing import Optional
 from ..embeddings.base import BaseEmbeddings
@@ -10,7 +11,7 @@ class DocumentSearchSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity based search query")
+    query = dspy.OutputField(desc = "The similarity based search query (only ONE sentence)")
 
 class DocumentSearchTool(BaseTool):
 
@@ -28,6 +29,7 @@ class DocumentSearchTool(BaseTool):
         super().__init__(name = "DocumentSearch")
         self.predict = dspy.Predict(DocumentSearchSignature)
         self.k = k
+        self.embeddings = embeddings
         self.retriever = DocumentRetriever(
             index_name = index_name,
             embeddings = embeddings,
@@ -67,3 +69,17 @@ class DocumentSearchTool(BaseTool):
                 query = prompt,
                 passages = result.passages,
             )
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            index_name = self.retriever.index_name,
+            embeddings = self.retriever.embeddings,
+            graph_index = self.retriever.graph_index,
+            hostname = self.retriever.hostname,
+            port = self.retriever.port,
+            username = self.retriever.username,
+            password = self.retriever.password,
+            k = self.k,
+        )
+        cpy.predict = copy.deepcopy(self.predict, memo = memo)
+        return cpy

@@ -34,7 +34,7 @@ class HybridStore():
                 username = username if username else None,
                 password = password if password else None,
             )
-            self.hybridstore = self.get_graph(self.index_name)
+            self.hybridstore = self.get_graph(self.graph_index)
             self.hybridstore.query("RETURN 1")
         except Exception as e:
             raise ConnectionError("Failed to connect to FalkorDB database") from e
