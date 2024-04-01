@@ -1,6 +1,0 @@
-python-dotenv
-git+https://github.com/stanfordnlp/dspy.git
-FalkorDB
-sentence-transformers
-faiss-gpu
-duckduckgo_search

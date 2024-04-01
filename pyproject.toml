@@ -12,7 +12,7 @@ sentence-transformers = ">=2.6.0"
 faiss-gpu = ">=1.7.2"
 duckduckgo-search = ">=5.2.1"
 falkordb = ">=1.0.3"
-dspy = {git = "https://github.com/stanfordnlp/dspy.git"}
+dspy = {git = "https://github.com/stanfordnlp/dspy.git", branch = "main"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.1.1"
