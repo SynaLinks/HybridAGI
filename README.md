@@ -9,7 +9,7 @@ HybridAGI is the *first Programmable LLM-based Autonomous Agent* that lets you p
 
 Become the *first Prompt Programmers in history*; be a part of the AI revolution one node at a time!
 
-*DISCLAIMER: We are currently heavily upgrading the codecase to integrate DSPy*
+**Disclaimer: We are currently in the process of upgrading the codebase to integrate DSPy**
 
 ## Key Features 🎉
 
