@@ -115,6 +115,12 @@ CREATE
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
+### Install from pip
+
+```
+pip install git+https://github.com/SynaLinks/HybridAGI
+```
+
 ### Install from source
 
 ```bash
