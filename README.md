@@ -9,6 +9,8 @@ HybridAGI is the *first Programmable LLM-based Autonomous Agent* that lets you p
 
 Become the *first Prompt Programmers in history*; be a part of the AI revolution one node at a time!
 
+*DISCLAIMER: We are currently heavily upgrading the codecase to integrate DSPy*
+
 ## Key Features 🎉
 
 - **Automatic prompt optimization & finetuning:** Thanks to the integration of [DSPy](https://dspy-docs.vercel.app), HybridAGI can now self-refine its own prompt automatically. This new feature helps the system optimize itself based on the examples you provide. You can even use the LLM as a tutor and train your AI in a self-supervised fashion with ease or finetuning it. See the [examples](examples) for more information.
@@ -112,13 +114,6 @@ CREATE
 ```
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
-
-### Install from pip
-
-```
-pip install git+https://github.com/SynaLinks/HybridAGI.git
-```
-
 
 ### Install from source
 

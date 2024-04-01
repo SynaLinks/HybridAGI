@@ -549,9 +549,9 @@ weaviate = ["weaviate-client (>=4.5.4,<5.0.0)"]
 
 [package.source]
 type = "git"
-url = "https://github.com/stanfordnlp/dspy.git"
+url = "https://github.com/SynaLinks/dspy"
 reference = "main"
-resolved_reference = "3e3a693928930a074cbb678d2c78ef8a45e6adb7"
+resolved_reference = "3b766f280ceca3444b5ae277b3e77ecfbe20d90f"
 
 [[package]]
 name = "duckduckgo-search"
@@ -3233,4 +3233,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "384a05eef161585b367694732af951481a06e3bedc70e686eac0b41c3a5090ea"
+content-hash = "6636f379ae8b1691957ee81ad6dc55cc8fde7d54fdd25e5f66c4a7ed1e949cde"
