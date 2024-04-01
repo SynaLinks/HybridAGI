@@ -6,15 +6,16 @@ from collections import deque
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 from ..types.state import AgentState
-from hybridagi.tools import UpdateObjectiveTool, CallProgramTool
+from ..parsers.decision import DecisionParser
 
 class DecisionSignature(dspy.Signature):
     """Answer the assessed question by analyzing the previous actions"""
-    context = dspy.InputField(desc="The previous actions (what you have done)")
-    purpose = dspy.InputField(desc="The purpose of the question (what you have to do now)")
-    question = dspy.InputField(desc="The question to assess (the question you have to answer)")
-    options = dspy.InputField(desc="The possible answers to the assessed question")
-    answer = dspy.OutputField(desc="The final answer (between the above possible answers) to the assessed question without additionals details")
+    objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
+    context = dspy.InputField(desc = "The previous actions (what you have done)")
+    purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
+    question = dspy.InputField(desc = "The question to assess (the question you have to answer)")
+    options = dspy.InputField(desc = "The possible answers to the assessed question")
+    answer = dspy.OutputField(desc = "The final answer to the assessed question (between the above possible answers)")
 
 class FinishSignature(dspy.Signature):
     """Generate the final answer if the objective is a question or a summary of the previous actions otherwise"""
@@ -43,6 +44,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.max_iters = max_iters
         self.commit_decision = commit_decision
         self.commit_program_flow = commit_program_flow
+        self.decision_parser = DecisionParser()
         # DSPy reasoners
         self.tools = {tool.name: tool for tool in tools}
         self.decision = dspy.TypedChainOfThought(DecisionSignature)
@@ -161,19 +163,18 @@ class GraphProgramInterpreter(dspy.Module):
             trace = "\n".join(self.agent_state.program_trace[-self.num_history:])
         else:
             trace = "Nothing done yet"
-        possible_answers = " or ".join(options)
+        possible_answers = " or ".join(["<"+opt+">" for opt in options])
         prediction = self.decision(
+            objective = self.agent_state.objective,
             context = trace,
             purpose = purpose,
             question = question,
             options = possible_answers,
         )
-        answer = prediction.answer.split()[0]
-        answer = answer.strip(".:;,")
-        answer = answer.upper()
+        answer = self.decision_parser.parse(prediction.answer, options=options)
         dspy.Suggest(
             answer in options,
-            f"The Answer should be only ONE word between {possible_answers}"
+            f"Got '{answer}' The Answer should be only ONE word between {possible_answers}"
         )
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(
@@ -259,16 +260,8 @@ class GraphProgramInterpreter(dspy.Module):
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
-            program_memory = ProgramMemory(
-                index_name = self.program_memory.index_name,
-                graph_index = self.program_memory.graph_index,
-                embeddings = self.program_memory.embeddings,
-                hostname = self.program_memory.hostname,
-                port = self.program_memory.port,
-                username = self.program_memory.username,
-                password = self.program_memory.password,
-                indexed_label = self.program_memory.indexed_label,
-            ),
+            program_memory=self.program_memory,
+            agent_state=self.agent_state,
         )
         cpy.tools = copy.deepcopy(self.tools)
         cpy.decision = copy.deepcopy(self.decision)

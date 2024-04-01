@@ -1,34 +1,15 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory, FileSystem
-from hybridagi.tools import PredictTool, DocumentSearchTool
+from hybridagi import ProgramMemory, FileSystem, AgentState
+from hybridagi.tools import (
+    PredictTool,
+    DocumentSearchTool,
+    DuckDuckGoSearchTool,
+    WriteFileTool,
+)
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
-
-documents_ids = [
-    "/home/user/synalinks_presentation.txt",
-]
-
-documents_texts = [
-"""
-SynaLinks is a young French start-up founded in Toulouse in 2023.
-Our mission is to promote a responsible and pragmatic approach to general artificial intelligence.
-To achieve this, we integrate deep learning models with symbolic artificial intelligence models, the traditional domain of AI before the era of deep learning.
-
-At SynaLinks, our approach aims to combine the efficiency of deep learning models with the transparency and explicability of symbolic models, thus creating more robust and ethical artificial intelligence systems. 
-We work on cutting-edge technologies that enable businesses to fully harness the potential of AI while retaining significant control over their systems, reducing the risks associated with opacity and dependence on deep learning algorithms.
-
-We work closely with our clients to customize our solutions to meet their specific needs.
-Our neuro-symbolic approach offers the flexibility necessary to address the diverse requirements of businesses, allowing them to remain masters of their AI.
-
-We are confident that AI can be a positive force for society and the economy,rather than a source of concern.
-We are committed to playing an active role in promoting responsible AI use while contributing to the advancement of the fourth industrial revolution.
-
-As a start-up based in Toulouse, we take pride in being part of the French technological ecosystem and contributing to innovation in the field of AI.
-Our future is centered on ongoing research, improving our products and services, and creating a world where AI is a driver of progress, ethics, and profitability for businesses.
-"""
-]
 
 print("Loading LLM & embeddings models...")
 student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
@@ -38,7 +19,7 @@ embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence
 
 dspy.settings.configure(lm=student_llm)
 
-model_path = "document_rag.json"
+model_path = "learning_rag.json"
 
 class Score(BaseModel):
     score: float
@@ -61,14 +42,14 @@ def program_success_metric(example, pred, trace=None):
 
 print("Initializing the program memory...")
 program_memory = ProgramMemory(
-    index_name = "document_rag",
+    index_name = "learning_rag",
     embeddings = embeddings,
     wipe_on_start = True,
 )
 
 print("Initializing the internal filesystem...")
 filesystem = FileSystem(
-    index_name = "document_rag",
+    index_name = "learning_rag",
     embeddings = embeddings,
 )
 
@@ -85,14 +66,31 @@ CREATE
     tool: "DocumentSearch",
     prompt: "Use the objective's question to infer the search query"
 }),
+(is_answer_known:Decision {
+    name:"Check if the answer to the objective's question is in the above search",
+    question: "Do you known the answer based on the context not based on prior knowledge"
+}),
+(websearch:Action {
+    name: "Perform a duckduckgo search",
+    tool: "DuckDuckGoSearch",
+    prompt: "Infer the search query to answer the given question"
+}),
 (answer:Action {
     name: "Answer the objective's question",
     tool: "Predict",
     prompt: "You are an helpfull assistant, answer the given question using the above search"
 }),
+(save_answer:Action {
+    name: "Answer the objective's question",
+    tool: "WriteFile",
+    prompt: "Save the answer to the objective's question in a txt file, choose the filename based on the question"
+}),
 (start)-[:NEXT]->(document_search),
-(document_search)-[:NEXT]->(answer),
-(answer)-[:NEXT]->(end)
+(document_search)-[:NEXT]->(is_answer_known),
+(is_answer_known)-[:YES]->(answer),
+(is_answer_known)-[:NO]->(websearch),
+(websearch)-[:NEXT]->(save_answer),
+(save_answer)-[:NEXT]->(end)
 """,
     ],
     ids = [
@@ -100,40 +98,41 @@ CREATE
     ]
 )
 
-print("Adding documents to the filesystem...")
-
-filesystem.add_texts(
-    texts = documents_texts,
-    ids = documents_ids,
-)
-
 dataset = [
-    dspy.Example(objective="What is the primary mission of SynaLinks as a start-up?").with_inputs("objective"),
-    dspy.Example(objective="How does SynaLinks approach the development of artificial intelligence systems?").with_inputs("objective"),
-    dspy.Example(objective="What technologies does SynaLinks work on to enable businesses to fully utilize AI?").with_inputs("objective"),
-    dspy.Example(objective="How does SynaLinks ensure transparency and explicability in their AI models?").with_inputs("objective"),
-    dspy.Example(objective="What role do deep learning models play in SynaLinks approach to AI?").with_inputs("objective"),
-    dspy.Example(objective="How does SynaLinks help businesses reduce risks associated with AI opacity and dependence?").with_inputs("objective"),
-    dspy.Example(objective="How does SynaLinks customize their solutions to meet client's specific needs?").with_inputs("objective"),
-    dspy.Example(objective="What is the neuro-symbolic approach offered by SynaLinks?").with_inputs("objective"),
-    dspy.Example(objective="How does SynaLinks aim to contribute to the advancement of the fourth industrial revolution?").with_inputs("objective"),
-    dspy.Example(objective="What is SynaLinks stance on the role of AI in society and the economy?").with_inputs("objective"),
+    dspy.Example(objective="What is the definition of machine learning?").with_inputs("objective"),
+    dspy.Example(objective="Who made significant contributions to the field of quantum computing?").with_inputs("objective"),
+    dspy.Example(objective="What is the main argument in Immanuel Kant's Critique of Pure Reason?").with_inputs("objective"),
+    dspy.Example(objective="What is the recipe for making lasagna?").with_inputs("objective"),
+    dspy.Example(objective="When did the French Revolution occur?").with_inputs("objective"),
+    dspy.Example(objective="Can you explain the theory of relativity?").with_inputs("objective"),
+    dspy.Example(objective="Can you explain the concept of blockchain technology?").with_inputs("objective"),
+    dspy.Example(objective="Do you known how to make lasagna?").with_inputs("objective"),
+    dspy.Example(objective="Can you explain Pythagoras theorem?").with_inputs("objective"),
+    dspy.Example(objective="What is a blockchain?").with_inputs("objective"),
 ]
 
 testset = [
-    dspy.Example(objective="How does SynaLinks promote responsible AI use?").with_inputs("objective"),
+    dspy.Example(objective="Can you explain the concept of blockchain technology?").with_inputs("objective"),
     dspy.Example(objective="As a French start-up, how does SynaLinks contribute to the local technological ecosystem?").with_inputs("objective"),
     dspy.Example(objective="What are SynaLinks future plans in terms of research and development?").with_inputs("objective"),
     dspy.Example(objective="How does SynaLinks envision AI as a driver of progress, ethics, and profitability?").with_inputs("objective"),
     dspy.Example(objective="How does SynaLinks ensure that businesses remain in control of their AI systems?").with_inputs("objective"),
 ]
 
+agent_state = AgentState()
+
 tools = [
     PredictTool(),
     DocumentSearchTool(
-        index_name = "document_rag",
+        index_name = "learning_rag",
         embeddings = embeddings,
     ),
+    DuckDuckGoSearchTool(),
+    WriteFileTool(
+        filesystem = filesystem,
+        agent_state = agent_state,
+    )
+
 ]
 
 print("Optimizing underlying prompts...")
@@ -146,7 +145,7 @@ optimizer = BootstrapFewShot(
     **config,
 )
 
-interpreter = GraphProgramInterpreter(program_memory = program_memory, tools = tools)
+interpreter = GraphProgramInterpreter(program_memory = program_memory, agent_state = agent_state, tools = tools)
 
 compiled_interpreter = optimizer.compile(
     interpreter,

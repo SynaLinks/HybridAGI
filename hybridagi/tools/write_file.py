@@ -1,10 +1,12 @@
 import dspy
+import copy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..parsers.path import PathOutputParser
+from ..types.state import AgentState
 
 class WriteFileSignature(dspy.Signature):
-    """Write into a file and create it if non-existing"""
+    """Write into a file"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -39,13 +41,13 @@ class WriteFileTool(BaseTool):
             disable_inference: bool = False,
         ) -> dspy.Prediction:
         if not disable_inference:
-            pred = self.predict(
+            prediction = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.write_file(prediction.filename)
+            observation = self.write_file(prediction.filename, prediction.content)
             return dspy.Prediction(
                 filename = prediction.filename,
                 content = prediction.content,
@@ -53,3 +55,11 @@ class WriteFileTool(BaseTool):
             )
         else:
             raise NotImplementedError("Disabling inference for WriteFile not supported")
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            agent_state = self.agent_state,
+            filesystem = self.filesystem,
+        )
+        cpy.predict = copy.deepcopy(self.predict, memo)
+        return cpy

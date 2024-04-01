@@ -4,7 +4,7 @@ from .base import BaseOutputParser
 
 class CypherOutputParser(BaseOutputParser):
     """
-    The Output Parser for RedisGraph Cypher queries
+    The output parser for RedisGraph Cypher queries
     """
 
     def parse(self, output:str) -> str:
