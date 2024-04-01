@@ -1,6 +1,5 @@
 # HybridAGI: The Programmable Neuro-Symbolic AGI for people who want AI to behave as expected
 ![Beta](https://img.shields.io/badge/Release-Beta-blue)
-![Coverage](coverage.svg)
 ![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 [![Documentation](https://img.shields.io/badge/Docs-Documentation-blue)](https://synalinks.github.io/documentation)
@@ -12,13 +11,15 @@ Become the *first Prompt Programmers in history*; be a part of the AI revolution
 
 ## Key Features 🎉
 
+- **Automatic prompt optimization & finetuning:** Thanks to the integration of DSPy, HybridAGI can now self-refine its own prompt automatically. This new feature helps the system optimize itself based on the examples you provide. You can even use the LLM as a tutor and train your AI in a self-supervised fashion with ease. See the [examples](examples) for more information.
+
 - **For AI makers:** This framework is intended for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. This product requires some programming and prompt engineering knowledge to get the best out of it. It's a Build Yourself product where the focus is on human creativity rather than AI autonomy. If you are new to prompt engineering, start by looking at [this guide](https://www.promptingguide.ai/).
 
 - **Memory-Centric AGI:** Thanks to a hybrid vector and graph database powered by [FalkorDB](https://www.falkordb.com/) enabling efficient storage of data, you can inspect its long-term memory and know what's going on at a glance! The AGI remembers its programs, can execute, or modify them dynamically.
 
 - **Graph-based Prompt Programming:** HybridAGI allows you to encode its behavior using programs represented as graphs. This capability, at the core of our approach, ensures that the system follows a structured and logical behavior enabling conditional loops and multi-output decisions. Want to adapt its behavior to your workflow? [Learn how to program HybridAGI](https://synalinks.github.io/documentation/basics/graph-prompt-programming) using [Cypher](https://en.wikipedia.org/wiki/Cypher_(query_language))!
 
-- **Graph Program Interpreter:** We introduce a revolutionary [LLM Agent as Graph Interpreter](hybridagi/interpreter/graph_program_interpreter.py) that leverages probabilistic decision-making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
+- **Graph Program Interpreter:** We introduce a revolutionary [LLM Agent as Graph Interpreter](hybridagi/agents/interpreter.py) that leverages probabilistic decision-making and graphs to determine actions based on a program. By reducing ambiguity and allowing composition of programs, this state-of-the-art feature enables the AGI to handle complex tasks with ease and precision.
 
 - **One Prompt At a Time:** Our interpreter focuses on the current node's prompt to predict tool input, eliminating role confusion. This allows for seamless integration of multiple role-based prompts in the same program, enhancing flexibility, adaptability, and performance.
 
@@ -32,40 +33,9 @@ Many people think prompt engineering is an already dead discipline. The truth is
 
 *✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
-## Chat Demo: Quickstart in 5 simple steps !
+## The Domain Specific Language (DSL) of HybridAGI
 
-#### What you need to start?
-
-- A MistralAI API key (get one at https://mistral.ai/)
-- [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/products/docker-desktop/)
-
-### Installation
-
-First, clone the chat repository with:
-
-```shell
-git clone https://github.com/SynaLinks/HybridAGI-chat
-cd HybridAGI-chat
-```
-
-### Directory hierarchy
-
-Then you should open the repository folder in your favorite IDE ([VSCodium](https://vscodium.com/) with the Neo4J plugin is a good start). 
-
-```shell
-📦HybridAGI-chat
-┣ 📂archives  # This is where the AGI will save its uploaded work
-┣ 📂documentation # This is where you can put your pdf and documents
-┣ 📂programs # This is where you should put your Cypher programs
-┣ 📂src # The source code of the UI
-... the license and other files related to deployment
-```
-
-Note that the folders `archives`, `documentation` and `programs` are shared with the application container, you can edit them and reload your programs/documentation without restarting the application container.
-
-### Echo test program
-
-Start with a simple echo test, create a `main.cypher` file inside the `programs` folder:
+Like any programming language, it starts with a main prompt program...
 
 main.cypher:
 ```javascript
@@ -143,61 +113,41 @@ CREATE
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
-Then explore the curated [list of Cypher primitives](https://github.com/SynaLinks/primitives-pack) to speed up your development.
 
-### Deploy your chat app
+### Install from source
 
-Now it is time to deploy this app, just use the following command
-
-```shell
-docker-compose up
+```bash
+git clone -b dspy https://github.com/SynaLinks/HybridAGI.git
+cd HybridAGI
+virtualenv venv
+source venv/bin/activate
+pip install poetry
+poetry install
 ```
 
-## CLI Demo (use asyncio to speed-up inference)
+### Setup the Knowledge Base
 
-To use the CLI demo, rename the `.env.template` file into `.env`, replace `your-api-key` with your actual MistralAI API key and use the following command:
+Setup the knowledge base & sandbox using docker
 
 ```
-docker compose run -it hybrid-agi-cli
+docker compose up
 ```
-
-### Inspect the database
 
 Open your browser at `http://localhost:8001` and connect to an existing database with the hostname `hybrid-agi-db` and port `6379`.
 
-## Available Tools 🛠️
+### Run the tests
 
-| Tool         | Description                               |
-|--------------|:------------------------------------------:|
-| `WriteFiles` | Write into files, or override if existing |
-| `AppendFiles`|  Append data to files, or create if non-existing |
-| `ReadFile` | Read data chunk by chunk (use multiple times to scroll) |
-| `Shell` | Replicate unix commands to navigate inside the hybrid database: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`, `tree`] |
-| `RemoteShell` | Allow remote command execution inside a sandbox container |
-| `Upload` | Archive and upload the target folder or file to the User |
-| `ContentSearch` | Perform a similarity based search and fetch the content |
-| `ReadProgram` | Read a program based on its name |
-| `ProgramSearch` | Perform a similarity based search and list the top-5 most relevant |
-| `LoadPrograms` | Load programs, override if existing |
-| `CallProgram` | Call a program based on its name |
-| `UpdateObjective` | Update the long-term objective |
-| `UpdateNote` | Update the note (used as reminder) |
-| `Predict` | Populate the prompt with intermediary data for reasoning |
-| `RevertTrace` | Remove from the trace the N last steps |
-| `ClearTrace` | Clear the trace from the prompt |
-| `AskUser` | Ask a question to the user |
-| `Speak` | Tell something to the User |
-| `InternetSearch` | Perform a DuckDuckGo search |
-| `BrowseWebsite` | Browse a website chunk by chunk (use multiple times to scroll) |
-| `Arxiv` | Perform a search on [Arxiv](https://arxiv.org/) |
+Use the following command to run the tests:
+```
+poetry run pytest -vv
+```
 
 ## Credits 👏
 
 HybridAGI is made possible by the following open-source tools:
 
-- [LangChain](https://www.langchain.com/) framework
+- [DSPy](https://dspy-docs.vercel.app/) framework
 - [FalkorDB](https://www.falkordb.com/) database
-- [MistralAI](https://mistral.ai) models
 
 ## Contributors 🔥
 

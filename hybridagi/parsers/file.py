@@ -2,7 +2,7 @@
 
 import re
 from typing import Tuple, List
-from langchain.schema import BaseOutputParser
+from .base import BaseOutputParser
 
 PATTERN = \
 r"(?P<filename>[a-zA-Z0-9_.-]+)\n```(?P<lang>[a-zA-Z]+)\n(?P<content>.*?)\n```"

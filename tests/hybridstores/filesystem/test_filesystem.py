@@ -1,51 +1,99 @@
-import unittest
-from langchain_community.embeddings import FakeEmbeddings
-
+from hybridagi import FakeEmbeddings
 from hybridagi import FileSystem
 
-class TestFileSystem(unittest.TestCase):
-    def setUp(self):
-        # Initialize a Redis client and the RedisGraphHybridStore
-        self.redis_url = "redis://localhost:6379"
-        self.index_name = "test"
-        self.verbose = False
-        self.embeddings = FakeEmbeddings(size=512)
-        self.embeddings_dim = 512
-        # Set up the RedisGraphHybridStore
-        self.filesystem = FileSystem(
-            redis_url = self.redis_url,
-            index_name = self.index_name,
-            embeddings = self.embeddings,
-            embeddings_dim = self.embeddings_dim,
-            verbose = self.verbose
-        )
-        self.filesystem.clear()
-        self.filesystem.initialize()
+def test_create_folder():
+    emb = FakeEmbeddings(dim=250)
+    memory = FileSystem(
+        index_name = "test",
+        embeddings = emb,
+        wipe_on_start = True,
+    )
 
-    def test_add_document(self):
-        self.assertFalse(self.filesystem.exists("/home/user/text.txt"))
-        self.filesystem.add_documents(
-            ["/home/user/text.txt"],
-            ["This is a document"],
-            languages = ["plaintext"]
-        )
-        self.assertTrue(self.filesystem.exists("/home/user/text.txt"))
+    memory.create_folder("/test")
+    assert memory.is_folder("/test")
 
-    def test_add_folder(self):
-        self.filesystem.add_folders(
-            ["tests/hybridstores/filesystem/test_folder"],
-            ["/home/user/TestFolder"]
-        )
-        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_1"))
-        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_1/test_file_1.txt"))
-        self.assertEqual(
-            "This is a first test", 
-            self.filesystem.get_document("/home/user/TestFolder/test_folder_1/test_file_1.txt")
-        )
-        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_2"))
-        self.assertTrue(self.filesystem.exists("/home/user/TestFolder/test_folder_2/test_file_2.txt"))
-        self.assertEqual(
-            "This is a second test", 
-            self.filesystem.get_document("/home/user/TestFolder/test_folder_2/test_file_2.txt")
-        )
+def test_create_document():
+    emb = FakeEmbeddings(dim=250)
+    memory = FileSystem(
+        index_name = "test",
+        embeddings = emb,
+        wipe_on_start = True,
+    )
 
+    memory.create_document("/test.txt")
+    assert memory.is_file("/test.txt")
+
+def test_add_one_text():
+    emb = FakeEmbeddings(dim=250)
+    memory = FileSystem(
+        index_name = "test",
+        embeddings = emb,
+        wipe_on_start = True,
+    )
+
+    text = \
+"""Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Integer molestie pellentesque velit, nec lobortis elit. 
+Curabitur rhoncus vehicula euismod. Donec suscipit justo 
+quis ante congue, sed dictum lorem hendrerit. Curabitur 
+ultricies erat felis, vitae rutrum arcu placerat vel.
+Nulla dapibus dictum arcu, nec varius lacus tempor non.
+Maecenas aliquet porta dui quis aliquam. Proin dictum orci
+auctor orci vulputate, commodo tristique neque posuere.
+Aliquam in eros eu arcu fermentum dignissim nec vehicula diam."""
+
+    filename = "/lorem_ipsum.txt"
+
+    memory.add_texts(
+        [text],
+        [filename],
+    )
+
+    assert memory.is_file(filename)
+    assert memory.get_document(filename) == text
+
+def test_add_two_texts():
+    emb = FakeEmbeddings(dim=250)
+    memory = FileSystem(
+        index_name = "test",
+        embeddings = emb,
+        wipe_on_start = True,
+    )
+
+    text1 = \
+"""Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Integer molestie pellentesque velit, nec lobortis elit. 
+Curabitur rhoncus vehicula euismod. Donec suscipit justo 
+quis ante congue, sed dictum lorem hendrerit. Curabitur 
+ultricies erat felis, vitae rutrum arcu placerat vel.
+Nulla dapibus dictum arcu, nec varius lacus tempor non.
+Maecenas aliquet porta dui quis aliquam. Proin dictum orci
+auctor orci vulputate, commodo tristique neque posuere.
+Aliquam in eros eu arcu fermentum dignissim nec vehicula diam."""
+
+    text2 = \
+"""
+Cras suscipit quis lacus eu vulputate. Donec commodo volutpat tellus, 
+sed finibus enim aliquam in. Suspendisse id felis dignissim, 
+pharetra turpis in, convallis velit. Morbi magna felis, porttitor 
+vel volutpat eget, condimentum vitae est. Cras lacus nunc, sagittis
+vel nisi quis, tincidunt aliquam elit. Vivamus sagittis suscipit sem,
+eget pretium nibh. Pellentesque rhoncus velit ut nisi egestas, nec 
+iaculis elit fermentum. Etiam tempus ante lacinia, ornare ante id,
+bibendum arcu. Mauris purus dui, placerat blandit scelerisque in, 
+varius vitae enim. Nullam eu leo a urna tincidunt interdum vitae sed felis. 
+In id nibh in quam sollicitudin egestas non sed est.
+
+Sed interdum, nulla ut tempor lacinia, magna sem accumsan turpis,
+sit amet hendrerit purus odio pretium turpis.
+Curabitur convallis tempor consequat.
+Proin dictum imperdiet eros nec vehicula.
+"""
+
+    filename1 = "/lorem_ipsum.txt"
+    filename2 = "/lorem_ipsum2.txt"
+
+    memory.add_texts(
+        [text1, text2],
+        [filename1, filename2],
+    )

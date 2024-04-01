@@ -1,17 +1,22 @@
-[build-system]
-requires = ["hatchling", "hatch-requirements-txt"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "hybridagi"
-version = "0.1.0"
-authors = [
-    {name = "SynaLinks", email = "author@example.com"},
-]
+version = "0.2.0"
 description = "The Programmable Neuro-Symbolic AGI"
+authors = ["YoanSallami - SynaLinks"]
 readme = "README.md"
-requires-python = ">=3.10"
-dynamic = ["dependencies"]
 
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["requirements.txt"]
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+python-dotenv = ">=1.0.1"
+sentence-transformers = ">=2.6.0"
+faiss-gpu = ">=1.7.2"
+duckduckgo-search = ">=5.2.1"
+falkordb = ">=1.0.3"
+dspy = {git = "https://github.com/stanfordnlp/dspy.git"}
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

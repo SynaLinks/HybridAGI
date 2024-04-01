@@ -1,22 +1,5 @@
 version: '3'
 services:
-  hybrid-agi-cli:
-    image: hybrid-agi-cli:0.1.0
-    working_dir: /HybridAGI
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: hybrid-agi-cli
-    env_file:
-      - .env
-    depends_on:
-      - hybrid-agi-db
-      - hybrid-agi-db-browser
-      - hybrid-agi-sandbox
-    volumes:
-      - ./archives:/HybridAGI/archives
-      - ./documentation:/HybridAGI/documentation
-      - ./programs:/HybridAGI/programs
   hybrid-agi-db:
     image: falkordb/falkordb:edge
     container_name: hybrid-agi-db

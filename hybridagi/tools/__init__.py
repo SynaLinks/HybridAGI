@@ -1,28 +1,15 @@
-from .ask_user import AskUserTool
-from .speak import SpeakTool
-from .load_programs import LoadProgramsTool
-from .program_search import ProgramSearchTool
-from .read_program import ReadProgramTool
-
-from .append_files import AppendFilesTool
-from .read_file import ReadFileTool
-from .upload import UploadTool
-from .shell import ShellTool
-from .write_files import WriteFilesTool
-from .content_search import ContentSearchTool
-from .browse_website import BrowseWebsiteTool
+from .predict import PredictTool
+from .duckduckgo_search import DuckDuckGoSearchTool
+from .document_search import DocumentSearchTool
+from .update_objective import UpdateObjectiveTool
+from .call_program import CallProgramTool
+from .write_file import WriteFileTool
 
 __all__ = [
-    "AskUserTool",
-    "SpeakTool",
-    "LoadProgramsTool",
-    "ProgramSearchTool",
-    "ReadProgramTool",
-    "AppendFilesTool",
-    "ReadFileTool",
-    "UploadTool",
-    "ShellTool",
-    "WriteFilesTool",
-    "ContentSearchTool",
-    "BrowseWebsiteTool",
+    PredictTool,
+    DuckDuckGoSearchTool,
+    DocumentSearchTool,
+    UpdateObjectiveTool,
+    CallProgramTool,
+    WriteFileTool,
 ]

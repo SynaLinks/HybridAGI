@@ -1,15 +1,10 @@
 from typing import List
 from .path import dirname, join
-from pydantic.v1 import BaseModel
 
-class FileSystemContext(BaseModel):
-    home_directory: str = "/home/user"
-    working_directory: str = "/home/user"
-    previous_working_directory: str = "/home/user"
+class FileSystemContext():
 
     """The filesystem context"""
     def __init__(self):
-        super().__init__()
         self.initialize()
 
     def eval_path(self, path: str) -> str:
