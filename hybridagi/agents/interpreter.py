@@ -6,7 +6,7 @@ from collections import deque
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 from ..types.state import AgentState
-from ..parsers.decision import DecisionParser
+from ..parsers.decision import DecisionOutputParser
 
 class DecisionSignature(dspy.Signature):
     """Answer the assessed question by analyzing the previous actions"""
@@ -18,9 +18,9 @@ class DecisionSignature(dspy.Signature):
     answer = dspy.OutputField(desc = "The final answer to the assessed question (between the above possible answers)")
 
 class FinishSignature(dspy.Signature):
-    """Generate the final answer if the objective is a question or a summary of the previous actions otherwise"""
+    """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""
     trace = dspy.InputField(desc="The previous actions (what you have done)")
-    objective = dspy.InputField(desc="Long-term objective (what you tried to accomplish)")
+    objective = dspy.InputField(desc="Long-term objective (what you tried to accomplish or answer)")
     answer = dspy.OutputField(desc="Final answer if the objective is a question or a summary of the previous actions otherwise")
 
 class GraphProgramInterpreter(dspy.Module):
@@ -44,7 +44,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.max_iters = max_iters
         self.commit_decision = commit_decision
         self.commit_program_flow = commit_program_flow
-        self.decision_parser = DecisionParser()
+        self.decision_parser = DecisionOutputParser()
         # DSPy reasoners
         self.tools = {tool.name: tool for tool in tools}
         self.decision = dspy.TypedChainOfThought(DecisionSignature)

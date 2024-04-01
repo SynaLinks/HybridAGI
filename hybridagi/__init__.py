@@ -17,6 +17,7 @@ from .embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from .parsers.cypher import CypherOutputParser
 from .parsers.path import PathOutputParser
 from .parsers.file import FileOutputParser
+from .parsers.decision import DecisionOutputParser
 
 from .types.actions import (
     AgentAction,

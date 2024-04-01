@@ -31,8 +31,8 @@ Our future is centered on ongoing research, improving our products and services,
 ]
 
 print("Loading LLM & embeddings models...")
-student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
-teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
+student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024)
+teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024)
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -40,23 +40,30 @@ dspy.settings.configure(lm=student_llm)
 
 model_path = "document_rag.json"
 
-class Score(BaseModel):
-    score: float
 
 class AssessProgramSuccess(dspy.Signature):
     """Assess the success of the trace according to the objective"""
     assessed_trace = dspy.InputField(desc="The trace to assess")
     assessed_question = dspy.InputField(desc="The question to be assessed")
-    score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0 without additional details")
+    critique = dspy.OutputField(desc="The critique of the trace")
+
+class Score(BaseModel):
+    score: float
+
+class CritiqueToScoreSignature(dspy.Signature):
+    """Convert a critique into a score between 0.0 and 1.0"""
+    critique = dspy.InputField(desc="The critique to convert to a score")
+    score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0")
 
 def program_success_metric(example, pred, trace=None):
     objective = example.objective
     sucessfull = f"How well does the program trace reflect the achievement of its intended objective: {objective}"
     with dspy.context(lm=teacher_llm):
-        result = dspy.TypedPredictor(AssessProgramSuccess)(
+        prediction = dspy.ChainOfThought(AssessProgramSuccess)(
             assessed_trace = pred.program_trace,
             assessed_question = sucessfull,
         )
+        result = dspy.TypedPredictor(CritiqueToScoreSignature)(critique=prediction.critique)
     return result.score.score
 
 print("Initializing the program memory...")

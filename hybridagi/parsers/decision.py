@@ -1,7 +1,7 @@
 from .base import BaseOutputParser
 from typing import List
 
-class DecisionParser(BaseOutputParser):
+class DecisionOutputParser(BaseOutputParser):
     """
     The output parser for decision making steps
     """

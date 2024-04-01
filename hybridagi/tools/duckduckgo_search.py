@@ -4,12 +4,12 @@ from typing import Optional
 from duckduckgo_search import DDGS
 
 class DuckDuckGoSearchSignature(dspy.Signature):
-    """Infer a duckduckgo search query to answer question"""
+    """Infer a DuckDuckGo search query to answer question"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The duckduckgo search query")
+    query = dspy.OutputField(desc = "The DuckDuckGo search query (ONE sentence only)")
 
 class DuckDuckGoSearchTool(BaseTool):
 

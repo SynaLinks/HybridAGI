@@ -224,5 +224,14 @@ class HybridStore():
         return True
         
     def clear(self):
-        """Method to clear the entire database"""
-        self.client.connection.flushall()
+        """Method to clear the hybridstore"""
+        self.hybridstore.delete()
+        try:
+            params = {"dim": self.embeddings.dim}
+            self.hybridstore.query(
+                "CREATE VECTOR INDEX FOR (c:"+self.indexed_label+
+                ") ON (c.embeddings_vector) OPTIONS {dimension:$dim, similarityFunction:'euclidean'}",
+                params,
+            )
+        except Exception:
+            pass
