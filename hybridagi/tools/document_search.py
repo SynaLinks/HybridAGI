@@ -6,7 +6,7 @@ from ..embeddings.base import BaseEmbeddings
 from ..retrievers.document import DocumentRetriever
 
 class DocumentSearchSignature(dspy.Signature):
-    """Infer a search query to retrieve documents to answer question"""
+    """Infer the best search query to retrieve documents passages"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")

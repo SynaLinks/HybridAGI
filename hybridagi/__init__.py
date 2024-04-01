@@ -7,6 +7,9 @@ from .retrievers.base import BaseRetriever
 from .retrievers.document import DocumentRetriever
 from .retrievers.program import ProgramRetriever
 
+from .text_splitter.base import BaseTextSplitter
+from .text_splitter.sentence import SentenceTextSplitter
+
 from .embeddings.base import BaseEmbeddings
 from .embeddings.fake import FakeEmbeddings
 from .embeddings.sentence_transformer import SentenceTransformerEmbeddings

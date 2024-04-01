@@ -245,6 +245,7 @@ class GraphProgramInterpreter(dspy.Module):
     def start(self, objective: str):
         """Start the interpreter"""
         self.agent_state.init()
+        self.agent_state.objective = objective
         call_program = self.call_program(objective, self.entrypoint)
         self.agent_state.program_trace.append(str(call_program))
 

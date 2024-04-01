@@ -1,9 +1,8 @@
 from ..hybridstore import HybridStore
 from typing import List, Dict, Optional
 from .path import dirname
-# TODO replace langchain with llama-index or custom implementation
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.schema import Document
+
+from ...text_splitter.sentence import SentenceTextSplitter
 
 from .context import FileSystemContext
 from ...embeddings.base import BaseEmbeddings
@@ -54,20 +53,15 @@ class FileSystem(HybridStore):
             if self.exists(path):
                 self.remove_documents([path])
             text_splitter = \
-            RecursiveCharacterTextSplitter(
+            SentenceTextSplitter(
                 chunk_size=self.chunk_size,
                 chunk_overlap=self.chunk_overlap,
             )
-            if isinstance(text, Document):
-                sub_docs = text_splitter.split_documents(
-                    [text]
-                )
-            elif isinstance(text, str):
-                sub_docs = text_splitter.split_documents(
-                    [Document(page_content=text, metadata=metadata)]
-                )
-            subdocs_texts = [d.page_content for d in sub_docs]
-            subdocs_metadatas = [d.metadata for d in sub_docs]
+            subdocs_texts = text_splitter.split_text(text)
+            if metadata:
+                subdocs_metadatas = [metadata for _ in range(subdocs_texts)]
+            else:
+                subdocs_metadatas = []
             indexes = super().add_texts(
                 texts = subdocs_texts,
                 metadatas = subdocs_metadatas,

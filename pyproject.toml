@@ -11,7 +11,6 @@ python-dotenv = ">=1.0.1"
 sentence-transformers = ">=2.6.0"
 faiss-gpu = ">=1.7.2"
 duckduckgo-search = ">=5.2.1"
-langchain = ">=0.1.13"
 falkordb = ">=1.0.3"
 dspy = {git = "https://github.com/stanfordnlp/dspy.git"}
 

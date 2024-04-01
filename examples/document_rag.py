@@ -26,7 +26,7 @@ We are confident that AI can be a positive force for society and the economy,rat
 We are committed to playing an active role in promoting responsible AI use while contributing to the advancement of the fourth industrial revolution.
 
 As a start-up based in Toulouse, we take pride in being part of the French technological ecosystem and contributing to innovation in the field of AI.
-Our future is centered on ongoing research, improving our products and services, and creating a world where AI is a driver of progress, ethics, and profitability for businesses.",
+Our future is centered on ongoing research, improving our products and services, and creating a world where AI is a driver of progress, ethics, and profitability for businesses.
 """
 ]
 

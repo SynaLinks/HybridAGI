@@ -117,10 +117,11 @@ Learn more about Graph-based Prompt Programming by reading our [documentation](h
 ### Install from source
 
 ```bash
-git clone https://github.com/SynaLinks/HybridAGI.git
+git clone -b dspy https://github.com/SynaLinks/HybridAGI.git
 cd HybridAGI
 virtualenv venv
 source venv/bin/activate
+pip install poetry
 poetry install
 ```
 
