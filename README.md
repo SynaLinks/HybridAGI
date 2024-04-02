@@ -138,7 +138,7 @@ poetry install
 Then setup the knowledge base & sandbox using docker:
 
 ```
-cd Hybrid-AGI
+cd HybridAGI
 docker compose up
 ```
 
