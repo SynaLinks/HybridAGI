@@ -37,7 +37,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install ruff poetry pytest
       - name: Install HybridAGI
-          pip install .
+        run: pip install .
       # - name: Lint with ruff
       #   run: |
       #     # stop the build if there are Python syntax errors or undefined names
