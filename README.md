@@ -117,7 +117,7 @@ Learn more about Graph-based Prompt Programming by reading our [documentation](h
 
 ### Install from pip
 
-```
+```bash
 virtualenv venv
 source venv/bin/activate
 pip install git+https://github.com/SynaLinks/HybridAGI
