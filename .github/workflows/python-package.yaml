@@ -35,7 +35,7 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff poetry
+          pip install ruff poetry pytest
           pip install .
       # - name: Lint with ruff
       #   run: |
