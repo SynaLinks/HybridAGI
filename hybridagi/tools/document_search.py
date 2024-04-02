@@ -25,6 +25,7 @@ class DocumentSearchTool(BaseTool):
         super().__init__(name = "DocumentSearch")
         self.predict = dspy.Predict(DocumentSearchSignature)
         self.k = k
+        self.filesystem = filesystem
         self.embeddings = embeddings
         self.retriever = DocumentRetriever(
             filesystem = filesystem,
@@ -63,13 +64,8 @@ class DocumentSearchTool(BaseTool):
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
-            index_name = self.retriever.index_name,
-            embeddings = self.retriever.embeddings,
-            graph_index = self.retriever.graph_index,
-            hostname = self.retriever.hostname,
-            port = self.retriever.port,
-            username = self.retriever.username,
-            password = self.retriever.password,
+            filesystem = self.filesystem,
+            embeddings = self.embeddings,
             k = self.k,
         )
         cpy.predict = copy.deepcopy(self.predict, memo = memo)
