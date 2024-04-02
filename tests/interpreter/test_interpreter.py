@@ -127,7 +127,7 @@ def test_one_decision_program():
     emb = FakeEmbeddings(dim=250)
 
     answers = [
-""" answer, the objective contains the character `?` denoting a question.\n\nAnswer: YES
+""" answer, the objective contains the character `?` denoting a question.\n\nAnswer: <YES>
 """
 ]
 

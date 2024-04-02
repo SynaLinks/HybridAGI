@@ -8,6 +8,6 @@ class DecisionOutputParser(BaseOutputParser):
 
     def parse(self, output: str, options: List[str] = []) -> str:
         for opt in options:
-            if output.find("<"+opt+">"):
+            if output.find("<"+opt+">") >= 0:
                 return opt
         return output

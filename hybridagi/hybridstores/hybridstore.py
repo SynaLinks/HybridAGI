@@ -39,7 +39,7 @@ class HybridStore():
         except Exception as e:
             raise ConnectionError("Failed to connect to FalkorDB database") from e
         if self.wipe_on_start:
-            self.clear()
+            self.client.connection.flushall()
         self.hybridstore = self.get_graph(self.index_name)
         try:
             params = {"dim": self.embeddings.dim}

@@ -1,6 +1,5 @@
 # HybridAGI: The Programmable Neuro-Symbolic AGI for people who want AI to behave as expected
 ![Beta](https://img.shields.io/badge/Release-Beta-blue)
-<!-- ![CI](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yaml/badge.svg) -->
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 [![Documentation](https://img.shields.io/badge/Docs-Documentation-blue)](https://synalinks.github.io/documentation)
 ---
