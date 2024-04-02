@@ -11,12 +11,14 @@ class DocumentRetriever(dspy.Retrieve):
             self,
             filesystem: FileSystem,
             embeddings: BaseEmbeddings,
+            distance_threshold: float = 1.2,
             k: int = 3,
         ):
         """The retriever constructor"""
         super().__init__(k = k)
         self.filesystem = filesystem
         self.embeddings = embeddings
+        self.distance_threshold = distance_threshold
 
     def forward(
             self,
@@ -37,12 +39,15 @@ class DocumentRetriever(dspy.Retrieve):
                 query,
                 params = params,
             )
-            contents.extend(
-                [{"passage": dotdict({"long_text": self.filesystem.get_content(r[0])}), "score": r[1]} 
-                for r in result.result_set])
+            if len(result.result_set) > 0:
+                for record in result.result_set:
+                    content = self.filesystem.get_content(record[0])
+                    distance = record[1]
+                    if float(distance) < self.distance_threshold:
+                        contents.extend([{"passage": dotdict({"long_text": content}), "distance": float(distance)}])
         sorted_passages = sorted(
             contents,
-            key=lambda x: x["score"],
+            key=lambda x: x["distance"],
             reverse=True,
         )[: k or self.k]
         return dspy.Prediction(

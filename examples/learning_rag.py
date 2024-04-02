@@ -68,33 +68,37 @@ CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
 (document_search:Action {
-    name: "Search to information to answer the objective's question",
+    name: "Search to documents to answer the objective's question",
     tool: "DocumentSearch",
     prompt: "Use the objective's question to infer the search query"
 }),
 (is_answer_known:Decision {
     name:"Check if the answer to the objective's question is in the above search",
-    question: "Do you known the answer based on the context not based on prior knowledge"
+    question: "Do you known the answer based on the above document search not based on prior knowledge?"
 }),
 (websearch:Action {
     name: "Perform a duckduckgo search",
     tool: "DuckDuckGoSearch",
-    prompt: "Infer the search query to answer the given question (ONE sentence only)"
+    prompt: "Use the objective's question to infer the search query"
 }),
 (answer_web:Action {
-    name: "Answer the objective's question based on the above web search",
+    name: "Answer the objective's question based on the web search",
     tool: "Predict",
-    prompt: "You are an helpfull assistant, answer the given question using the above web search"
+    prompt: "Use the above web search to infer the answer"
 }),
 (answer:Action {
-    name: "Answer the objective's question",
+    name: "Answer the objective's question based on the document search",
     tool: "Predict",
-    prompt: "You are an helpfull assistant, answer the given question using the above search"
+    prompt: "Use the above document search to infer the answer"
 }),
 (save_answer:Action {
     name: "Answer the objective's question",
     tool: "WriteFile",
-    prompt: "Save the answer to the objective's question in a txt file, choose the filename based on the question and use the above search to infer the right content"
+    prompt: "
+Use the final answer to the objective's question to infer the content of the file,
+Use the objective's question to infer its snake case filename
+The content should be ONE paragraph only containing the answer.
+Please always ensure to correctly infer the content of the file, don't be lazy."
 }),
 (start)-[:NEXT]->(document_search),
 (document_search)-[:NEXT]->(is_answer_known),
@@ -114,12 +118,12 @@ CREATE
 dataset = [
     dspy.Example(objective="What is the definition of machine learning?").with_inputs("objective"),
     dspy.Example(objective="Who made significant contributions to the field of quantum computing?").with_inputs("objective"),
-    dspy.Example(objective="What is the main argument in Immanuel Kant's Critique of Pure Reason?").with_inputs("objective"),
-    dspy.Example(objective="What is the recipe for making lasagna?").with_inputs("objective"),
+    dspy.Example(objective="Explain me what is a Large Language Model").with_inputs("objective"),
+    dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
     dspy.Example(objective="When did the French Revolution occur?").with_inputs("objective"),
     dspy.Example(objective="Can you explain the theory of relativity?").with_inputs("objective"),
     dspy.Example(objective="Can you explain the concept of blockchain technology?").with_inputs("objective"),
-    dspy.Example(objective="Do you known how to make lasagna?").with_inputs("objective"),
+    dspy.Example(objective="What ethical considerations should be taken into account regarding the integration of AI into various job sectors?").with_inputs("objective"),
     dspy.Example(objective="Can you explain Pythagoras theorem?").with_inputs("objective"),
     dspy.Example(objective="What is a blockchain?").with_inputs("objective"),
 ]

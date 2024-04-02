@@ -6,12 +6,12 @@ from ..parsers.path import PathOutputParser
 from ..types.state import AgentState
 
 class WriteFileSignature(dspy.Signature):
-    """Write into a file"""
+    """Infer the filename and content to write into a file"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file to write into")
+    filename = dspy.OutputField(desc = "The name of the file (short and concise) to write into without additional details")
     content = dspy.OutputField(desc = "The content to write into the file")
 
 class WriteFileTool(BaseTool):
@@ -47,9 +47,20 @@ class WriteFileTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.write_file(prediction.filename, prediction.content)
+            filename = prediction.filename.replace("\\_", "_")
+            filename = filename.replace("\"", "")
+            filename = filename.replace(":", "")
+            dspy.Suggest(
+                len(filename) != 0,
+                "The filename should not be empty"
+            )
+            dspy.Suggest(
+                len(filename) < 100,
+                "The filename should be short and consice"
+            )
+            observation = self.write_file(filename, prediction.content)
             return dspy.Prediction(
-                filename = prediction.filename,
+                filename = filename,
                 content = prediction.content,
                 observation = observation,
             )

@@ -4,7 +4,7 @@ from typing import Optional
 from duckduckgo_search import DDGS
 
 class DuckDuckGoSearchSignature(dspy.Signature):
-    """Infer a DuckDuckGo search query to answer question"""
+    """Infer one DuckDuckGo search query to answer a question"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -34,7 +34,7 @@ class DuckDuckGoSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = pred.query.strip("\"").strip()
+            query = pred.query.replace("\"", "").strip()
             result = DDGS().text(query, max_results=k if k else self.k)
             return dspy.Prediction(
                 query = query,

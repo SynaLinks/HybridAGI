@@ -15,13 +15,13 @@ CONTROL_COLOR = f"{Fore.MAGENTA}"
 FINISH_COLOR = f"{Fore.YELLOW}"
 
 class DecisionSignature(dspy.Signature):
-    """Answer the assessed question by analyzing the previous actions"""
+    """Infer the final answer between the possible options"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
     question = dspy.InputField(desc = "The question to assess (the question you have to answer)")
-    options = dspy.InputField(desc = "The possible answers to the assessed question")
-    answer = dspy.OutputField(desc = "The final answer to the assessed question (between the above possible answers)")
+    options = dspy.InputField(desc = "The possible options to the assessed question")
+    answer = dspy.OutputField(desc = "The final answer to the assessed question (between the above possible options)")
 
 class FinishSignature(dspy.Signature):
     """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""
@@ -191,7 +191,7 @@ class GraphProgramInterpreter(dspy.Module):
         answer = self.decision_parser.parse(prediction.answer, options=options)
         dspy.Assert(
             answer in options,
-            f"The Answer should be only ONE word between {possible_answers}"
+            f"The Answer should be ONE of the following label: {possible_answers}"
         )
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(

@@ -11,6 +11,7 @@ class ProgramRetriever(dspy.Retrieve):
             self,
             program_memory: ProgramMemory,
             embeddings: BaseEmbeddings,
+            distance_threshold: float = 1.2,
             k: int = 3,
         ):
         """The retriever constructor"""
@@ -38,15 +39,18 @@ class ProgramRetriever(dspy.Retrieve):
                 query,
                 params = params,
             )
-            contents.extend(
-                [{"passage": dotdict({"subprogram": f"{r[0]}: {r[1]}"}), "score": r[2]}
-                for r in result.result_set])
+            if len(result.result_set) > 0:
+                for record in result.result_set:
+                    content = f"{record[0]}: {record[1]}"
+                    distance = record[2]
+                    if float(distance) < self.distance_threshold:
+                        contents.extend([{"program": dotdict({"long_text": content}), "distance": float(distance)}])
             print(contents)
         sorted_passages = sorted(
             contents,
-            key=lambda x: x["score"],
+            key=lambda x: x["distance"],
             reverse=True,
         )[: k or self.k]
         return dspy.Prediction(
-            passages=[el["passage"] for el in sorted_passages]
+            passages=[el["program"] for el in sorted_passages]
         )

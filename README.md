@@ -125,7 +125,7 @@ pip install git+https://github.com/SynaLinks/HybridAGI
 ### Install from source
 
 ```bash
-git clone -b dspy https://github.com/SynaLinks/HybridAGI.git
+git clone https://github.com/SynaLinks/HybridAGI.git
 cd HybridAGI
 virtualenv venv
 source venv/bin/activate
@@ -135,9 +135,10 @@ poetry install
 
 ### Setup the Knowledge Base
 
-Setup the knowledge base & sandbox using docker
+Then setup the knowledge base & sandbox using docker:
 
 ```
+cd Hybrid-AGI
 docker compose up
 ```
 
@@ -146,6 +147,7 @@ Open your browser at `http://localhost:8001` and connect to an existing database
 ### Run the tests
 
 Use the following command to run the tests:
+
 ```
 poetry run pytest -vv
 ```

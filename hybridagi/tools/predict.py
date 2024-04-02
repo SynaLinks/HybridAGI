@@ -2,7 +2,7 @@ import dspy
 from .base import BaseTool
 
 class PredictSignature(dspy.Signature):
-    """Answer as best as possible according to the provided instructions"""
+    """Infer the best answer according to the provided instructions"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -30,8 +30,14 @@ class PredictTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            return dspy.Prediction(
+            occurence = pred.answer.find("\n\nAnswer:")
+            if occurence > 0:
+                answer = pred.answer[occurence+len("\n\nAnswer:"):]
+            else:
                 answer = pred.answer
+            answer = answer.strip()
+            return dspy.Prediction(
+                answer = answer
             )
         else:
             return dspy.Prediction(
