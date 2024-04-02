@@ -28,4 +28,4 @@ CREATE
         program_memory = memory,
         embeddings = emb,
     )
-    assert retriever.forward("test").passages[0]["subprogram"] == "test_program: Test description"
+    assert retriever.forward("test").programs[0]["definition"] == "test_program: Test description"
