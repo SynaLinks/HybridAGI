@@ -18,6 +18,7 @@ class ProgramRetriever(dspy.Retrieve):
         super().__init__(k = k)
         self.program_memory = program_memory
         self.embeddings = embeddings
+        self.distance_threshold = distance_threshold
 
     def forward(
             self,
