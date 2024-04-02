@@ -3,6 +3,7 @@ import copy
 from .base import BaseTool
 from typing import Optional
 from ..embeddings.base import BaseEmbeddings
+from ..hybridstores.filesystem.filesystem import FileSystem
 from ..retrievers.document import DocumentRetriever
 
 class DocumentSearchSignature(dspy.Signature):
@@ -17,13 +18,8 @@ class DocumentSearchTool(BaseTool):
 
     def __init__(
             self,
-            index_name: str,
+            filesystem: FileSystem,
             embeddings: BaseEmbeddings,
-            graph_index: str = "filesystem",
-            hostname: str = "localhost",
-            port: int = 6379,
-            username: str = "",
-            password: str = "",
             k: int = 3,
         ):
         super().__init__(name = "DocumentSearch")
@@ -31,13 +27,8 @@ class DocumentSearchTool(BaseTool):
         self.k = k
         self.embeddings = embeddings
         self.retriever = DocumentRetriever(
-            index_name = index_name,
+            filesystem = filesystem,
             embeddings = embeddings,
-            graph_index = graph_index,
-            hostname = hostname,
-            port = port,
-            username = username,
-            password = password,
             k = self.k,
         )
     

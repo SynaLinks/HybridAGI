@@ -3,7 +3,6 @@ from .hybridstores.filesystem.context import FileSystemContext
 from .hybridstores.filesystem.filesystem import FileSystem
 from .hybridstores.program_memory.program_memory import ProgramMemory
 
-from .retrievers.base import BaseRetriever
 from .retrievers.document import DocumentRetriever
 from .retrievers.program import ProgramRetriever
 
@@ -55,7 +54,6 @@ __all__ = [
     FileSystem,
     ProgramMemory,
 
-    BaseRetriever,
     DocumentRetriever,
     ProgramRetriever,
 

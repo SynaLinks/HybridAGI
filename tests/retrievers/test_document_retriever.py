@@ -18,7 +18,7 @@ def test_forward():
     )
 
     retriever = DocumentRetriever(
-        index_name = "test",
+        filesystem = memory,
         embeddings = emb,
     )
 
@@ -40,7 +40,7 @@ def test_forward_multiple():
     )
 
     retriever = DocumentRetriever(
-        index_name = "test",
+        filesystem = memory,
         embeddings = emb,
     )
 
@@ -62,7 +62,7 @@ def test_forward_more_than_k():
     )
 
     retriever = DocumentRetriever(
-        index_name = "test",
+        filesystem = memory,
         embeddings = emb,
         k = 3,
     )

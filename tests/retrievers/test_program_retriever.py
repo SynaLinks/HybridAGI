@@ -25,7 +25,7 @@ CREATE
     )
 
     retriever = ProgramRetriever(
-        index_name = "test",
+        program_memory = memory,
         embeddings = emb,
     )
     assert retriever.forward("test").passages[0]["subprogram"] == "test_program: Test description"

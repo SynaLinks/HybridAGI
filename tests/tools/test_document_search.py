@@ -26,7 +26,7 @@ def test_document_search():
     dspy.settings.configure(lm=DummyLM(answers=answers))
 
     tool = DocumentSearchTool(
-        index_name = "test",
+        filesystem = memory,
         embeddings = emb,
     )
 
@@ -63,7 +63,7 @@ def test_document_search_without_inference():
     dspy.settings.configure(lm=DummyLM(answers=answers))
 
     tool = DocumentSearchTool(
-        index_name = "test",
+        filesystem = memory,
         embeddings = emb,
     )
 

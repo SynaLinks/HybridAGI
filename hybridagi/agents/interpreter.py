@@ -1,5 +1,6 @@
 import dspy
 import copy
+from colorama import Fore, Style
 from falkordb import Node, Graph
 from typing import List, Optional, Union
 from collections import deque
@@ -7,6 +8,11 @@ from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 from ..types.state import AgentState
 from ..parsers.decision import DecisionOutputParser
+
+DECISION_COLOR = f"{Fore.BLUE}"
+ACTION_COLOR = f"{Fore.CYAN}"
+CONTROL_COLOR = f"{Fore.MAGENTA}"
+FINISH_COLOR = f"{Fore.YELLOW}"
 
 class DecisionSignature(dspy.Signature):
     """Answer the assessed question by analyzing the previous actions"""
@@ -36,6 +42,7 @@ class GraphProgramInterpreter(dspy.Module):
             max_iters: int = 20,
             commit_decision: bool = True,
             commit_program_flow: bool = True,
+            verbose: bool = True,
         ):
         self.program_memory = program_memory
         self.agent_state = agent_state if agent_state is not None else AgentState()
@@ -45,6 +52,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.commit_decision = commit_decision
         self.commit_program_flow = commit_program_flow
         self.decision_parser = DecisionOutputParser()
+        self.verbose = verbose
         # DSPy reasoners
         self.tools = {tool.name: tool for tool in tools}
         self.decision = dspy.TypedChainOfThought(DecisionSignature)
@@ -65,6 +73,8 @@ class GraphProgramInterpreter(dspy.Module):
                 step = self.call_program(program_purpose, program_name)
                 if self.commit_program_flow:
                     self.agent_state.program_trace.append(str(step))
+                    if self.verbose:
+                        print(f"{CONTROL_COLOR}{step}{Style.RESET_ALL}")
             elif current_node.labels[0] == "Action":
                 try:
                     action_purpose = current_node.properties["name"]
@@ -86,6 +96,8 @@ class GraphProgramInterpreter(dspy.Module):
                     disable_inference = disable_inference,
                 )
                 self.agent_state.program_trace.append(str(step))
+                if self.verbose:
+                    print(f"{ACTION_COLOR}{step}{Style.RESET_ALL}")
             elif current_node.labels[0] == "Decision":
                 try:
                     decision_purpose = current_node.properties["name"]
@@ -109,6 +121,8 @@ class GraphProgramInterpreter(dspy.Module):
                 )
                 if self.commit_decision:
                     self.agent_state.program_trace.append(str(step))
+                    if self.verbose:
+                        print(f"{DECISION_COLOR}{step}{Style.RESET_ALL}")
             elif current_node.labels[0] == "Control":
                 try:
                     control_flow = current_node.properties["name"]
@@ -116,8 +130,11 @@ class GraphProgramInterpreter(dspy.Module):
                     raise RuntimeError("Control node invalid: Missing a required parameter")
                 if control_flow == "End":
                     step = self.end_current_program()
-                    if self.commit_program_flow:
-                        self.agent_state.program_trace.append(str(step))
+                    if step is not None:
+                        if self.commit_program_flow:
+                            self.agent_state.program_trace.append(str(step))
+                            if self.verbose:
+                                print(f"{CONTROL_COLOR}{step}{Style.RESET_ALL}")
                 else:
                     raise RuntimeError(
                         "Invalid name for control node. Please verify your programs."
@@ -204,6 +221,8 @@ class GraphProgramInterpreter(dspy.Module):
             trace = "\n".join(self.agent_state.program_trace),
             objective = self.agent_state.objective,
         )
+        if self.verbose:
+            print(f"{FINISH_COLOR}{prediction.answer}{Style.RESET_ALL}")
         return dspy.Prediction(
             final_answer = prediction.answer,
             program_trace = "\n".join(self.agent_state.program_trace),
@@ -249,6 +268,8 @@ class GraphProgramInterpreter(dspy.Module):
         self.agent_state.objective = objective
         call_program = self.call_program(objective, self.entrypoint)
         self.agent_state.program_trace.append(str(call_program))
+        if self.verbose:
+            print(f"{CONTROL_COLOR}{call_program}{Style.RESET_ALL}")
 
     def stop(self):
         """Stop the interpreter"""

@@ -37,6 +37,7 @@ class FileSystem(HybridStore):
         )
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
+        self.init()
 
     def add_texts(
             self,
@@ -205,3 +206,17 @@ class FileSystem(HybridStore):
         if len(result) > 0:
             return result.result_set[0][0].properties["name"]
         return ""
+
+    def init(self):
+        """Method to initialize the filesystem"""
+        self.hybridstore.query('MERGE (:Folder {name:"/"})')
+        self.create_folder("/home")
+        self.create_folder("/home/user")
+        self.create_folder("/home/user/Downloads")
+        self.create_folder("/home/user/Documents")
+        self.create_folder("/home/user/Pictures")
+        self.create_folder("/home/user/Music")
+
+    def clear(self):
+        super().clear()
+        self.init()

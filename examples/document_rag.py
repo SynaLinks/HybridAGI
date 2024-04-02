@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
 documents_ids = [
-    "/home/user/synalinks_presentation.txt",
+    "synalinks_presentation.txt",
 ]
 
 documents_texts = [

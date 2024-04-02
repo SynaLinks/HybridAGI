@@ -2,35 +2,21 @@ import dspy
 from typing import Union, Optional, List
 from dsp.utils import dotdict
 from ..embeddings.base import BaseEmbeddings
-from .base import BaseRetriever
+from ..hybridstores.program_memory.program_memory import ProgramMemory
 
-class ProgramRetriever(BaseRetriever):
+class ProgramRetriever(dspy.Retrieve):
     """Retrieve program names and description based on similarity"""
 
     def __init__(
             self,
-            index_name: str,
+            program_memory: ProgramMemory,
             embeddings: BaseEmbeddings,
-            graph_index: str = "program_memory",
-            hostname: str = "localhost",
-            port: int = 6379,
-            username: str = "",
-            password: str = "",
-            indexed_label: str = "Content",
             k: int = 3,
         ):
         """The retriever constructor"""
-        super().__init__(
-            index_name = index_name,
-            graph_index = graph_index,
-            embeddings = embeddings,
-            hostname = hostname,
-            port = port,
-            username = username,
-            password = password,
-            indexed_label = indexed_label,
-            k = k,
-        )
+        super().__init__(k = k)
+        self.program_memory = program_memory
+        self.embeddings = embeddings
 
     def forward(
             self,
@@ -46,9 +32,9 @@ class ProgramRetriever(BaseRetriever):
             params = {"vector": list(vector), "k": k or self.k}
             #TODO update the Cypher query to only return the non-protected programs
             query = " ".join([
-                "CALL db.idx.vector.queryNodes('"+self.indexed_label+"', 'embeddings_vector', $k, vecf32($vector)) YIELD node, score",
+                "CALL db.idx.vector.queryNodes('"+self.program_memory.indexed_label+"', 'embeddings_vector', $k, vecf32($vector)) YIELD node, score",
                 "RETURN node.name AS name, node.description AS description, score"])
-            result = self.hybridstore.query(
+            result = self.program_memory.hybridstore.query(
                 query,
                 params = params,
             )
