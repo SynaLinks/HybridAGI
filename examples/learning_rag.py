@@ -137,7 +137,7 @@ agent_state = AgentState()
 tools = [
     PredictTool(),
     DocumentSearchTool(
-        index_name = "learning_rag",
+        filesystem = filesystem,
         embeddings = embeddings,
     ),
     DuckDuckGoSearchTool(),

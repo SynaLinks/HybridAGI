@@ -138,7 +138,7 @@ testset = [
 tools = [
     PredictTool(),
     DocumentSearchTool(
-        index_name = "document_rag",
+        filesystem = filesystem,
         embeddings = embeddings,
     ),
 ]
