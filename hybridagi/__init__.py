@@ -2,6 +2,7 @@ from .hybridstores.hybridstore import HybridStore
 from .hybridstores.filesystem.context import FileSystemContext
 from .hybridstores.filesystem.filesystem import FileSystem
 from .hybridstores.program_memory.program_memory import ProgramMemory
+from .hybridstores.trace_memory.trace_memory import TraceMemory
 
 from .retrievers.document import DocumentRetriever
 from .retrievers.program import ProgramRetriever
@@ -53,6 +54,7 @@ __all__ = [
     FileSystemContext,
     FileSystem,
     ProgramMemory,
+    TraceMemory,
 
     DocumentRetriever,
     ProgramRetriever,

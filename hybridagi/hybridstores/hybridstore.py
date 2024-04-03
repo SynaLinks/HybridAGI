@@ -5,6 +5,7 @@ from typing import List, Optional, Dict, Any
 from ..embeddings.base import BaseEmbeddings
 
 class HybridStore():
+    """The base class for hybridstores"""
 
     def __init__(
             self,
@@ -17,7 +18,7 @@ class HybridStore():
             password: str = "",
             indexed_label: str = "Content",
             wipe_on_start: bool = False,
-            ):
+        ):
         self.hostname = hostname
         self.port = port
         self.username = username
@@ -106,7 +107,7 @@ class HybridStore():
 
     def set_content(self, content_index: str, text: str) -> bool:
         """Set content into FalkorDB"""
-        encoded_content = base64.b64encode(text.encode("ascii")).decode("ascii")
+        encoded_content = base64.b64encode(text.encode('utf-8')).decode('utf-8')
         if not self.exists(content_index):
             params = {"index": content_index, "content": encoded_content}
             self.hybridstore.query(
@@ -131,7 +132,7 @@ class HybridStore():
             )
             if len(result.result_set) > 0:
                 encoded_content = result.result_set[0][0]
-                decoded_content = base64.b64decode(encoded_content.encode("ascii")).decode("ascii")
+                decoded_content = base64.b64decode(encoded_content.encode('utf-8')).decode('utf-8')
                 return decoded_content
         return ""
 

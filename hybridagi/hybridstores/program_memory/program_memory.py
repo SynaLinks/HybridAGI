@@ -19,6 +19,7 @@ RESERVED_NAMES = [
 ]
 
 class ProgramMemory(HybridStore):
+    """The program memory"""
 
     def __init__(
             self,

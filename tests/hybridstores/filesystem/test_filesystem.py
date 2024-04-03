@@ -48,7 +48,6 @@ Aliquam in eros eu arcu fermentum dignissim nec vehicula diam."""
         [text],
         [filename],
     )
-
     assert memory.is_file(filename)
     assert memory.get_document(filename) == text
 
@@ -72,8 +71,7 @@ auctor orci vulputate, commodo tristique neque posuere.
 Aliquam in eros eu arcu fermentum dignissim nec vehicula diam."""
 
     text2 = \
-"""
-Cras suscipit quis lacus eu vulputate. Donec commodo volutpat tellus, 
+"""Cras suscipit quis lacus eu vulputate. Donec commodo volutpat tellus, 
 sed finibus enim aliquam in. Suspendisse id felis dignissim, 
 pharetra turpis in, convallis velit. Morbi magna felis, porttitor 
 vel volutpat eget, condimentum vitae est. Cras lacus nunc, sagittis
@@ -87,8 +85,7 @@ In id nibh in quam sollicitudin egestas non sed est.
 Sed interdum, nulla ut tempor lacinia, magna sem accumsan turpis,
 sit amet hendrerit purus odio pretium turpis.
 Curabitur convallis tempor consequat.
-Proin dictum imperdiet eros nec vehicula.
-"""
+Proin dictum imperdiet eros nec vehicula."""
 
     filename1 = "/lorem_ipsum.txt"
     filename2 = "/lorem_ipsum2.txt"
@@ -97,3 +94,8 @@ Proin dictum imperdiet eros nec vehicula.
         [text1, text2],
         [filename1, filename2],
     )
+
+    assert memory.is_file(filename1)
+    assert memory.get_document(filename1) == text1
+    assert memory.is_file(filename2)
+    assert memory.get_document(filename2) == text2

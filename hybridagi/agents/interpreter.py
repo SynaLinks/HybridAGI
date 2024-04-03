@@ -5,6 +5,7 @@ from falkordb import Node, Graph
 from typing import List, Optional, Union
 from collections import deque
 from ..hybridstores.program_memory.program_memory import ProgramMemory
+from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 from ..types.state import AgentState
 from ..parsers.decision import DecisionOutputParser
@@ -35,7 +36,8 @@ class GraphProgramInterpreter(dspy.Module):
     def __init__(
             self,
             program_memory: ProgramMemory,
-            agent_state: Optional[AgentState] = None, 
+            trace_memory: Optional[TraceMemory] = None,
+            agent_state: Optional[AgentState] = None,
             tools: List[dspy.BaseModule] = [],
             entrypoint: str = "main",
             num_history: int = 5,
@@ -45,6 +47,7 @@ class GraphProgramInterpreter(dspy.Module):
             verbose: bool = True,
         ):
         self.program_memory = program_memory
+        self.trace_memory = trace_memory
         self.agent_state = agent_state if agent_state is not None else AgentState()
         self.entrypoint = entrypoint
         self.num_history = num_history
@@ -55,8 +58,8 @@ class GraphProgramInterpreter(dspy.Module):
         self.verbose = verbose
         # DSPy reasoners
         self.tools = {tool.name: tool for tool in tools}
-        self.decision = dspy.TypedChainOfThought(DecisionSignature)
-        self.finish = dspy.ChainOfThought(FinishSignature)
+        self.decision = dspy.ChainOfThought(DecisionSignature)
+        self.finish = dspy.Predict(FinishSignature)
         super().__init__()
 
     def run_step(self) -> Union[AgentAction, AgentDecision, ProgramCall, ProgramEnd]:
@@ -71,6 +74,8 @@ class GraphProgramInterpreter(dspy.Module):
                 except ValueError:
                     raise RuntimeError("Program node invalid: missing a required parameter")
                 step = self.call_program(program_purpose, program_name)
+                if self.trace_memory:
+                    self.trace_memory.commit(step)
                 if self.commit_program_flow:
                     self.agent_state.program_trace.append(str(step))
                     if self.verbose:
@@ -96,6 +101,8 @@ class GraphProgramInterpreter(dspy.Module):
                     disable_inference = disable_inference,
                 )
                 self.agent_state.program_trace.append(str(step))
+                if self.trace_memory:
+                    self.trace_memory.commit(step)
                 if self.verbose:
                     print(f"{ACTION_COLOR}{step}{Style.RESET_ALL}")
             elif current_node.labels[0] == "Decision":
@@ -119,6 +126,8 @@ class GraphProgramInterpreter(dspy.Module):
                     question = decision_question,
                     options = options,
                 )
+                if self.trace_memory:
+                    self.trace_memory.commit(step)
                 if self.commit_decision:
                     self.agent_state.program_trace.append(str(step))
                     if self.verbose:
@@ -131,6 +140,8 @@ class GraphProgramInterpreter(dspy.Module):
                 if control_flow == "End":
                     step = self.end_current_program()
                     if step is not None:
+                        if self.trace_memory:
+                            self.trace_memory.commit(step)
                         if self.commit_program_flow:
                             self.agent_state.program_trace.append(str(step))
                             if self.verbose:
@@ -163,6 +174,7 @@ class GraphProgramInterpreter(dspy.Module):
         )
         action = AgentAction(
             hop = self.agent_state.current_hop,
+            objective = self.agent_state.objective,
             purpose = purpose,
             tool = tool,
             prompt = prompt,
@@ -201,10 +213,12 @@ class GraphProgramInterpreter(dspy.Module):
         next_node = result.result_set[0][0]
         decision = AgentDecision(
             hop = self.agent_state.current_hop,
+            objective = self.agent_state.objective,
             purpose = purpose,
             question = question,
             options = options,
             answer = answer,
+            log = prediction.rationale
         )
         self.agent_state.set_current_node(next_node)
         return decision
@@ -266,10 +280,13 @@ class GraphProgramInterpreter(dspy.Module):
         """Start the interpreter"""
         self.agent_state.init()
         self.agent_state.objective = objective
-        call_program = self.call_program(objective, self.entrypoint)
-        self.agent_state.program_trace.append(str(call_program))
+        first_step = self.call_program(objective, self.entrypoint)
+        self.agent_state.program_trace.append(str(first_step))
+        if self.trace_memory:
+            self.trace_memory.start_new_trace()
+            self.trace_memory.commit(first_step)
         if self.verbose:
-            print(f"{CONTROL_COLOR}{call_program}{Style.RESET_ALL}")
+            print(f"{CONTROL_COLOR}{first_step}{Style.RESET_ALL}")
 
     def stop(self):
         """Stop the interpreter"""
@@ -281,8 +298,9 @@ class GraphProgramInterpreter(dspy.Module):
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
-            program_memory=self.program_memory,
-            agent_state=self.agent_state,
+            program_memory = self.program_memory,
+            trace_memory = self.trace_memory,
+            agent_state = self.agent_state,
         )
         cpy.tools = copy.deepcopy(self.tools)
         cpy.decision = copy.deepcopy(self.decision)

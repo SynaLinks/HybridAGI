@@ -38,6 +38,23 @@ def test_add_two_texts():
     assert rm.get_content(text_name1) == text1
     assert rm.get_content(text_name2) == text2
 
+def test_add_texts_non_ascii():
+    emb = FakeEmbeddings(dim=250)
+    rm = HybridStore(
+        index_name="test",
+        graph_index="store",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    text = "This the a tes°t text"
+    text_name = "test_text"
+
+    rm.add_texts(
+        texts = [text],
+        ids = [text_name]
+    )
+    assert rm.get_content("test_text") == text
+
 def test_remove_texts():
     emb = FakeEmbeddings(dim=250)
     rm = HybridStore(

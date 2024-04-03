@@ -1,7 +1,7 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory, FileSystem, AgentState
+from hybridagi import ProgramMemory, FileSystem, TraceMemory, AgentState
 from hybridagi.tools import (
     PredictTool,
     DocumentSearchTool,
@@ -12,8 +12,8 @@ from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
 print("Loading LLM & embeddings models...")
-student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
-teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
+student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
+teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -59,6 +59,12 @@ filesystem = FileSystem(
     embeddings = embeddings,
 )
 
+print("Initializing the trace memory...")
+trace_memory = TraceMemory(
+    index_name = "learning_rag",
+    embeddings = embeddings,
+)
+
 print("Adding Cypher programs into the program memory...")
 program_memory.add_texts(
     texts = [
@@ -92,7 +98,7 @@ CREATE
     prompt: "Use the above document search to infer the answer"
 }),
 (save_answer:Action {
-    name: "Answer the objective's question",
+    name: "Save the answer to the objective's question",
     tool: "WriteFile",
     prompt: "
 Use the final answer to the objective's question to infer the content of the file,
@@ -162,7 +168,12 @@ optimizer = BootstrapFewShot(
     **config,
 )
 
-interpreter = GraphProgramInterpreter(program_memory = program_memory, agent_state = agent_state, tools = tools)
+interpreter = GraphProgramInterpreter(
+    program_memory = program_memory,
+    trace_memory = trace_memory,
+    agent_state = agent_state,
+    tools = tools,
+)
 
 compiled_interpreter = optimizer.compile(
     interpreter,

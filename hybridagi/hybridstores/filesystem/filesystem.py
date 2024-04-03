@@ -8,6 +8,7 @@ from .context import FileSystemContext
 from ...embeddings.base import BaseEmbeddings
 
 class FileSystem(HybridStore):
+    """The filesystem memory"""
 
     def __init__(
         self,

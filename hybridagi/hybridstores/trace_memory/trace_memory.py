@@ -1,237 +1,131 @@
 """The base trace memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import uuid
-from colorama import Fore, Style
-from time import gmtime, strftime
-from datetime import datetime
-from collections import deque
-from .base import BaseTraceMemory
-from typing import Optional, Callable, Any, Dict, List
-from langchain.schema.embeddings import Embeddings
-from ..hybridstore import BaseHybridStore
+import json
+from typing import Union, List
+from ...types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
+from ...embeddings.base import BaseEmbeddings
+from ..hybridstore import HybridStore
 
-COLORS = [f"{Fore.BLUE}", f"{Fore.MAGENTA}"]
-
-START_PROGRAM_DESCRIPTION = \
-"""Start Program: {program_name}
-Program Purpose: {purpose}"""
-
-END_PROGRAM_DESCRIPTION = \
-"""End Program: {program_name}"""
-
-ACTION_DESCRIPTION = \
-"""Action Purpose: {purpose}
-Action: {tool_name}
-Action Input: {tool_input}
-Action Observation: {tool_observation}"""
-
-DECISION_DESCRIPTION = \
-"""Decision Purpose: {purpose}
-Decision: {question}
-Decision Answer: {decision}"""
-
-def _default_norm(value):
-    return value
-
-class TraceMemory(BaseTraceMemory, BaseHybridStore):
+class TraceMemory(HybridStore):
     """The trace memory"""
-    commit_index_trace: deque = deque()
-    current_iteration = 0 # Used to display the trace
 
     def __init__(
             self,
             index_name: str,
-            redis_url: str,
-            embeddings: Embeddings,
-            embeddings_dim: int,
-            normalize: Optional[Callable[[Any], Any]] = _default_norm,
-            verbose: bool = True):
+            embeddings: BaseEmbeddings,
+            graph_index: str = "trace_memory",
+            hostname: int = "localhost",
+            port: int = 6379,
+            username: str = "",
+            password: str = "",
+            indexed_label: str = "Action",
+            wipe_on_start: bool = False,
+            ):
         super().__init__(
             index_name = index_name,
-            redis_url = redis_url,
+            graph_index = graph_index,
             embeddings = embeddings,
-            embeddings_dim = embeddings_dim,
-            graph_index = "trace_memory",
-            indexed_label = "Action",
-            normalize = normalize,
-            verbose = verbose,
+            hostname = hostname,
+            port = port,
+            username = username,
+            password = password,
+            indexed_label = indexed_label,
+            wipe_on_start = wipe_on_start,
         )
-
-    def get_timestamp(self):
-        """Returns a timestamp"""
-        return strftime("%Y-%m-%d_%H:%M:%S.%f%z", gmtime())
-
-    def get_commit_time(
-            self,
-            commit_index: str,
-        ) -> Optional[datetime]:
-        """Returns the commit timestamp in datetime format"""
-        result = self.query(
-            'MATCH (n {name:"'+commit_index+'"}) RETURN n.time as time'
-        )
-        if len(result) > 0:
-            date_string = result[0]
-            return datetime.strptime(date_string, '%Y-%m-%d_%H:%M:%S.%f%z')
-        return None
-
-    def get_current_commit(self) -> str:
-        """Returns the current commit index"""
-        if len(self.commit_index_trace) > 0:
-            return self.commit_index_trace[-1]
-        return ""
-
-    def get_next_commit(self, commit_index: str) -> str:
-        """Method to return the next content index"""
-        result = self.query(
-            'MATCH ({name:"'+commit_index+'"})-[:NEXT]->(n) RETURN n')
-        if len(result) > 0:
-            return result[0][0].properties["name"]
-        return ""
-
-    def get_previous_commit(self, commit_index: str) -> str:
-        """Method to return the next content index"""
-        result = self.query(
-            'MATCH (n:Step)-[:NEXT]->(:Step {name:"'+commit_index+'"}) RETURN n')
-        if len(result) > 0:
-            return result[0][0].properties["name"]
-        return ""
-
-    def start_new_trace(self):
-        """Start a new trace"""
-        self.commit_index_trace = deque()
-        self.clear_trace()
+        self.current_commit = None
 
     def commit(
             self,
-            label: str,
-            description: str,
-            metadata: Dict[str, Any] = {}
-        ):
-        """Commit a step of the program into memory"""
-        metadata["time"] = self.get_timestamp()
-        if label == self.indexed_label:
+            step: Union[
+                AgentAction,
+                AgentDecision,
+                ProgramCall,
+                ProgramEnd,
+            ]
+        ) -> str:
+        if isinstance(step, AgentAction):
+            metadata = {}
+            if step.prediction:
+                prediction = json.dumps(dict(step.prediction), indent=2)
+            else:
+                prediction = "None"
+            metadata["hop"] = step.hop
+            metadata["objective"] = step.objective
+            metadata["purpose"] = step.purpose
+            metadata["tool"] = step.tool
+            metadata["prompt"] = step.prompt
+            metadata["prediction"] = prediction
+            metadata["log"] = step.log
             indexes = self.add_texts(
-                texts = [description],
+                texts = [str(step)],
                 metadatas = [metadata],
             )
             new_commit = indexes[0]
-        else:
+        elif isinstance(step, AgentDecision):
             new_commit = str(uuid.uuid4().hex)
-            self.query('MERGE (:'+label+' {name:"'+new_commit+'"})')
-            for key, value in metadata.items():
-                self.query(
-                    'MATCH (n:'+label+' {name:"'+new_commit+'"})'
-                    +' SET n.'+str(key)+'='+repr(value))
-        current_commit = self.get_current_commit()
-        if current_commit:
-            self.query('MATCH (n {name:"'+current_commit
-                    +'"}), (m {name:"'+new_commit+'"})'
-                    +' MERGE (n)-[:NEXT]->(m)')
-        self.commit_index_trace.append(new_commit)
-        if self.verbose:
-            print(COLORS[self.current_iteration%2])
-            print(f"{description}{Style.RESET_ALL}")
-        self.current_iteration += 1
+            params = {
+                "index" : new_commit,
+                "hop" : step.hop,
+                "objective" : step.objective,
+                "purpose" : step.purpose,
+                "question" : step.question,
+                "options" : step.options,
+                "answer" : step.answer,
+                "log" : step.log,
+            }
+            self.hybridstore.query(
+                'MERGE (:Decision {name:$index, '+
+                'hop:$hop, objective:$objective, '+
+                'purpose:$purpose, '+
+                'question:$question, '+
+                'answer:$answer, '+
+                'log:$log})',
+                params = params,
+            )
+        elif isinstance(step, ProgramCall):
+            new_commit = str(uuid.uuid4().hex)
+            params = {
+                "index": new_commit,
+                "program": step.program,
+                "purpose": step.purpose,
+            }
+            self.hybridstore.query(
+                'MERGE (:ProgramCall {name:$index,'+
+                ' program:$program, purpose:$purpose})',
+                params = params,
+            )
+        elif isinstance(step, ProgramEnd):
+            new_commit = str(uuid.uuid4().hex)
+            params = {"index": new_commit, "program": step.program}
+            self.hybridstore.query(
+                'MERGE (:ProgramEnd {name:$index, '+
+                'program:$program})',
+                params = params,
+            )
+        else:
+            raise ValueError("Invalid step provided, could not commit to memory")
+        params = {"current": self.current_commit, "new": new_commit}
+        if self.current_commit:
+            self.hybridstore.query(
+                'MATCH (n {name:$current}), '+
+                '(m {name:$new}) MERGE (n)-[:NEXT]->(m)',
+                params = params,
+            )
+        self.current_commit = new_commit
         return new_commit
-        
-    def commit_action(
-            self,
-            purpose: str,
-            tool_name: str,
-            tool_input: str,
-            tool_observation: str,
-            metadata: Dict[str, Any] = {},
-        ):
-        """Commit an action"""
-        metadata["program"] = self.current_program
-        metadata["objective"] = self.objective
-        metadata["note"] = self.note
-        action_desc = ACTION_DESCRIPTION.format(
-            purpose = purpose,
-            tool_name = tool_name,
-            tool_input = tool_input,
-            tool_observation = tool_observation,
-        )
-        self.update_trace(action_desc)
-        self.commit(
-            label = "Action",
-            description = action_desc,
-            metadata = metadata)
 
-    def commit_decision(
-            self,
-            purpose: str,
-            question: str,
-            options: List[str],
-            decision: str,
-            metadata: Dict[str, Any] = {},
-        ):
-        """Commit a decision"""
-        metadata["purpose"] = purpose
-        metadata["program"] = self.current_program
-        metadata["question"] = question
-        metadata["options"] = options
-        metadata["decision"] = decision
-        metadata["objective"] = self.objective
-        metadata["note"] = self.note
-        decision_desc = DECISION_DESCRIPTION.format(
-            purpose = purpose,
-            question = question,
-            choice = " or ".join(options),
-            decision = decision,
-        )
-        self.update_trace(decision_desc)
-        self.commit(
-            label = "Decision",
-            description = decision_desc,
-            metadata = metadata)
-
-    def commit_program_start(
-            self,
-            purpose: str,
-            program_name: str,
-        ):
-        """Commit the starting of a program"""
-        metadata = {}
-        metadata["purpose"] = purpose
-        metadata["program"] = program_name
-        metadata["objective"] = self.objective
-        metadata["note"] = self.note
-        start_desc = START_PROGRAM_DESCRIPTION.format(
-            purpose = purpose,
-            program_name = program_name,
-        )
-        self.update_trace(start_desc)
-        self.commit(
-            label = "StartProgram",
-            description = start_desc,
-            metadata = metadata)
-
-    def commit_program_end(
-            self,
-            program_name: str,
-        ):
-        """Commit the ending of a program"""
-        metadata = {}
-        metadata["program"] = program_name
-        metadata["objective"] = self.objective
-        metadata["note"] = self.note
-        end_desc = END_PROGRAM_DESCRIPTION.format(
-            program_name = program_name,
-        )
-        self.update_trace(end_desc)
-        self.commit(
-            label = "EndProgram",
-            description = end_desc,
-            metadata = metadata)
+    def start_new_trace(self):
+        """Start a new trace"""
+        self.current_commit = None
 
     def get_trace_indexes(
             self,
         ) -> List[str]:
         """Get the traces indexes (the first commit index of each trace)"""
         trace_indexes = []
-        result = self.query('MATCH (n:StartProgram {program:"main"}) RETURN n.name as name')
-        for record in result:
+        result = self.hybridstore.query('MATCH (n:ProgramCall {program:"main"}) RETURN n.name as name')
+        for record in result.result_set:
             trace_indexes.append(record[0])
         return trace_indexes
 
@@ -240,9 +134,12 @@ class TraceMemory(BaseTraceMemory, BaseHybridStore):
             trace_index: str,
         ) -> bool:
         """Returns True if the execution of the program terminated"""
+        params = {"index": trace_index}
         result = self.query(
-            'MATCH (n:StartProgram {name:"'+trace_index+'", program:"main"})'
-            +'-[:NEXT*]->(m:EndProgram {program:"main"}) RETURN m')
-        if len(result) == 0:
+            'MATCH (n:ProgramCall {name:$index, program:"main"})'
+            +'-[:NEXT*]->(m:EndProgram {program:"main"}) RETURN m',
+            params = params,
+        )
+        if len(result.result_set) == 0:
             return False
         return True

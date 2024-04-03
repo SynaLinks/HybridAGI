@@ -23,15 +23,11 @@ END_PROGRAM_TEMPLATE = \
 End Program: {program}"""
 
 class AgentAction():
-    hop: int
-    purpose: str
-    tool: str
-    prompt: str = ""
-    log: str = ""
 
     def __init__(
             self,
             hop: int,
+            objective: str,
             purpose: str,
             tool: str,
             prompt: str = "",
@@ -39,6 +35,7 @@ class AgentAction():
             log: str = "",
         ):
         self.hop = hop
+        self.objective = objective
         self.purpose = purpose
         self.tool = tool
         self.prompt = prompt
@@ -53,16 +50,11 @@ class AgentAction():
         )
 
 class AgentDecision():
-    hop: int
-    purpose: str
-    question: str
-    options: List[str]
-    answer: str
-    log: str = ""
 
     def __init__(
             self,
             hop: int,
+            objective: str,
             purpose: str,
             question: str,
             options: List[str],
@@ -71,6 +63,7 @@ class AgentDecision():
             log: str = "",
         ):
         self.hop = hop
+        self.objective = objective
         self.purpose = purpose
         self.question = question
         self.options = options
@@ -87,9 +80,6 @@ class AgentDecision():
         )
 
 class ProgramCall():
-    hop: int
-    purpose: str
-    program: str
 
     def __init__(
             self,
@@ -109,8 +99,6 @@ class ProgramCall():
         )
 
 class ProgramEnd():
-    hop: int
-    program: str
 
     def __init__(
             self,

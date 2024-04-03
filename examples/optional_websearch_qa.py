@@ -1,14 +1,14 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory
+from hybridagi import ProgramMemory, TraceMemory
 from hybridagi.tools import PredictTool, DuckDuckGoSearchTool
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
 print("Loading LLM & embeddings models...")
-student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
-teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
+student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
+teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -48,6 +48,12 @@ program_memory = ProgramMemory(
     wipe_on_start = True,
 )
 
+print("Initializing the trace memory...")
+trace_memory = TraceMemory(
+    index_name = "optional_websearch_qa",
+    embeddings = embeddings,
+)
+
 print("Adding programs into memory...")
 program_memory.add_texts(
     texts = [
@@ -57,8 +63,8 @@ CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
 (is_websearch_needed:Decision {
-    name:"Check if searching for information online is needed to answer",
-    question:"Is searching online needed?"
+    name:"Check if searching for information online is needed to answer the objectve's question",
+    question:"Is searching online needed to answer the objective's question?"
 }),
 (websearch:Action {
     name: "Perform a duckduckgo search",
@@ -118,7 +124,11 @@ optimizer = BootstrapFewShot(
     **config,
 )
 
-interpreter = GraphProgramInterpreter(program_memory = program_memory, tools = tools)
+interpreter = GraphProgramInterpreter(
+    program_memory = program_memory,
+    trace_memory = trace_memory,
+    tools = tools,
+)
 
 compiled_interpreter = optimizer.compile(
     interpreter,

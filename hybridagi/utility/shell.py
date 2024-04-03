@@ -5,7 +5,7 @@ from ..hybridstores.filesystem.filesystem import FileSystem
 from .commands.base import BaseShellCommand
 
 class ShellUtility():
-    """The shell for the filesystem"""
+    """The internal shell for the filesystem"""
     filesystem: FileSystem
     commands_map: Dict[str, BaseShellCommand] = {}
 

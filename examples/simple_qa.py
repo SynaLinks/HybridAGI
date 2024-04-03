@@ -1,14 +1,14 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory
+from hybridagi import ProgramMemory, TraceMemory
 from hybridagi.tools import PredictTool
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
 print("Loading LLM & embeddings models...")
-student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
-teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n"])
+student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
+teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -46,6 +46,12 @@ program_memory = ProgramMemory(
     index_name = "simple_qa",
     embeddings = embeddings,
     wipe_on_start = True,
+)
+
+print("Initializing the trace memory...")
+trace_memory = TraceMemory(
+    index_name = "simple_qa",
+    embeddings = embeddings,
 )
 
 print("Adding programs into memory...")
@@ -107,7 +113,11 @@ optimizer = BootstrapFewShot(
     **config,
 )
 
-interpreter = GraphProgramInterpreter(program_memory = program_memory, tools = tools)
+interpreter = GraphProgramInterpreter(
+    program_memory = program_memory,
+    trace_memory = trace_memory,
+    tools = tools,
+)
 
 compiled_interpreter = optimizer.compile(
     interpreter,
