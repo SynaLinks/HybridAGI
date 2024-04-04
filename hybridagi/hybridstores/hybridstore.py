@@ -93,7 +93,7 @@ class HybridStore():
             )
         else:
             result = self.hybridstore.query(
-                'MATCH (n:'+self.indexed_label+' {name:$index}) RETURN n',
+                'MATCH (n {name:$index}) RETURN n',
                 params = params,
             )
         if len(result.result_set) > 0:

@@ -16,9 +16,9 @@ class BaseShellCommand():
             description: str,
             filesystem: FileSystem,
         ):
-        self.name = name,
-        self.description = description,
-        self.filesystem = filesystem,
+        self.name = name
+        self.description = description
+        self.filesystem = filesystem
 
     @abc.abstractmethod
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:

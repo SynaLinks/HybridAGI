@@ -35,24 +35,24 @@ class Move(BaseShellCommand):
         destination_path = ctx.eval_path(destination_path)
 
         if not self.filesystem.exists(target_path):
-            raise ValueError(f"Cannot move: {target_path}: No such file")
+            raise ValueError(f"Cannot move: No such file")
         if self.filesystem.exists(destination_path):
             raise ValueError("Cannot move: File or directory already exists")
 
         if dirname(target_path) == dirname(destination_path):
             # If same directory, just rename the file
-            self.filesystem.query(
+            self.filesystem.hybridstore.query(
                 'MATCH (n {name:"'+target_path+'"}) SET n.name="'+destination_path+'"')
         else:
             # Otherwise remove the Folder's edge and recreate it + rename
-            self.filesystem.query(
+            self.filesystem.hybridstore.query(
                 'MATCH (n {name:"'+
                 target_path+'"})<-[r:CONTAINS]-(m:Folder) DELETE r')
             folder_path = dirname(destination_path)
-            self.filesystem.query(
+            self.filesystem.hybridstore.query(
                 'MATCH (n:Folder {name:"'+folder_path+'"}),'+
                 ' (m {name:"'+target_path+'"}) MERGE (n)-[:CONTAINS]->(m)')
-            self.filesystem.query(
+            self.filesystem.hybridstore.query(
                 'MATCH (n {name:"'+target_path+'"}) SET n.name="'+destination_path+'"')
         return "Sucessfully moved"
 

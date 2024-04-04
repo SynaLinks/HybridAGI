@@ -1,3 +1,6 @@
+# Modifed from llama-index
+
+import re
 from typing import Callable, List
 from .base import BaseTextSplitter
 
@@ -29,8 +32,6 @@ def split_by_char() -> Callable[[str], List[str]]:
 
 def split_by_regex(regex: str) -> Callable[[str], List[str]]:
     """Split text by regex."""
-    import re
-
     return lambda text: re.findall(regex, text)
 
 

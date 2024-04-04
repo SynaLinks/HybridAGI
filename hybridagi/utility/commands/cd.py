@@ -9,7 +9,10 @@ from ...parsers.path import PathOutputParser
 class ChangeDirectory(BaseShellCommand):
     path_parser: PathOutputParser = PathOutputParser()
 
-    def __init__(self, filesystem: FileSystem):
+    def __init__(
+            self,
+            filesystem: FileSystem,
+        ):
         super().__init__(
             filesystem = filesystem,
             name = "cd",
@@ -32,7 +35,7 @@ class ChangeDirectory(BaseShellCommand):
             ctx.previous_working_directory = ctx.working_directory
             ctx.working_directory = path
             return f"Successfully changed working directory {path}"
-        return "Cannot change directory: Input path not provided."
+        raise ValueError("Cannot change directory: Input path not provided.")
 
     def get_instructions(self) -> str:
         return "The Input should be a unix-like path."

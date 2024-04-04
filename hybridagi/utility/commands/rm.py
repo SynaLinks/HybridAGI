@@ -28,13 +28,13 @@ class Remove(BaseShellCommand):
         if path.startswith("-"):
             raise ValueError("Cannot remove: Options not supported")
         if not self.filesystem.exists(path):
-            return f"Cannot remove {path}: No such file or directory"
+            raise ValueError(f"Cannot remove {path}: No such file or directory")
         if not self.filesystem.is_empty(path):
-            return f"Cannot remove {path}: Not empty directory"
-        self.filesystem.query(
+            return ValueError(f"Cannot remove {path}: Not empty directory")
+        self.filesystem.hybridstore.query(
             'MATCH (n {name:"'+path+'"})-[:CONTAINS]->(m) DETACH DELETE m'
         )
-        self.filesystem.query(
+        self.filesystem.hybridstore.query(
             'MATCH (n {name:"'+path+'"}) DETACH DELETE n'
         )
         return f"Sucessfully removed {path}"

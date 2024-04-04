@@ -27,7 +27,7 @@ class CallProgramTool(BaseTool):
         self.predict = dspy.Predict(CallProgramSignature)
 
     def call_program(self, program_name: str):
-        print(self.agent_state.program_stack)
+        """Method to call a program"""
         program_name = self.program_name_parser.parse(program_name)
         if not self.program_memory.exists(program_name):
             return "Error occured: This program does not exist, verify its name"
@@ -50,6 +50,7 @@ class CallProgramTool(BaseTool):
             prompt: str,
             disable_inference: bool = False,
         ) -> dspy.Prediction:
+        """Method to perform DSPy forward prediction"""
         if not disable_inference:
             prediction = self.predict(
                 context = context,

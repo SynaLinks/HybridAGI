@@ -3,33 +3,33 @@ import copy
 from .base import BaseTool
 from typing import Optional
 from ..embeddings.base import BaseEmbeddings
-from ..hybridstores.filesystem.filesystem import FileSystem
-from ..retrievers.document import DocumentRetriever
+from ..hybridstores.trace_memory.trace_memory import TraceMemory
+from ..retrievers.action import ActionRetriever
 
-class DocumentSearchSignature(dspy.Signature):
-    """Infer one search query to retrieve documents passages"""
+class ActionSearchSignature(dspy.Signature):
+    """Infer one search query to retrieve past actions"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     query = dspy.OutputField(desc = "The similarity based search query (only ONE sentence)")
 
-class DocumentSearchTool(BaseTool):
+class PastActionSearchTool(BaseTool):
 
     def __init__(
             self,
-            filesystem: FileSystem,
+            trace_memory: TraceMemory,
             embeddings: BaseEmbeddings,
             distance_threshold: float = 1.2,
             k: int = 3,
         ):
-        super().__init__(name = "DocumentSearch")
-        self.predict = dspy.Predict(DocumentSearchSignature)
-        self.filesystem = filesystem
+        super().__init__(name = "PastActionSearch")
+        self.predict = dspy.Predict(ActionSearchSignature)
+        self.trace_memory = trace_memory
         self.embeddings = embeddings
         self.distance_threshold = distance_threshold
         self.k = k
-        self.retriever = DocumentRetriever(
+        self.retriever = ActionRetriever(
             filesystem = filesystem,
             embeddings = embeddings,
             distance_threshold = self.distance_threshold,
@@ -57,18 +57,18 @@ class DocumentSearchTool(BaseTool):
             result = self.retriever(query)
             return dspy.Prediction(
                 query = query,
-                passages = result.passages,
+                past_actions = result.past_actions,
             )
         else:
             result = self.retriever(prompt)
             return dspy.Prediction(
                 query = prompt,
-                passages = result.passages,
+                past_actions = result.past_actions,
             )
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
-            filesystem = self.filesystem,
+            trace_memory = self.trace_memory,
             embeddings = self.embeddings,
             distance_threshold = self.distance_threshold,
             k = self.k,

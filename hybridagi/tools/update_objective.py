@@ -29,6 +29,7 @@ class UpdateObjectiveTool(BaseTool):
             prompt: str,
             disable_inference: bool = False,
         ) -> dspy.Prediction:
+        """Method to perform DSPy forward prediction"""
         if not disable_inference:
             prediction = self.predict(
                 context = context,
@@ -48,3 +49,10 @@ class UpdateObjectiveTool(BaseTool):
                 new_objective = new_objective,
                 observation = "Successfully updated",
             )
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            agent_state = self.agent_state,
+        )
+        cpy.predict = copy.deepcopy(self.predict, memo = memo)
+        return cpy

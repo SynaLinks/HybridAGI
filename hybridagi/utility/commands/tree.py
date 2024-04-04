@@ -79,11 +79,11 @@ class Tree(BaseShellCommand):
     def _get_subdirectories(self, path: str) -> List[str]:
         """Retrieve the folders of the given folder."""
         query = 'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n'
-        result_query = self.filesystem.query(query)
-        return sorted(record[0].properties["name"] for record in result_query)
+        result_query = self.filesystem.hybridstore.query(query)
+        return sorted(record[0].properties["name"] for record in result_query.result_set)
 
     def _get_files(self, path: str) -> List[str]:
         """Retrieve the files of the given folder."""
         query = 'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n'
-        result_query = self.filesystem.query(query)
-        return sorted(record[0].properties["name"] for record in result_query)
+        result_query = self.filesystem.hybridstore.query(query)
+        return sorted(record[0].properties["name"] for record in result_query.result_set)

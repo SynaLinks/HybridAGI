@@ -3,19 +3,6 @@
 from typing import List
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 
-RESERVED_NAMES = [
-    "main",
-    "playground",
-    "filesystem",
-    "program_memory",
-    "trace_memory",
-    "\u006D\u0061\u0069\u006E",
-    "\u0070\u006C\u0061\u0079\u0067\u0072\u006F\u0075\u006E\u0064",
-    "\u0066\u0069\u006C\u0065\u0073\u0079\u0073\u0074\u0065\u006D",
-    "\u0070\u0072\u006F\u0067\u0072\u0061\u006D\u005F\u006D\u0065\u006D\u006F\u0072\u0079",
-    "\u0074\u0072\u0061\u0063\u0065\u005F\u006D\u0065\u006D\u006F\u0072\u0079",
-]
-
 FORBIDDEN_COMMANDS = [
     "DETACH",
     "DELETE",
@@ -28,20 +15,13 @@ FORBIDDEN_COMMANDS = [
 
 class TesterUtility():
     """The class to make some verification to graph programs"""
-    program_memory: ProgramMemory
-    program_name: str = ""
 
-    class Config:
-        """Configuration for this pydantic object."""
-        arbitrary_types_allowed = True
-
-    def is_protected(self, program_name: str):
-        if program_name in RESERVED_NAMES:
-            return True
-        else:
-            if self.program_memory.depends_on("main", program_name):
-                return True
-        return False
+    def __init__(
+            self,
+            program_memory: ProgramMemory,
+    ):
+        self.program_memory = program_memory
+        self.program_name = ""
 
     def check_injection_attemp(self, program:str):
         for cmd in FORBIDDEN_COMMANDS:
@@ -67,7 +47,7 @@ class TesterUtility():
 
     def check_protected_program(self, program_name: str):
         """Check if the system try to modify a protected program"""
-        if self.is_protected(program_name):
+        if self.program_memory.is_protected(program_name):
             raise RuntimeError(
                 f"Error while loading '{program_name}': "+\
                 "Trying to modify a protected program. "+\

@@ -34,16 +34,16 @@ class ListDirectory(BaseShellCommand):
                 raise ValueError(f"Cannot list {path}: Not a directory")
         else:
             raise ValueError(f"Cannot list {path}: No such file or directory")
-        result_query = self.filesystem.query(
+        result_query = self.filesystem.hybridstore.query(
             'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n'
         )
-        for record in result_query:
+        for record in result_query.result_set:
             folder_name = record[0].properties["name"]
             result_list.append(basename(folder_name))
-        result_query = self.filesystem.query(
+        result_query = self.filesystem.hybridstore.query(
             'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n'
         )
-        for record in result_query:
+        for record in result_query.result_set:
             document_name = record[0].properties["name"]
             result_list.append(basename(document_name))
         return " ".join(result_list)

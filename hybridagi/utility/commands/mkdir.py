@@ -22,7 +22,7 @@ class MakeDirectory(BaseShellCommand):
         if len(args)==0:
             raise ValueError(
                 "Cannot create directory: Missing operand."+
-                " Try 'mkdir --help' for more information."
+                " Try `mkdir --help` for more information."
                 )
         nb_dir = 0
         args = args[0].split()

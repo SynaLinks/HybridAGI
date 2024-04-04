@@ -16,7 +16,11 @@ class WriteFileSignature(dspy.Signature):
 
 class WriteFileTool(BaseTool):
 
-    def __init__(self, filesystem: FileSystem, agent_state: AgentState):
+    def __init__(
+            self,
+            filesystem: FileSystem,
+            agent_state: AgentState,
+        ):
         super().__init__(name = "WriteFile")
         self.predict = dspy.Predict(WriteFileSignature)
         self.agent_state = agent_state
@@ -40,6 +44,7 @@ class WriteFileTool(BaseTool):
             prompt: str,
             disable_inference: bool = False,
         ) -> dspy.Prediction:
+        """Method to perform DSPy forward prediction"""
         if not disable_inference:
             prediction = self.predict(
                 objective = objective,
@@ -69,8 +74,8 @@ class WriteFileTool(BaseTool):
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
-            agent_state = self.agent_state,
             filesystem = self.filesystem,
+            agent_state = self.agent_state,
         )
         cpy.predict = copy.deepcopy(self.predict, memo)
         return cpy

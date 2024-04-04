@@ -4,17 +4,14 @@ from ..hybridstores.filesystem.filesystem import FileSystem
 
 class ReaderUtility():
     """The reader utility"""
-    filesystem: FileSystem
-    current_consulted_document: str = ""
-    last_content_consulted: str = ""
 
     def __init__(
             self,
             filesystem: FileSystem):
         """The reader constructor"""
-        super().__init__(
-            filesystem = filesystem
-        )
+        self.filesystem = filesystem
+        self.current_consulted_document = ""
+        self.last_content_consulted = ""
 
     def read_document(self, path:str) -> str:
         """

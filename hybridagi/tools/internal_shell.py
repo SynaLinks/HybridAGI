@@ -1,36 +1,45 @@
 import dspy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
-from ..utility.reader import ReaderUtility
+from ..utility.shell import ShellUtility
 from ..parsers.path import PathOutputParser
 
-class ReadFileSignature(dspy.Signature):
-    """Infer the name of the file to read"""
+class InternalShellSignature(dspy.Signature):
+    """Infer the unix shell command to access your filesystem"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file to read")
+    unix_shell_command = dspy.OutputField(desc = "The name of the file to read")
 
-class ReadFileTool(BaseTool):
+class InternalShellTool(BaseTool):
 
     def __init__(
             self,
             filesystem: FileSystem,
             agent_state: AgentState,
         ):
-        super().__init__(name = "ReadFile")
-        self.predict = dspy.Predict(ReadFileSignature)
+        super().__init__(name = "InternalShell")
+        self.predict = dspy.Predict(InternalShellSignature)
         self.agent_state = agent_state
         self.filesystem = filesystem
-        self.reader = ReaderUtility(filesystem=self.filesystem)
-        self.path_parser = PathOutputParser()
+        self.shell = ShellUtility(
+            filesystem=self.filesystem,
+            agent_state=self.agent_state,
+        )
 
-    def read_file(self, path: str) -> str:
+    def execute(self, command: str) -> str:
+        command = command.strip("`")
+        s = shlex.shlex(command, punctuation_chars=True)
+        args = list(s)
+        invalid_symbols = ["|", "||", "&", "&&", ">", ">>", "<", "<<", ";"]
+        if len(list(set(invalid_symbols).intersection(args))) > 0:
+            raise ValueError(
+                    "Piping, redirection and multiple commands are not supported:"+
+                    " Use one command at a time, without semicolon."
+                )
         try:
-            path = self.path_parser.parse(path)
-            path = self.agent_state.context.eval_path(path)
-            return self.reader.read_document(path)
+            return self.shell.execute(args)
         except Exception as err:
             return str(err)
     
@@ -50,15 +59,15 @@ class ReadFileTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.read_file(prediction.filename)
+            observation = self.execute(prediction.unix_shell_command)
             return dspy.Prediction(
-                answer = prediction.filename,
+                unix_shell_command = prediction.filename,
                 observation = observation,
             )
         else:
-            observation = self.read_file(prompt)
+            observation = self.execute(prompt)
             return dspy.Prediction(
-                answer = prompt,
+                unix_shell_command = prompt,
                 observation = observation,
             )
 

@@ -7,8 +7,15 @@ from ..hybridstores.filesystem.path import basename
 from ..hybridstores.filesystem.filesystem import FileSystem
 
 class ArchiverUtility():
-    filesystem: FileSystem
-    downloads_directory: str
+    """The archiver utility"""
+
+    def __init__(
+            self,
+            filesystem: FileSystem,
+            downloads_directory: str,
+        ):
+        self.filesystem = filesystem
+        self.downloads_directory = downloads_directory
 
     def zip_and_download(self, path:str) -> str:
         """Method to convert into .zip and download to downloads folder"""
@@ -34,23 +41,23 @@ class ArchiverUtility():
             zip_file:zipfile.ZipFile
         ):
         """Method to recursively add folder and files"""
-        result_query = self.filesystem.query(
+        result_query = self.filesystem.hybridstore.query(
             'MATCH (f:Folder {name:"'+current_folder_path+'"})-[:CONTAINS]->(n:Folder)'+
             ' RETURN n'
         )
-        for record in result_query:
+        for record in result_query.result_set:
             subfolder_path = record[0].properties["name"]
             self.zip_folders_and_files(
                 target_folder_path,
                 subfolder_path,
                 zip_file
             )
-        result_query = self.filesystem.query(
+        result_query = self.filesystem.hybridstore.query(
             'MATCH (f:Folder {name:"'+current_folder_path+
             '"})-[:CONTAINS]->(n:Document)'+
             ' RETURN n'
         )
-        for record in result_query:
+        for record in result_query.result_set:
             document_path = record[0].properties["name"]
             file_content = self.filesystem.get_document(document_path)
             zip_file.writestr(

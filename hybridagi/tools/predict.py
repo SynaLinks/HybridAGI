@@ -23,18 +23,19 @@ class PredictTool(BaseTool):
             prompt: str,
             disable_inference: bool = False,
         ) -> dspy.Prediction:
+        """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
+            prediction = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            occurence = pred.answer.find("\n\nAnswer:")
+            occurence = prediction.answer.find("\n\nAnswer:")
             if occurence > 0:
-                answer = pred.answer[occurence+len("\n\nAnswer:"):]
+                answer = prediction.answer[occurence+len("\n\nAnswer:"):]
             else:
-                answer = pred.answer
+                answer = prediction.answer
             answer = answer.strip()
             return dspy.Prediction(
                 answer = answer

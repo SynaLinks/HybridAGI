@@ -3,24 +3,20 @@
 from typing import List, Dict
 from ..hybridstores.filesystem.filesystem import FileSystem
 from .commands.base import BaseShellCommand
+from ..types.state import AgentState
 
 class ShellUtility():
     """The internal shell for the filesystem"""
-    filesystem: FileSystem
-    commands_map: Dict[str, BaseShellCommand] = {}
 
     def __init__(
             self,
             filesystem: FileSystem,
+            agent_state: AgentState,
             commands: List[BaseShellCommand]):
         """The shell utility constructor"""
-        commands_map = {}
-        for cmd in commands:
-            commands_map[cmd.name] = cmd
-        super().__init__(
-            filesystem = filesystem,
-            commands_map = commands_map,
-        )
+        self.commands_map = {cmd.name:cmd for cmd in commands}
+        self.filesystem = filesystem
+        self.agent_state = agent_state
 
     def execute(self, args:List[str]) -> str:
         """Execute a shell-like command"""
@@ -28,7 +24,7 @@ class ShellUtility():
             cmd = args[0]
             arguments = args[1:]
             if cmd in self.commands_map.keys():
-                return self.commands_map[cmd].run(arguments, self.filesystem.context)
+                return self.commands_map[cmd].run(arguments, self.agent_state.context)
             else:
                 raise ValueError(f"Command '{cmd}' not supported")
         else:
