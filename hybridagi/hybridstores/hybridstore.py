@@ -216,7 +216,7 @@ class HybridStore():
     def clear(self):
         """Method to clear the hybridstore"""
         self.hybridstore.delete()
-        self.hybridstore.init()
+        self.hybridstore.init_index()
 
     def init_index(self):
         try:
