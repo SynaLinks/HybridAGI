@@ -1,3 +1,5 @@
+"""The action retriever. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 import dspy
 from typing import Union, Optional, List
 from dsp.utils import dotdict
@@ -23,7 +25,7 @@ class ActionRetriever(dspy.Retrieve):
     def forward(
             self,
             query_or_queries: Union[str, List[str]],
-            k:Optional[int] = None,
+            k: Optional[int] = None,
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not isinstance(query_or_queries, list):

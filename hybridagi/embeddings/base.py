@@ -1,3 +1,5 @@
+"""The base embeddings. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 import abc
 import numpy as np
 from typing import Union, List

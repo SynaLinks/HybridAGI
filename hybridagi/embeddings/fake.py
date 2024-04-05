@@ -1,3 +1,5 @@
+"""The fake embeddings. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 import numpy as np
 from typing import Union, List
 from .base import BaseEmbeddings

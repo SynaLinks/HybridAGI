@@ -1,3 +1,5 @@
+"""The agent state. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 from collections import deque
 from falkordb import Node, Graph
 from typing import List, Iterable, Optional, Tuple

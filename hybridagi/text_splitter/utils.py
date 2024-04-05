@@ -1,4 +1,5 @@
-# Modifed from llama-index
+"""The text splitter functions. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+# Modifed from llama-index text splitter
 
 import re
 from typing import Callable, List

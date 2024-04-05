@@ -1,3 +1,5 @@
+"""The interpreter. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 import dspy
 import copy
 from colorama import Fore, Style

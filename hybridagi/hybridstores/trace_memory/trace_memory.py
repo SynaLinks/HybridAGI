@@ -1,4 +1,4 @@
-"""The base trace memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
+"""The trace memory. Copyright (C) 2023 SynaLinks. License: GPL-3.0"""
 
 import uuid
 import json

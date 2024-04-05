@@ -1,4 +1,5 @@
-# Modified from dspy
+"""The sentence transformer embeddings. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+# Modified from dspy vectorizer
 
 import numpy as np
 from typing import Union, List

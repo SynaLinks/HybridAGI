@@ -1,3 +1,5 @@
+"""The path functions. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 from typing import List
 
 def join(paths: List[str]) -> str:

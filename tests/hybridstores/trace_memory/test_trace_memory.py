@@ -19,7 +19,9 @@ def test_add_action_step():
         prediction = None,
         log = "",
     )
-    memory.commit(step)
+    index = memory.commit(step)
+    assert memory.get_content(index) == str(step)
+
 
 def test_add_decision_step():
     emb = FakeEmbeddings(dim=250)
@@ -96,8 +98,10 @@ def test_add_two_step():
         prediction = None,
         log = "",
     )
-    memory.commit(step1)
-    memory.commit(step2)
+    index1 = memory.commit(step1)
+    index2 = memory.commit(step2)
+    assert memory.get_content(index1) == str(step1)
+    assert memory.get_content(index2) == str(step2)
 
 
 def test_add_two_trace():

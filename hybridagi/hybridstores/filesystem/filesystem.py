@@ -1,3 +1,5 @@
+"""The filesystem memory. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 from ..hybridstore import HybridStore
 from typing import List, Dict, Optional
 from .path import dirname

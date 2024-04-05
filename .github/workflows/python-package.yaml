@@ -31,7 +31,7 @@ jobs:
       - name: Install FalkorDB dependencies
         run: sudo apt-get install -y build-essential cmake m4 automake peg libtool autoconf python3 python3-pip
       - name: Install FalkorDB
-        run: cd .. && git clone --recurse-submodules -j8 https://github.com/FalkorDB/FalkorDB.git && cd FalkorDB && make
+        run: git clone --recurse-submodules -j8 https://github.com/FalkorDB/FalkorDB.git && cd FalkorDB && make
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip

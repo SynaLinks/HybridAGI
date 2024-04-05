@@ -1,3 +1,5 @@
+"""The filesystem context. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 from typing import List
 from .path import dirname, join
 

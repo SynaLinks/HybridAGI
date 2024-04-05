@@ -1,3 +1,5 @@
+"""The hybridstore. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 import uuid
 import base64
 from falkordb import FalkorDB, Graph
@@ -28,29 +30,16 @@ class HybridStore():
         self.embeddings = embeddings
         self.indexed_label = indexed_label
         self.wipe_on_start = wipe_on_start
-        try:
-            self.client = FalkorDB(
-                hostname,
-                port,
-                username = username if username else None,
-                password = password if password else None,
-            )
-            self.hybridstore = self.get_graph(self.graph_index)
-            self.hybridstore.query("RETURN 1")
-        except Exception as e:
-            raise ConnectionError("Failed to connect to FalkorDB database") from e
+        self.client = FalkorDB(
+            hostname,
+            port,
+            username = username if username else None,
+            password = password if password else None,
+        )
         if self.wipe_on_start:
             self.client.connection.flushall()
         self.hybridstore = self.get_graph(self.graph_index)
-        try:
-            params = {"dim": self.embeddings.dim}
-            self.hybridstore.query(
-                "CREATE VECTOR INDEX FOR (c:"+self.indexed_label+
-                ") ON (c.embeddings_vector) OPTIONS {dimension:$dim, similarityFunction:'euclidean'}",
-                params,
-            )
-        except Exception:
-            pass
+        self.init_index()
 
     def add_texts(
             self,
@@ -229,7 +218,7 @@ class HybridStore():
         self.hybridstore.delete()
         self.hybridstore.init()
 
-    def init(self):
+    def init_index(self):
         try:
             params = {"dim": self.embeddings.dim}
             self.hybridstore.query(

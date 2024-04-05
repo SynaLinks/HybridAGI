@@ -1,3 +1,5 @@
+"""The program memory. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 import uuid
 import os
 from falkordb import Node, Graph

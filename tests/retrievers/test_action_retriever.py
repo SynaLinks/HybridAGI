@@ -22,7 +22,7 @@ def test_forward():
         prediction = None,
         log = "",
     )
-    memory.init()
+    
     memory.commit(step)
 
     retriever = ActionRetriever(

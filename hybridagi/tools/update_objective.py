@@ -1,3 +1,5 @@
+"""The update objective tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+
 import dspy
 from .base import BaseTool
 from typing import Optional, Callable

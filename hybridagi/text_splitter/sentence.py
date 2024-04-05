@@ -1,4 +1,5 @@
-# Modifed from llama-index
+"""The sentence splitter. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+# Modifed from llama-index text splitter
 
 from pydantic import BaseModel
 from typing import List, Tuple
