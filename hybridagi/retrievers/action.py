@@ -11,7 +11,7 @@ class ActionRetriever(dspy.Retrieve):
             self,
             trace_memory: TraceMemory,
             embeddings: BaseEmbeddings,
-            distance_threshold: float = 1.2,
+            distance_threshold: float = 1.0,
             k: int = 3,
         ):
         """The retriever constructor"""
@@ -39,6 +39,7 @@ class ActionRetriever(dspy.Retrieve):
                 query,
                 params = params,
             )
+            print(result.result_set)
             if len(result.result_set) > 0:
                 for record in result.result_set:
                     content = self.trace_memory.get_content(record[0])

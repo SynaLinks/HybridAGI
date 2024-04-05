@@ -27,5 +27,6 @@ CREATE
     retriever = ProgramRetriever(
         program_memory = memory,
         embeddings = emb,
+        distance_threshold = 100.0,
     )
     assert retriever.forward("test").programs[0]["definition"] == "test_program: Test description"

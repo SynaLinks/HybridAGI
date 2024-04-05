@@ -19,7 +19,7 @@ class TraceMemory(HybridStore):
             port: int = 6379,
             username: str = "",
             password: str = "",
-            indexed_label: str = "Action",
+            indexed_label: str = "Content",
             wipe_on_start: bool = False,
             ):
         super().__init__(

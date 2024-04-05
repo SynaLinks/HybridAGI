@@ -3,6 +3,7 @@ from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.reader import ReaderUtility
 from ..parsers.path import PathOutputParser
+from ..types.state import AgentState
 
 class ReadFileSignature(dspy.Signature):
     """Infer the name of the file to read"""

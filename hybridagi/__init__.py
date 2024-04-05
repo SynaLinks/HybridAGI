@@ -6,6 +6,7 @@ from .hybridstores.trace_memory.trace_memory import TraceMemory
 
 from .retrievers.document import DocumentRetriever
 from .retrievers.program import ProgramRetriever
+from .retrievers.action import ActionRetriever
 
 from .text_splitter.base import BaseTextSplitter
 from .text_splitter.sentence import SentenceTextSplitter
@@ -58,6 +59,7 @@ __all__ = [
 
     DocumentRetriever,
     ProgramRetriever,
+    ActionRetriever,
 
     GraphProgramInterpreter,
 

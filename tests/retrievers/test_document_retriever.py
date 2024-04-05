@@ -42,6 +42,7 @@ def test_forward_multiple():
     retriever = DocumentRetriever(
         filesystem = memory,
         embeddings = emb,
+        distance_threshold = 100.0,
     )
 
     assert len(retriever.forward(["test", "test2"]).passages) == 2

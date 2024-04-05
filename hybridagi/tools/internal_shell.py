@@ -3,6 +3,7 @@ from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.shell import ShellUtility
 from ..parsers.path import PathOutputParser
+from ..types.state import AgentState
 
 class InternalShellSignature(dspy.Signature):
     """Infer the unix shell command to access your filesystem"""
@@ -24,8 +25,8 @@ class InternalShellTool(BaseTool):
         self.agent_state = agent_state
         self.filesystem = filesystem
         self.shell = ShellUtility(
-            filesystem=self.filesystem,
-            agent_state=self.agent_state,
+            filesystem = self.filesystem,
+            agent_state = self.agent_state,
         )
 
     def execute(self, command: str) -> str:
@@ -61,7 +62,7 @@ class InternalShellTool(BaseTool):
             )
             observation = self.execute(prediction.unix_shell_command)
             return dspy.Prediction(
-                unix_shell_command = prediction.filename,
+                unix_shell_command = prediction.unix_shell_command,
                 observation = observation,
             )
         else:

@@ -1,4 +1,4 @@
-# This example is here to illustrate the capability of the system to write into a vector indexed filesystem
+# This example is here to illustrate the capability of the system to recall previous actions
 
 import dspy
 from hybridagi import GraphProgramInterpreter
@@ -6,9 +6,8 @@ from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, FileSystem, TraceMemory, AgentState
 from hybridagi.tools import (
     PredictTool,
-    DocumentSearchTool,
+    PastActionSearchTool,
     DuckDuckGoSearchTool,
-    WriteFileTool,
 )
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
@@ -21,7 +20,7 @@ embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence
 
 dspy.settings.configure(lm=student_llm)
 
-model_path = "learning_rag.json"
+model_path = "learning_rag_trace.json"
 
 class AssessProgramSuccess(dspy.Signature):
     """Assess the success of the trace according to the objective"""
@@ -50,20 +49,20 @@ def program_success_metric(example, pred, trace=None):
 
 print("Initializing the program memory...")
 program_memory = ProgramMemory(
-    index_name = "learning_rag",
+    index_name = "learning_rag_trace",
     embeddings = embeddings,
     wipe_on_start = True,
 )
 
 print("Initializing the internal filesystem...")
 filesystem = FileSystem(
-    index_name = "learning_rag",
+    index_name = "learning_rag_trace",
     embeddings = embeddings,
 )
 
 print("Initializing the trace memory...")
 trace_memory = TraceMemory(
-    index_name = "learning_rag",
+    index_name = "learning_rag_trace",
     embeddings = embeddings,
 )
 
@@ -75,9 +74,9 @@ program_memory.add_texts(
 CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
-(document_search:Action {
-    name: "Search to documents to answer the objective's question",
-    tool: "DocumentSearch",
+(action_search:Action {
+    name: "Search past actions to answer the objective's question",
+    tool: "PastActionSearch",
     prompt: "Use the objective's question to infer the search query"
 }),
 (is_answer_known:Decision {
@@ -90,32 +89,16 @@ CREATE
     prompt: "Use the objective's question to infer the search query"
 }),
 (answer_web:Action {
-    name: "Answer the objective's question based on the web search",
+    name: "Answer the objective's question based on the search",
     tool: "Predict",
-    prompt: "Use the above web search to infer the answer"
+    prompt: "Use the above search to infer the answer"
 }),
-(answer:Action {
-    name: "Answer the objective's question based on the document search",
-    tool: "Predict",
-    prompt: "Use the above document search to infer the answer"
-}),
-(save_answer:Action {
-    name: "Save the answer to the objective's question",
-    tool: "WriteFile",
-    prompt: "
-Use the final answer to the objective's question to infer the content of the file,
-Use the objective's question to infer its snake case filename
-The content should be ONE paragraph only containing the answer.
-Please always ensure to correctly infer the content of the file, don't be lazy."
-}),
-(start)-[:NEXT]->(document_search),
-(document_search)-[:NEXT]->(is_answer_known),
+(start)-[:NEXT]->(action_search),
+(action_search)-[:NEXT]->(is_answer_known),
 (is_answer_known)-[:YES]->(answer),
 (is_answer_known)-[:NO]->(websearch),
 (websearch)-[:NEXT]->(answer_web),
-(answer_web)-[:NEXT]->(save_answer),
-(save_answer)-[:NEXT]->(end),
-(answer)-[:NEXT]->(end)
+(answer_web)-[:NEXT]->(end)
 """,
     ],
     ids = [
@@ -129,7 +112,7 @@ dataset = [
     dspy.Example(objective="Explain me what is a Large Language Model").with_inputs("objective"),
     dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
     dspy.Example(objective="When did the French Revolution occur?").with_inputs("objective"),
-    dspy.Example(objective="Can you explain the theory of relativity?").with_inputs("objective"),
+    dspy.Example(objective="Can you explain the difference between Deep Learning and Symbolic AI?").with_inputs("objective"),
     dspy.Example(objective="Can you explain the concept of blockchain technology?").with_inputs("objective"),
     dspy.Example(objective="What ethical considerations should be taken into account regarding the integration of AI into various job sectors?").with_inputs("objective"),
     dspy.Example(objective="Can you explain Pythagoras theorem?").with_inputs("objective"),
@@ -148,17 +131,14 @@ agent_state = AgentState()
 
 tools = [
     PredictTool(),
-    DocumentSearchTool(
-        filesystem = filesystem,
+    DuckDuckGoSearchTool(),
+    PastActionSearchTool(
+        trace_memory = trace_memory,
         embeddings = embeddings,
     ),
-    DuckDuckGoSearchTool(),
-    WriteFileTool(
-        filesystem = filesystem,
-        agent_state = agent_state,
-    )
-
 ]
+
+
 
 print("Optimizing underlying prompts...")
 

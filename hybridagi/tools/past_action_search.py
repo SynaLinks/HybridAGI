@@ -30,7 +30,7 @@ class PastActionSearchTool(BaseTool):
         self.distance_threshold = distance_threshold
         self.k = k
         self.retriever = ActionRetriever(
-            filesystem = filesystem,
+            trace_memory = trace_memory,
             embeddings = embeddings,
             distance_threshold = self.distance_threshold,
             k = self.k,
