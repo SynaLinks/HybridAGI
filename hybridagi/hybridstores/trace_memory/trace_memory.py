@@ -45,21 +45,42 @@ class TraceMemory(HybridStore):
             ]
         ) -> str:
         if isinstance(step, AgentAction):
-            metadata = {}
+            new_commit = str(uuid.uuid4().hex)
             if step.prediction:
                 prediction = json.dumps(dict(step.prediction), indent=2)
             else:
                 prediction = "None"
-            metadata["hop"] = step.hop
-            metadata["objective"] = step.objective
-            metadata["purpose"] = step.purpose
-            metadata["tool"] = step.tool
-            metadata["prompt"] = step.prompt
-            metadata["prediction"] = prediction
-            metadata["log"] = step.log
             indexes = self.add_texts(
                 texts = [str(step)],
-                metadatas = [metadata],
+            )
+            params = {
+                "index" : indexes[0],
+                "hop" : step.hop,
+                "objective" : step.objective,
+                "purpose" : step.purpose,
+                "tool" : step.tool,
+                "prompt" : step.prompt,
+                "prediction" : prediction,
+                "log" : step.log,
+            }
+            self.hybridstore.query(
+                'MERGE (:Action {name:$index, '+
+                'hop:$hop, objective:$objective, '+
+                'purpose:$purpose, '+
+                'tool:$tool, '+
+                'prompt:$prompt, '+
+                'prediction:$prediction, '+
+                'log:$log})',
+                params = params,
+            )
+            params = {
+                "commit_index" : new_commit,
+                "content_index": indexes[0],
+            }
+            self.hybridstore.query(
+                "MATCH (a:Action {name:$commit_index}), "+
+                "(c:"+self.indexed_label+" {name:$content_index}) MERGE (a)-[:CONTAINS]->(c)",
+                params = params,
             )
             new_commit = indexes[0]
         elif isinstance(step, AgentDecision):

@@ -1,6 +1,7 @@
 """The hybridstore. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import uuid
+import json
 import base64
 from falkordb import FalkorDB, Graph
 from typing import List, Optional, Dict, Any
@@ -52,19 +53,22 @@ class HybridStore():
         indexes = []
         for idx, text in enumerate(texts):
             content_index = str(uuid.uuid4().hex) if not ids else ids[idx]
-            description = text if not descriptions else descriptions[idx]
+            description = "" if not descriptions else descriptions[idx]
             metadata = {} if not metadatas else metadatas[idx]
             vector = self.embeddings.embed_text(description)
-            params = {"vector": list(vector), "index": content_index}
+            params = {
+                "vector": list(vector),
+                "index": content_index,
+                "metadata": json.dumps(metadata, indent=2),
+                "description": description,
+            }
             self.hybridstore.query(
-                "MERGE (n:"+self.indexed_label+" {name:$index, embeddings_vector:vecf32($vector)})",
+                "MERGE (n:"+self.indexed_label+" {name:$index, "+
+                "embeddings_vector:vecf32($vector), "+
+                "metadata:$metadata, description:$description})",
                 params,
             )
             self.set_content(content_index, text)
-            if descriptions:
-                self.set_content_description(content_index, description)
-            if metadata:
-                self.set_content_metadata(content_index, metadata)
             indexes.append(content_index)
         return indexes
 
@@ -162,21 +166,23 @@ class HybridStore():
     def set_content_metadata(
             self,
             content_index: str,
-            metadata: Dict[str, Any],
+            metadata: Dict[Any, Any],
         ) -> bool:
         """Method to set the content metadata"""
         if not self.exists(content_index):
             return False
-        for key, value in metadata.items():
-            try:
-                params = {"index": content_index, "value": value}
-                self.hybridstore.query(
-                    'MATCH (n:'+self.indexed_label+' {name:$index})'
-                    +' SET n.'+str(key)+'=$value',
-                    params = params,
-                )
-            except Exception:
-                return False
+        params = {"index": content_index, "metadata": json.dumps(metadata, indent=2)}
+        self.hybridstore.query(
+            'MATCH (n:'+self.indexed_label+' {name:$index})'
+            +' SET n.metadata=$metadata',
+            params = params,
+        )
+        # for key, value in metadata.items():
+        #     try:
+        #         params = {"index": content_index, "value": value}
+                
+        #     except Exception:
+        #         return False
         return True
 
     def get_content_metadata(self, content_index: str) -> Optional[Dict[Any, Any]]:
@@ -186,19 +192,12 @@ class HybridStore():
         try:
             params = {"index": content_index}
             result = self.hybridstore.query(
-                'MATCH (n:'+self.indexed_label+' {name:$index}) RETURN n',
+                'MATCH (n:'+self.indexed_label+' {name:$index})'+
+                ' RETURN n.metadata AS metadata',
                 params = params,
             )
-            metadata = result.result_set[0][0].properties
-            if "name" in metadata:
-                del metadata["name"]
-            if "embeddings_vector" in metadata:
-                del metadata["embeddings_vector"]
-            if "description" in metadata:
-                del metadata["description"]
-            if "content" in metadata:
-                del metadata["content"]
-            return metadata
+            metadata = result.result_set[0][0]
+            return json.loads(metadata)
         except Exception:
             return None
         return None
@@ -226,5 +225,5 @@ class HybridStore():
                 ") ON (c.embeddings_vector) OPTIONS {dimension:$dim, similarityFunction:'euclidean'}",
                 params,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)

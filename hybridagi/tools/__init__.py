@@ -12,6 +12,9 @@ from .call_program import CallProgramTool
 from .write_file import WriteFileTool
 from .read_file import ReadFileTool
 
+from .speak import SpeakTool
+from .ask_user import AskUserTool
+
 from .internal_shell import InternalShellTool
 
 __all__ = [
