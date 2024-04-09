@@ -80,7 +80,7 @@ CREATE
 }),
 (answer:Action {
     name:"Answer the objective's question",
-    tool:"Predict",
+    tool:"Speak",
     prompt:"Answer the objective's question"
 }),
 // Structure declaration
