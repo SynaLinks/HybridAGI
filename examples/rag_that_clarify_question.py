@@ -80,7 +80,7 @@ CREATE
 }),
 (answer:Action {
     name:"Answer the objective's question",
-    tool:"Speak",
+    tool:"Predict",
     prompt:"Answer the objective's question"
 }),
 // Structure declaration
@@ -171,7 +171,7 @@ interpreter = GraphProgramInterpreter(
     trace_memory = trace_memory,
     agent_state = agent_state,
     tools = tools,
-    return_final_answer = False, 
+    return_final_answer = False,
 )
 
 compiled_interpreter = optimizer.compile(

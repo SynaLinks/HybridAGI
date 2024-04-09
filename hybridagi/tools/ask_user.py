@@ -107,6 +107,8 @@ class AskUserTool(BaseTool):
         cpy = (type)(self)(
             agent_state = self.agent_state,
             num_history = self.num_history,
+            ask_user_func = self.ask_user_func,
+            simulated = self.simulated,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

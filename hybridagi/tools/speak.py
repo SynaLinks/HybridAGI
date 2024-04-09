@@ -71,3 +71,12 @@ class SpeakTool(BaseTool):
             return dspy.Prediction(
                 message = prompt
             )
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            agent_state = self.agent_state,
+            speak_func = self.speak_func,
+            simulated = self.simulated,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy
