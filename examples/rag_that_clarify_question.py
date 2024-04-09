@@ -40,7 +40,7 @@ def program_success(example, pred, trace=None):
     question = example.objective
     with dspy.context(lm=teacher_llm):
         prediction = dspy.ChainOfThought(AssessInteraction)(
-            assessed_answer = pred.final_answer,
+            assessed_interaction = pred.final_answer,
             assessed_question = question,
         )
         result = dspy.TypedPredictor(CritiqueToScoreSignature)(critique=prediction.critique)
