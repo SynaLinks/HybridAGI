@@ -12,7 +12,7 @@ class UpdateObjectiveSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    new_objective = dspy.OutputField(desc = "The new objective")
+    new_objective = dspy.OutputField(desc = "The new objective (few words only)")
 
 class UpdateObjectiveTool(BaseTool):
 

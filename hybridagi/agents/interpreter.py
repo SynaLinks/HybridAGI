@@ -1,5 +1,6 @@
 """The interpreter. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import random
 import dspy
 import json
 import copy
@@ -12,6 +13,8 @@ from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 from ..types.state import AgentState
 from ..parsers.decision import DecisionOutputParser
+
+random.seed(123)
 
 DECISION_COLOR = f"{Fore.BLUE}"
 ACTION_COLOR = f"{Fore.CYAN}"
@@ -26,7 +29,7 @@ class DecisionSignature(dspy.Signature):
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
     question = dspy.InputField(desc = "The question to assess (the question you have to answer)")
     options = dspy.InputField(desc = "The possible options to the assessed question")
-    answer = dspy.OutputField(desc = "The final answer to the assessed question (only few words)")
+    answer = dspy.OutputField(desc = "The answer between the possible options")
 
 class FinishSignature(dspy.Signature):
     """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""
@@ -198,6 +201,7 @@ class GraphProgramInterpreter(dspy.Module):
 
     def decide(self, purpose: str, question:str, options: List[str]) -> AgentDecision:
         """The method to make a decision"""
+        random.shuffle(options)
         if len(self.agent_state.program_trace) > 0:
             trace = "\n".join(self.agent_state.program_trace[-self.num_history:])
         else:
