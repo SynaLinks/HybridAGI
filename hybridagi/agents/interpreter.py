@@ -26,7 +26,7 @@ class DecisionSignature(dspy.Signature):
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
     question = dspy.InputField(desc = "The question to assess (the question you have to answer)")
     options = dspy.InputField(desc = "The possible options to the assessed question")
-    answer = dspy.OutputField(desc = "The final answer to the assessed question (between the above possible options)")
+    answer = dspy.OutputField(desc = "The final answer to the assessed question (only few words)")
 
 class FinishSignature(dspy.Signature):
     """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""
@@ -336,6 +336,9 @@ class GraphProgramInterpreter(dspy.Module):
             program_memory = self.program_memory,
             trace_memory = self.trace_memory,
             agent_state = self.agent_state,
+            return_chat_history = self.return_chat_history,
+            return_final_answer = self.return_final_answer,
+            return_program_trace = self.return_program_trace,
         )
         cpy.tools = copy.deepcopy(self.tools)
         cpy.decision = copy.deepcopy(self.decision)
