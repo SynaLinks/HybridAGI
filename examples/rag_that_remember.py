@@ -22,27 +22,26 @@ dspy.settings.configure(lm=student_llm)
 
 model_path = "learning_rag_trace.json"
 
-class AssessProgramSuccess(dspy.Signature):
+class AssessAnswer(dspy.Signature):
     """Assess the success of the trace according to the objective"""
-    assessed_trace = dspy.InputField(desc="The trace to assess")
+    assessed_answer = dspy.InputField(desc="The answer to assess")
     assessed_question = dspy.InputField(desc="The question to be assessed")
-    critique = dspy.OutputField(desc="The critique of the trace")
+    critique = dspy.OutputField(desc="The critique of the answer")
 
 class Score(BaseModel):
     score: float
 
 class CritiqueToScoreSignature(dspy.Signature):
     """Convert a critique into a score between 0.0 and 1.0"""
-    critique = dspy.InputField(desc="The critique to convert to a score")
+    critique = dspy.InputField(desc="The critique to convert into a score")
     score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0")
 
 def program_success(example, pred, trace=None):
-    objective = example.objective
-    sucessfull = f"How well does the program trace reflect the achievement of its intended objective: {objective}"
+    question = example.objective
     with dspy.context(lm=teacher_llm):
-        prediction = dspy.ChainOfThought(AssessProgramSuccess)(
-            assessed_trace = pred.program_trace,
-            assessed_question = sucessfull,
+        prediction = dspy.ChainOfThought(AssessAnswer)(
+            assessed_answer = pred.final_answer,
+            assessed_question = question,
         )
         result = dspy.TypedPredictor(CritiqueToScoreSignature)(critique=prediction.critique)
     return result.score.score
