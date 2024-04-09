@@ -29,7 +29,7 @@ class DecisionSignature(dspy.Signature):
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
     question = dspy.InputField(desc = "The question to assess (the question you have to answer)")
     options = dspy.InputField(desc = "The possible options to the assessed question")
-    answer = dspy.OutputField(desc = "The answer between the possible options")
+    answer = dspy.OutputField(desc = "The right answer between the possible options along with the explaination")
 
 class FinishSignature(dspy.Signature):
     """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""
@@ -215,9 +215,9 @@ class GraphProgramInterpreter(dspy.Module):
             options = possible_answers,
         )
         answer = self.decision_parser.parse(prediction.answer, options=options)
-        dspy.Assert(
+        dspy.Suggest(
             answer in options,
-            f"The Answer should be ONE of the following label: {possible_answers}"
+            f"The Answer should be only ONE of the following label: {possible_answers}"
         )
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(

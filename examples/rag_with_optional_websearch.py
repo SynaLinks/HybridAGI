@@ -77,6 +77,8 @@ CREATE
 }),
 (start)-[:NEXT]->(is_websearch_needed),
 (is_websearch_needed)-[:YES]->(websearch),
+(is_websearch_needed)-[:MAYBE]->(websearch),
+(is_websearch_needed)-[:UNKNOWN]->(websearch),
 (is_websearch_needed)-[:NO]->(answer),
 (websearch)-[:NEXT]->(answer),
 (answer)-[:NEXT]->(end)
