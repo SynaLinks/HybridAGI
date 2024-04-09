@@ -44,14 +44,14 @@ main.cypher:
 CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
-(echo_objective:Action {
-    name:"Reformulate the Objective",
+(answer:Action {
+    name:"Answer the objective's question",
     tool:"Speak",
-    prompt:"Please reformulate the objective using other words"
+    prompt:"Answer the objective's question"
 }),
 // Structure declaration
-(start)-[:NEXT]->(echo_objective),
-(echo_objective)-[:NEXT]->(end)
+(start)-[:NEXT]->(answer),
+(answer)-[:NEXT]->(end)
 ```
 
 You can also describe conditional loops or multi-output choices using decision nodes!
@@ -84,9 +84,9 @@ CREATE
 // The outgoing edges of decision nodes give
 // the possible answers to the system
 (is_anything_unclear)-[:YES]->(ask_question),
-(is_anything_unclear)-[:NO]->(end),
 // Decisions can have multiple arbitrary outcomes
-(is_anything_unclear)-[:MAYBE]->(ask_question)
+(is_anything_unclear)-[:MAYBE]->(ask_question),
+(is_anything_unclear)-[:NO]->(end)
 ```
 
 And obvisouly, you can call other programs using Program nodes!
@@ -101,15 +101,15 @@ CREATE
     name:"Clarify the objective if needed",
     program:"clarify_objective"
 }),
-(echo_objective:Action {
-    name:"Reformulate the Objective",
+(answer:Action {
+    name:"Answer the objective's question",
     tool:"Speak",
-    prompt:"Please reformulate the objective using other words"
+    prompt:"Answer the objective's question"
 }),
 // Structure declaration
 (start)-[:NEXT]->(clarify_objective),
-(clarify_objective)-[:NEXT]->(echo_objective),
-(echo_objective)-[:NEXT]->(end)
+(clarify_objective)-[:NEXT]->(answer),
+(answer)-[:NEXT]->(end)
 ```
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).

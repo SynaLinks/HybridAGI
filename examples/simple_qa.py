@@ -30,7 +30,7 @@ class CritiqueToScoreSignature(dspy.Signature):
     critique = dspy.InputField(desc="The critique to convert into a score")
     score: Score = dspy.OutputField(desc="A score between 0.0 and 1.0")
 
-def answer_correct(example, pred, trace=None):
+def program_success(example, pred, trace=None):
     question = example.objective
     with dspy.context(lm=teacher_llm):
         prediction = dspy.ChainOfThought(AssessAnswer)(
@@ -108,7 +108,7 @@ config = dict(max_bootstrapped_demos=4, max_labeled_demos=4)
 
 optimizer = BootstrapFewShot(
     teacher_settings=dict({'lm': teacher_llm}),
-    metric = answer_correct,
+    metric = program_success,
     **config,
 )
 
@@ -126,7 +126,7 @@ compiled_interpreter = optimizer.compile(
 
 evaluate = dspy.evaluate.Evaluate(
     devset = testset, 
-    metric = answer_correct,
+    metric = program_success,
     num_threads = 1,
     display_progress = True,
     display_table = 0,

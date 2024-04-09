@@ -23,7 +23,7 @@ FINISH_COLOR = f"{Fore.YELLOW}"
 CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
-    """Infer the final answer between the possible options"""
+    """Infer the right label between the possible options, always ends with one of the possible label"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
@@ -217,7 +217,7 @@ class GraphProgramInterpreter(dspy.Module):
         answer = self.decision_parser.parse(prediction.answer, options=options)
         dspy.Suggest(
             answer in options,
-            f"The Answer should be only ONE of the following label: {possible_answers}"
+            f"Error occured: The Answer should ends with one of the following label: {possible_answers}"
         )
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(

@@ -122,23 +122,23 @@ CREATE
 )
 
 dataset = [
-    dspy.Example(objective="What's the right temperature to store that item?").with_inputs("objective"),
-    dspy.Example(objective="Can you explain that concept we learned in class?").with_inputs("objective"),
-    dspy.Example(objective="What is python?").with_inputs("objective"),
-    dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
+    dspy.Example(objective="Can you tell me how to be successful?").with_inputs("objective"),
+    dspy.Example(objective="What career path should I pursue?").with_inputs("objective"),
+    dspy.Example(objective="What's the key to living a fulfilling retirement?").with_inputs("objective"),
+    dspy.Example(objective="What should I do about my relationship problems?").with_inputs("objective"),
     dspy.Example(objective="I want to make a python game").with_inputs("objective"),
     dspy.Example(objective="Are there any potential risks or obstacles we should be aware of?").with_inputs("objective"),
-    dspy.Example(objective="Can you explain the concept of blockchain technology?").with_inputs("objective"),
-    dspy.Example(objective="What ethical considerations should be taken into account regarding the integration of AI into various job sectors?").with_inputs("objective"),
+    dspy.Example(objective="What's the best way to travel on a budget?").with_inputs("objective"),
+    dspy.Example(objective="How do I achieve work-life balance?").with_inputs("objective"),
     dspy.Example(objective="Can you explain Pythagoras theorem?").with_inputs("objective"),
-    dspy.Example(objective="What is a blockchain?").with_inputs("objective"),
+    dspy.Example(objective="What's the key to a fulfilling life?").with_inputs("objective"),
 ]
 
 testset = [
-    dspy.Example(objective="Can you explain the concept of blockchain technology?").with_inputs("objective"),
-    dspy.Example(objective="Does the lasagna contains tomatoes?").with_inputs("objective"),
+    dspy.Example(objective="What's the best way to improve my life?").with_inputs("objective"),
+    dspy.Example(objective="What's the meaning of life?").with_inputs("objective"),
     dspy.Example(objective="When did the French Revolution occur?").with_inputs("objective"),
-    dspy.Example(objective="What is a blockchain?").with_inputs("objective"),
+    dspy.Example(objective="How can I make more money?").with_inputs("objective"),
     dspy.Example(objective="What is the recipe of lasagna?").with_inputs("objective"),
 ]
 
