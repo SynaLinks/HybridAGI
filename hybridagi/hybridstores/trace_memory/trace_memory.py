@@ -48,11 +48,11 @@ class TraceMemory(HybridStore):
             new_commit = str(uuid.uuid4().hex)
             if step.prediction:
                 prediction = json.dumps(dict(step.prediction), indent=2)
+                indexes = self.add_texts(
+                    texts = [prediction],
+                )
             else:
                 prediction = "None"
-            indexes = self.add_texts(
-                texts = [str(step)],
-            )
             params = {
                 "index" : indexes[0],
                 "hop" : step.hop,

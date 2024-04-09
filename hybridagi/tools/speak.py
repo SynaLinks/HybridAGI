@@ -1,9 +1,10 @@
 """The speak tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
-from typing import List
+from typing import List, Optional, Callable
 from colorama import Fore, Style
 import dspy
 from .base import BaseTool
+from ..types.state import AgentState
 
 class SpeakSignature(dspy.Signature):
     """Infer what you want to say to the user"""
@@ -17,21 +18,23 @@ class SpeakTool(BaseTool):
 
     def __init__(
             self,
-            chat_history: List[dict],
+            agent_state: AgentState,
+            speak_func: Optional[Callable[[str], None]] = None,
             simulated: bool = True,
         ):
         super().__init__(name = "Speak")
         self.predict = dspy.Predict(PredictSignature)
         self.simulated = simulated
-        if self.simulated and chat_history is None:
-            raise ValueError("Chat history required to simulate 'Speak' tool")
-        self.chat_history = chat_history
+        self.agent_state = agent_state
+        self.speak_func = speak_func
 
     def speak(self, message: str):
-        raise NotImplementedError("Not implemented yet")
-
-    def simulate_speak(self, message: str):
-        pass
+        if self.speak_func:
+            return self.speak_func(message)
+        else:
+            raise ValueError(
+                "You should specify a function to call to use `Speak` outside simulation"
+            )
 
     def forward(
             self,
@@ -50,23 +53,19 @@ class SpeakTool(BaseTool):
                 prompt = prompt,
             )
             message = message.strip()
-            self.chat_history.append(
+            self.agent_state.chat_history.append(
                 {"role": "AI", "message": message}
             )
-            if self.simulated:
-                self.simulate_speak(message)
-            else:
+            if not self.simulated:
                 self.speak(message)
             return dspy.Prediction(
                 message = message
             )
         else:
-            self.chat_history.append(
+            self.agent_state.chat_history.append(
                 {"role": "AI", "message": message}
             )
-            if self.simulated:
-                self.simulate_speak(message)
-            else:
+            if not self.simulated:
                 self.speak(message)
             return dspy.Prediction(
                 message = prompt

@@ -79,5 +79,5 @@ class InternalShellTool(BaseTool):
             filesystem = self.filesystem,
             agent_state = self.agent_state,
         )
-        cpy.predict = copy.deepcopy(self.predict, memo = memo)
+        cpy.predict = copy.deepcopy(self.predict)
         return cpy

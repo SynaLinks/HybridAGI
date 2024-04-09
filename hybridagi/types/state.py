@@ -43,3 +43,4 @@ class AgentState():
         self.program_trace = []
         self.program_stack = deque()
         self.context = FileSystemContext()
+        self.chat_history = []

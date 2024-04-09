@@ -1,9 +1,10 @@
 """The ask user tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
-from typing import List
+from typing import List, Optional, Callable
 import json
 import dspy
 from .base import BaseTool
+from ..types.state import AgentState
 
 class AskUserSignature(dspy.Signature):
     """Infer the question to ask to the user"""
@@ -24,7 +25,8 @@ class AskUserTool(BaseTool):
 
     def __init__(
             self,
-            chat_history: List[dict],
+            agent_state: AgentState,
+            ask_user_func: Optional[Callable[[str], str]] = None,
             num_history: int = 50,
             simulated: bool = True,
         ):
@@ -32,14 +34,19 @@ class AskUserTool(BaseTool):
         self.predict = dspy.Predict(PredictSignature)
         self.simulated = simulated
         self.simulate = dspy.Predict(SimulateAnswerSignature)
-        self.chat_history = chat_history
+        self.agent_state = agent_state
         self.num_history = num_history
+        self.ask_user_func = ask_user_func
 
     def ask_user(self, question : str) -> str:
-        raise NotImplementedError("Not implemented yet")
+        if self.ask_user_func:
+            return self.ask_user_func(question)
+        else:
+            raise ValueError(
+                "You should specify a function to call to use `AskUser` outside simulation")
 
     def simulate_ask_user(self, question: str):
-        chat_history = json.dumps(self.chat_history[:-self.num_history], indent=2)
+        chat_history = json.dumps(self.agent_state.chat_history[:-self.num_history], indent=2)
         simulation = self.simulate(
             objective = objective,
             chat_history = chat_history,
@@ -65,14 +72,14 @@ class AskUserTool(BaseTool):
                 prompt = prompt,
             )
             question = prediction.question
-            self.chat_history.append(
+            self.agent_state.chat_history.append(
                 {"role": "AI", "message": question}
             )
             if self.simulated:
                 answer = self.simulate_ask_user(question)
             else:
                 answer = self.ask_user(question)
-            self.chat_history.append(
+            self.agent_state.chat_history.append(
                 {"role": "User", "message": answer}
             )
             return dspy.Prediction(
@@ -80,17 +87,25 @@ class AskUserTool(BaseTool):
                 answer = answer,
             )
         else:
-            self.chat_history.append(
+            self.agent_state.chat_history.append(
                 {"role": "AI", "message": prompt}
             )
             if self.simulated:
                 answer = self.simulate_ask_user(question)
             else:
                 answer = self.ask_user(message)
-            self.chat_history.append(
+            self.agent_state.chat_history.append(
                 {"role": "User", "message": answer}
             )
             return dspy.Prediction(
                 question = prompt,
                 answer = answer,
             )
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            agent_state = self.agent_state,
+            num_history = self.num_history,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

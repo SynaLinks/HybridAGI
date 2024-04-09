@@ -71,3 +71,11 @@ class CallProgramTool(BaseTool):
                 selected_program = prompt,
                 observation = observation,
             )
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            program_memory = self.program_memory,
+            agent_state = self.agent_state,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

@@ -1,6 +1,7 @@
 """The interpreter. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import dspy
+import json
 import copy
 from colorama import Fore, Style
 from falkordb import Node, Graph
@@ -16,6 +17,7 @@ DECISION_COLOR = f"{Fore.BLUE}"
 ACTION_COLOR = f"{Fore.CYAN}"
 CONTROL_COLOR = f"{Fore.MAGENTA}"
 FINISH_COLOR = f"{Fore.YELLOW}"
+CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
     """Infer the final answer between the possible options"""
@@ -46,6 +48,9 @@ class GraphProgramInterpreter(dspy.Module):
             max_iters: int = 20,
             commit_decision: bool = True,
             commit_program_flow: bool = True,
+            return_final_answer: bool = True,
+            return_program_trace: bool = True,
+            return_chat_history: bool = True,
             verbose: bool = True,
         ):
         self.program_memory = program_memory
@@ -57,6 +62,9 @@ class GraphProgramInterpreter(dspy.Module):
         self.commit_decision = commit_decision
         self.commit_program_flow = commit_program_flow
         self.decision_parser = DecisionOutputParser()
+        self.return_final_answer = return_final_answer
+        self.return_program_trace = return_program_trace
+        self.return_chat_history = return_chat_history
         self.verbose = verbose
         # DSPy reasoners
         self.tools = {tool.name: tool for tool in tools}
@@ -225,23 +233,45 @@ class GraphProgramInterpreter(dspy.Module):
         self.agent_state.set_current_node(next_node)
         return decision
 
-    def forward(self, **kwargs):
+    def forward(self, objective: str):
         """DSPy forward prediction"""
-        self.start(kwargs["objective"])
+        self.start(objective)
         for i in range(self.max_iters):
             if not self.finished():
                 self.run_step()
             else:
                 break
-        prediction = self.finish(
-            trace = "\n".join(self.agent_state.program_trace),
-            objective = self.agent_state.objective,
-        )
+        if self.return_final_answer:
+            prediction = self.finish(
+                trace = "\n".join(self.agent_state.program_trace),
+                objective = self.agent_state.objective,
+            )
+            final_answer = prediction.answer
+            self.agent_state.chat_history.append(
+                {"role": "AI", "message": final_answer}
+            )
+        else:
+            final_answer = ""
+
+        if self.return_chat_history:
+            chat_history = json.dumps(self.agent_state.chat_history, indent=2)
+        else:
+            chat_history = ""
+        
+        if self.return_program_trace:
+            program_trace = json.dumps(self.agent_state.program_trace, indent=2)
+        else:
+            program_trace = ""
+
         if self.verbose:
-            print(f"{FINISH_COLOR}{prediction.answer}{Style.RESET_ALL}")
+            if self.return_final_answer:
+                print(f"{FINISH_COLOR}Final Answer:\n\n{final_answer}{Style.RESET_ALL}")
+            if self.return_chat_history:
+                print(f"{CHAT_COLOR}Chat History:\n\n{chat_history}{Style.RESET_ALL}")
         return dspy.Prediction(
-            final_answer = prediction.answer,
-            program_trace = "\n".join(self.agent_state.program_trace),
+            final_answer = final_answer,
+            chat_history = chat_history,
+            program_trace = program_trace,
             finish_reason = "max iters" if i >= self.max_iters else "finished",
         )
 
@@ -281,6 +311,9 @@ class GraphProgramInterpreter(dspy.Module):
     def start(self, objective: str):
         """Start the interpreter"""
         self.agent_state.init()
+        self.agent_state.chat_history.append(
+            {"role": "User", "message": objective}
+        )
         self.agent_state.objective = objective
         first_step = self.call_program(objective, self.entrypoint)
         self.agent_state.program_trace.append(str(first_step))

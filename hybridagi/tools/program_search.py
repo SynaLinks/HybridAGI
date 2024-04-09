@@ -75,5 +75,5 @@ class ProgramSearchTool(BaseTool):
             distance_threshold = self.distance_threshold,
             k = self.k,
         )
-        cpy.predict = copy.deepcopy(self.predict, memo = memo)
+        cpy.predict = copy.deepcopy(self.predict)
         return cpy
