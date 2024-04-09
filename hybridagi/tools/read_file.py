@@ -1,5 +1,6 @@
 """The read file tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import copy
 import dspy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem

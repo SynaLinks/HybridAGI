@@ -1,14 +1,14 @@
-# This example is here to illustrate the capability of the system to write into a vector indexed filesystem and retrieve the notes
+# This example is here to illustrate the capability of the system to simulate user interaction to optimize the quality of the interaction
+# This example first clarify the objective given by the user, then update the AI objective and answer it
 
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, FileSystem, TraceMemory, AgentState
 from hybridagi.tools import (
-    PredictTool,
-    DocumentSearchTool,
-    DuckDuckGoSearchTool,
-    WriteFileTool,
+    SpeakTool,
+    AskUserTool,
+    UpdateObjectiveTool,
 )
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
@@ -21,12 +21,11 @@ embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence
 
 dspy.settings.configure(lm=student_llm)
 
-model_path = "rag_that_take_notes.json"
+model_path = "rag_that_clarify_question.json"
 
-class AssessAnswer(dspy.Signature):
+class AssessInteraction(dspy.Signature):
     """Assess the success of the trace according to the objective"""
-    assessed_answer = dspy.InputField(desc="The answer to assess")
-    assessed_question = dspy.InputField(desc="The question to be assessed")
+    assessed_interaction = dspy.InputField(desc="The interaction to assess")
     critique = dspy.OutputField(desc="The critique of the answer")
 
 class Score(BaseModel):
@@ -40,7 +39,7 @@ class CritiqueToScoreSignature(dspy.Signature):
 def program_success(example, pred, trace=None):
     question = example.objective
     with dspy.context(lm=teacher_llm):
-        prediction = dspy.ChainOfThought(AssessAnswer)(
+        prediction = dspy.ChainOfThought(AssessInteraction)(
             assessed_answer = pred.final_answer,
             assessed_question = question,
         )
@@ -49,20 +48,20 @@ def program_success(example, pred, trace=None):
 
 print("Initializing the program memory...")
 program_memory = ProgramMemory(
-    index_name = "rag_that_take_notes",
+    index_name = "rag_that_clarify_question",
     embeddings = embeddings,
     wipe_on_start = True,
 )
 
 print("Initializing the internal filesystem...")
 filesystem = FileSystem(
-    index_name = "rag_that_take_notes",
+    index_name = "rag_that_clarify_question",
     embeddings = embeddings,
 )
 
 print("Initializing the trace memory...")
 trace_memory = TraceMemory(
-    index_name = "rag_that_take_notes",
+    index_name = "rag_that_clarify_question",
     embeddings = embeddings,
 )
 
@@ -71,55 +70,54 @@ program_memory.add_texts(
     texts = [
 """
 // @desc: The main program
+// Nodes declaration
 CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
-(document_search:Action {
-    name: "Search to documents to answer the objective's question",
-    tool: "DocumentSearch",
-    prompt: "Use the objective's question to infer the search query"
-}),
-(is_answer_known:Decision {
-    name:"Check if the answer to the objective's question is in the above search",
-    question: "Do you known the answer based on the above document search not based on prior knowledge?"
-}),
-(websearch:Action {
-    name: "Perform a duckduckgo search",
-    tool: "DuckDuckGoSearch",
-    prompt: "Use the objective's question to infer the search query"
-}),
-(answer_web:Action {
-    name: "Answer the objective's question based on the web search",
-    tool: "Predict",
-    prompt: "Use the above web search to infer the answer"
+(clarify_objective:Program {
+    name:"Clarify the objective if needed",
+    program:"clarify_objective"
 }),
 (answer:Action {
-    name: "Answer the objective's question based on the document search",
-    tool: "Predict",
-    prompt: "Use the above document search to infer the answer"
+    name:"Answer the objective's question",
+    tool:"Speak",
+    prompt:"Answer the objective's question"
 }),
-(save_answer:Action {
-    name: "Save the answer to the objective's question",
-    tool: "WriteFile",
-    prompt: "
-Use the final answer to the objective's question to infer the content of the file,
-Use the objective's question to infer its snake case filename
-The content should be ONE paragraph only containing the answer.
-Please always ensure to correctly infer the content of the file, don't be lazy."
-}),
-(start)-[:NEXT]->(document_search),
-(document_search)-[:NEXT]->(is_answer_known),
-(is_answer_known)-[:YES]->(answer),
-(is_answer_known)-[:NO]->(websearch),
-(websearch)-[:NEXT]->(answer_web),
-(answer_web)-[:NEXT]->(save_answer),
-(save_answer)-[:NEXT]->(end),
+// Structure declaration
+(start)-[:NEXT]->(clarify_objective),
+(clarify_objective)-[:NEXT]->(answer),
 (answer)-[:NEXT]->(end)
 """,
+"""
+// @desc: Clarify the objective if needed
+CREATE
+// Nodes declaration
+(start:Control {name:"Start"}),
+(end:Control {name:"End"}),
+(is_anything_unclear:Decision {
+    name:"Find out if there is anything unclear in the Objective", 
+    question:"Is the Objective unclear?"
+}),
+(ask_question:Action {
+    name:"Ask question to clarify the objective",
+    tool:"AskUser",
+    prompt:"Pick one question to clarify the Objective"
+}),
+(refine_objective:Action {
+    name:"Clarify the given objective",
+    tool:"UpdateObjective", 
+    prompt:"The refined Objective"
+}),
+// Structure declaration
+(start)-[:NEXT]->(is_anything_unclear),
+(ask_question)-[:NEXT]->(refine_objective),
+(refine_objective)-[:NEXT]->(is_anything_unclear),
+(is_anything_unclear)-[:YES]->(ask_question),
+(is_anything_unclear)-[:MAYBE]->(ask_question),
+(is_anything_unclear)-[:NO]->(end)
+"""
     ],
-    ids = [
-        "main",
-    ]
+    ids = ["main", "clarify_objective"]
 )
 
 dataset = [
@@ -128,7 +126,7 @@ dataset = [
     dspy.Example(objective="Explain me what is a Large Language Model").with_inputs("objective"),
     dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
     dspy.Example(objective="When did the French Revolution occur?").with_inputs("objective"),
-    dspy.Example(objective="Can you explain the theory of relativity?").with_inputs("objective"),
+    dspy.Example(objective="Can you explain the difference between Deep Learning and Symbolic AI?").with_inputs("objective"),
     dspy.Example(objective="Can you explain the concept of blockchain technology?").with_inputs("objective"),
     dspy.Example(objective="What ethical considerations should be taken into account regarding the integration of AI into various job sectors?").with_inputs("objective"),
     dspy.Example(objective="Can you explain Pythagoras theorem?").with_inputs("objective"),
@@ -146,17 +144,15 @@ testset = [
 agent_state = AgentState()
 
 tools = [
-    PredictTool(),
-    DocumentSearchTool(
-        filesystem = filesystem,
-        embeddings = embeddings,
-    ),
-    DuckDuckGoSearchTool(),
-    WriteFileTool(
-        filesystem = filesystem,
+    AskUserTool(
         agent_state = agent_state,
-    )
-
+    ),
+    SpeakTool(
+        agent_state = agent_state,
+    ),
+    UpdateObjectiveTool(
+        agent_state = agent_state,
+    ),
 ]
 
 print("Optimizing underlying prompts...")
@@ -169,11 +165,13 @@ optimizer = BootstrapFewShot(
     **config,
 )
 
+# we choose to not output a final answer and use the speak tool instead giving us more control over the interaction
 interpreter = GraphProgramInterpreter(
     program_memory = program_memory,
     trace_memory = trace_memory,
     agent_state = agent_state,
     tools = tools,
+    return_final_answer = False, 
 )
 
 compiled_interpreter = optimizer.compile(

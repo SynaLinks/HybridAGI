@@ -1,5 +1,6 @@
 """The speak tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import copy
 from typing import List, Optional, Callable
 from colorama import Fore, Style
 import dspy
@@ -23,7 +24,7 @@ class SpeakTool(BaseTool):
             simulated: bool = True,
         ):
         super().__init__(name = "Speak")
-        self.predict = dspy.Predict(PredictSignature)
+        self.predict = dspy.Predict(SpeakSignature)
         self.simulated = simulated
         self.agent_state = agent_state
         self.speak_func = speak_func
@@ -52,7 +53,7 @@ class SpeakTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            message = message.strip()
+            message = prediction.message.strip()
             self.agent_state.chat_history.append(
                 {"role": "AI", "message": message}
             )
@@ -63,10 +64,10 @@ class SpeakTool(BaseTool):
             )
         else:
             self.agent_state.chat_history.append(
-                {"role": "AI", "message": message}
+                {"role": "AI", "message": prompt}
             )
             if not self.simulated:
-                self.speak(message)
+                self.speak(prompt)
             return dspy.Prediction(
                 message = prompt
             )

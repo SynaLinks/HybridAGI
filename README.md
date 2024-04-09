@@ -80,7 +80,7 @@ CREATE
 // Structure declaration
 (start)-[:NEXT]->(is_anything_unclear),
 (ask_question)-[:NEXT]->(refine_objective),
-(refine_objective)-[:NEXT]->(is_anything_unclear)
+(refine_objective)-[:NEXT]->(is_anything_unclear),
 // The outgoing edges of decision nodes give
 // the possible answers to the system
 (is_anything_unclear)-[:YES]->(ask_question),

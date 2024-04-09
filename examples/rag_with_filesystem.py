@@ -38,9 +38,7 @@ embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence
 
 dspy.settings.configure(lm=student_llm)
 
-model_path = "document_rag.json"
-
-
+model_path = "rag_with_filesystem.json"
 
 class AssessAnswer(dspy.Signature):
     """Assess the success of the trace according to the objective"""
@@ -68,20 +66,20 @@ def program_success(example, pred, trace=None):
 
 print("Initializing the program memory...")
 program_memory = ProgramMemory(
-    index_name = "document_rag",
+    index_name = "rag_with_filesystem",
     embeddings = embeddings,
     wipe_on_start = True,
 )
 
 print("Initializing the internal filesystem...")
 filesystem = FileSystem(
-    index_name = "document_rag",
+    index_name = "rag_with_filesystem",
     embeddings = embeddings,
 )
 
 print("Initializing the trace memory...")
 trace_memory = TraceMemory(
-    index_name = "document_rag",
+    index_name = "rag_with_filesystem",
     embeddings = embeddings,
 )
 

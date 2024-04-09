@@ -1,5 +1,6 @@
 """The ask user tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import copy
 from typing import List, Optional, Callable
 import json
 import dspy
@@ -19,7 +20,7 @@ class SimulateAnswerSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     chat_history = dspy.InputField(desc = "The chat history")
     question = dspy.InputField(desc = "The question to assess")
-    answer = dspy.OutputField(desc = "The answer to the assessed question")
+    answer = dspy.OutputField(desc = "The short and concise answer to the assessed question (only few words)")
 
 class AskUserTool(BaseTool):
 
@@ -31,7 +32,7 @@ class AskUserTool(BaseTool):
             simulated: bool = True,
         ):
         super().__init__(name = "AskUser")
-        self.predict = dspy.Predict(PredictSignature)
+        self.predict = dspy.Predict(AskUserSignature)
         self.simulated = simulated
         self.simulate = dspy.Predict(SimulateAnswerSignature)
         self.agent_state = agent_state
@@ -48,7 +49,7 @@ class AskUserTool(BaseTool):
     def simulate_ask_user(self, question: str):
         chat_history = json.dumps(self.agent_state.chat_history[:-self.num_history], indent=2)
         simulation = self.simulate(
-            objective = objective,
+            objective = self.agent_state.objective,
             chat_history = chat_history,
             question = question,
         )

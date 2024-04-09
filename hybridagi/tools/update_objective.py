@@ -1,5 +1,6 @@
 """The update objective tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import copy
 import dspy
 from .base import BaseTool
 from typing import Optional, Callable
@@ -42,13 +43,13 @@ class UpdateObjectiveTool(BaseTool):
             self.agent_state.objective = prediction.new_objective
             observation = "Successfully updated"
             return dspy.Prediction(
-                new_objective = new_objective,
+                new_objective = prediction.new_objective,
                 observation = observation,
             )
         else:
             self.agent_state.objective = prompt
             return dspy.Prediction(
-                new_objective = new_objective,
+                new_objective = prompt,
                 observation = "Successfully updated",
             )
 
