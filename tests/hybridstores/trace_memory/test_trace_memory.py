@@ -1,3 +1,5 @@
+import dspy
+import json
 from hybridagi import TraceMemory
 from hybridagi import FakeEmbeddings
 from hybridagi import AgentAction, AgentDecision, ProgramCall, ProgramEnd
@@ -16,11 +18,11 @@ def test_add_action_step():
         purpose = "test purpose",
         tool = "TestTool",
         prompt = "This is a test prompt",
-        prediction = None,
+        prediction = dspy.Prediction(answer="test"),
         log = "",
     )
     index = memory.commit(step)
-    assert memory.get_content(index) == str(step)
+    assert memory.get_content(index) == json.dumps(dict(step.prediction), indent=2)
 
 
 def test_add_decision_step():
@@ -86,7 +88,7 @@ def test_add_two_step():
         purpose = "test purpose",
         tool = "TestTool",
         prompt = "This is a test prompt",
-        prediction = None,
+        prediction = dspy.Prediction(answer="test1"),
         log = "",
     )
     step2 = AgentAction(
@@ -95,13 +97,13 @@ def test_add_two_step():
         purpose = "test purpose",
         tool = "TestTool",
         prompt = "This is a test prompt",
-        prediction = None,
+        prediction = dspy.Prediction(answer="test2"),
         log = "",
     )
     index1 = memory.commit(step1)
     index2 = memory.commit(step2)
-    assert memory.get_content(index1) == str(step1)
-    assert memory.get_content(index2) == str(step2)
+    assert memory.get_content(index1) == json.dumps(dict(step1.prediction), indent=2)
+    assert memory.get_content(index2) == json.dumps(dict(step2.prediction), indent=2)
 
 
 def test_add_two_trace():

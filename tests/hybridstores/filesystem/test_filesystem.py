@@ -99,3 +99,20 @@ Proin dictum imperdiet eros nec vehicula."""
     assert memory.get_document(filename1) == text1
     assert memory.is_file(filename2)
     assert memory.get_document(filename2) == text2
+
+
+def test_load_folders():
+    emb = FakeEmbeddings(dim=250)
+    memory = FileSystem(
+        index_name = "test",
+        embeddings = emb,
+        wipe_on_start = True,
+    )
+
+    memory.add_folders(
+        ["tests/hybridstores/filesystem/test_folder"],
+    )
+
+    assert memory.is_folder("/home/user/test_folder")
+    assert memory.is_file("/home/user/test_folder/plaintext_test.txt")
+    assert memory.is_file("/home/user/test_folder/markdown_test.md")

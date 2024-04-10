@@ -263,7 +263,7 @@ class GraphProgramInterpreter(dspy.Module):
             chat_history = ""
         
         if self.return_program_trace:
-            program_trace = json.dumps(self.agent_state.program_trace, indent=2)
+            program_trace = "\n".join(self.agent_state.program_trace)
         else:
             program_trace = ""
 

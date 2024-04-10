@@ -1,3 +1,4 @@
+import dspy
 from hybridagi import (
     FakeEmbeddings,
     TraceMemory,
@@ -19,7 +20,7 @@ def test_forward():
         purpose = "test purpose",
         tool = "TestTool",
         prompt = "This is a test prompt",
-        prediction = None,
+        prediction = dspy.Prediction(answer="test1"),
         log = "",
     )
     

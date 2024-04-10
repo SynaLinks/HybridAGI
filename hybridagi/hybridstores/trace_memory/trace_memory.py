@@ -44,6 +44,8 @@ class TraceMemory(HybridStore):
                 ProgramEnd,
             ]
         ) -> str:
+        new_commit = ""
+        content_index = ""
         if isinstance(step, AgentAction):
             new_commit = str(uuid.uuid4().hex)
             if step.prediction:
@@ -51,10 +53,11 @@ class TraceMemory(HybridStore):
                 indexes = self.add_texts(
                     texts = [prediction],
                 )
+                content_index = indexes[0]
             else:
                 prediction = "None"
             params = {
-                "index" : indexes[0],
+                "index" : new_commit,
                 "hop" : step.hop,
                 "objective" : step.objective,
                 "purpose" : step.purpose,
@@ -73,16 +76,16 @@ class TraceMemory(HybridStore):
                 'log:$log})',
                 params = params,
             )
-            params = {
-                "commit_index" : new_commit,
-                "content_index": indexes[0],
-            }
-            self.hybridstore.query(
-                "MATCH (a:Action {name:$commit_index}), "+
-                "(c:"+self.indexed_label+" {name:$content_index}) MERGE (a)-[:CONTAINS]->(c)",
-                params = params,
-            )
-            new_commit = indexes[0]
+            if content_index:
+                params = {
+                    "commit_index" : new_commit,
+                    "content_index": content_index,
+                }
+                self.hybridstore.query(
+                    "MATCH (a:Action {name:$commit_index}), "+
+                    "(c:"+self.indexed_label+" {name:$content_index}) MERGE (a)-[:CONTAINS]->(c)",
+                    params = params,
+                )
         elif isinstance(step, AgentDecision):
             new_commit = str(uuid.uuid4().hex)
             params = {
@@ -134,7 +137,7 @@ class TraceMemory(HybridStore):
                 params = params,
             )
         self.current_commit = new_commit
-        return new_commit
+        return new_commit if not content_index else content_index
 
     def start_new_trace(self):
         """Start a new trace"""

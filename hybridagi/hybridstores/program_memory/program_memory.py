@@ -47,7 +47,7 @@ class ProgramMemory(HybridStore):
             wipe_on_start = wipe_on_start,
         )
 
-    def from_folders(
+    def add_folders(
             self,
             folders: List[str],
         ):
@@ -65,7 +65,7 @@ class ProgramMemory(HybridStore):
                             programs.append(open(source, "r").read())
                         except Exception:
                             pass
-        self.add_texts(texts = programs, ids = names)
+        return self.add_texts(texts = programs, ids = names)
 
     def add_texts(
             self,
