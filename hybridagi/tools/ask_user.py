@@ -16,11 +16,11 @@ class AskUserSignature(dspy.Signature):
     question = dspy.OutputField(desc = "The question to ask to the user")
 
 class SimulateAnswerSignature(dspy.Signature):
-    """Answer like a real person would do, if you don't known imagine what an average user would answer"""
+    """Answer from the perspective of a real person, if you don't known imagine what an average user would answer"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     chat_history = dspy.InputField(desc = "The chat history")
     question = dspy.InputField(desc = "The question to assess")
-    answer = dspy.OutputField(desc = "The short and concise answer to the assessed question (only few words)")
+    user_answer = dspy.OutputField(desc = "The answer from the perspective of a real person (only few words)")
 
 class AskUserTool(BaseTool):
 
@@ -53,7 +53,7 @@ class AskUserTool(BaseTool):
             chat_history = chat_history,
             question = question,
         )
-        answer = simulation.answer
+        answer = simulation.user_answer
         return answer
 
     def forward(
