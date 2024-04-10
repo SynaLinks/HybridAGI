@@ -114,7 +114,6 @@ CREATE
 (refine_objective)-[:NEXT]->(is_anything_unclear),
 (is_anything_unclear)-[:YES]->(ask_question),
 (is_anything_unclear)-[:MAYBE]->(ask_question),
-(is_anything_unclear)-[:UNKNOWN]->(ask_question),
 (is_anything_unclear)-[:NO]->(end)
 """
     ],
