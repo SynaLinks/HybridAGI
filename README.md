@@ -114,7 +114,7 @@ CREATE
 
 Here is a trace of the above example, the system can simulate user input to optimize/finetune itself without human intervention.
 
-```json
+```
  --- Step 0 ---
 Call Program: main
 Program Purpose: What's the meaning of life?
