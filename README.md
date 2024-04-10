@@ -154,7 +154,8 @@ End Program: main
 
 HybridAGI output the chat history, along with the final answer and trace allowing DSPy to optimize every aspect of a conversational agent.
 
-```json
+Chat History:
+```
 [
   {
     "role": "User",
