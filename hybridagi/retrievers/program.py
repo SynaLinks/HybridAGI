@@ -51,7 +51,7 @@ class ProgramRetriever(dspy.Retrieve):
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],
-            reverse=True,
+            reverse=False,
         )[: k or self.k]
         return dspy.Prediction(
             programs=[el["programs"] for el in sorted_passages]

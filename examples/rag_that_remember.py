@@ -6,6 +6,7 @@ from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, FileSystem, TraceMemory, AgentState
 from hybridagi.tools import (
     PredictTool,
+    SpeakTool,
     PastActionSearchTool,
     DuckDuckGoSearchTool,
 )
@@ -80,24 +81,24 @@ CREATE
 }),
 (is_answer_known:Decision {
     name:"Check if the answer to the objective's question is in the above search",
-    question: "Do you known the answer based on the above document search not based on prior knowledge?"
+    question: "Is the answer your past actions?"
 }),
 (websearch:Action {
     name: "Perform a duckduckgo search",
     tool: "DuckDuckGoSearch",
     prompt: "Use the objective's question to infer the search query"
 }),
-(answer_web:Action {
+(answer:Action {
     name: "Answer the objective's question based on the search",
-    tool: "Predict",
+    tool: "Speak",
     prompt: "Use the above search to infer the answer"
 }),
 (start)-[:NEXT]->(action_search),
 (action_search)-[:NEXT]->(is_answer_known),
 (is_answer_known)-[:YES]->(answer),
 (is_answer_known)-[:NO]->(websearch),
-(websearch)-[:NEXT]->(answer_web),
-(answer_web)-[:NEXT]->(end)
+(websearch)-[:NEXT]->(answer),
+(answer)-[:NEXT]->(end)
 """,
     ],
     ids = [
@@ -135,6 +136,9 @@ tools = [
         trace_memory = trace_memory,
         embeddings = embeddings,
     ),
+    SpeakTool(
+        agent_state = agent_state,
+    )
 ]
 
 print("Optimizing underlying prompts...")
@@ -152,6 +156,7 @@ interpreter = GraphProgramInterpreter(
     trace_memory = trace_memory,
     agent_state = agent_state,
     tools = tools,
+    return_final_answer = False,
 )
 
 compiled_interpreter = optimizer.compile(

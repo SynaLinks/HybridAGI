@@ -50,8 +50,10 @@ class ActionRetriever(dspy.Retrieve):
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],
-            reverse=True,
+            reverse=False,
         )[: k or self.k]
+        # print(contents)
+        # print(sorted_passages)
         return dspy.Prediction(
             past_actions=[el["actions"] for el in sorted_passages]
         )

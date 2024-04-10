@@ -50,7 +50,7 @@ class DocumentRetriever(dspy.Retrieve):
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],
-            reverse=True,
+            reverse=False,
         )[: k or self.k]
         return dspy.Prediction(
             passages=[el["passage"] for el in sorted_passages]

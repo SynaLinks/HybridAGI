@@ -22,7 +22,7 @@ class ProgramSearchTool(BaseTool):
             self,
             program_memory: ProgramMemory,
             embeddings: BaseEmbeddings,
-            distance_threshold: float = 1.2,
+            distance_threshold: float = 1.25,
             k: int = 3,
         ):
         super().__init__(name = "ProgramSearch")

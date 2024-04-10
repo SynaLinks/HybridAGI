@@ -81,7 +81,7 @@ CREATE
 }),
 (is_answer_known:Decision {
     name:"Check if the answer to the objective's question is in the above search",
-    question: "Do you known the answer based on the above document search not based on prior knowledge?"
+    question: "Is the answer in the above search?"
 }),
 (websearch:Action {
     name: "Perform a duckduckgo search",

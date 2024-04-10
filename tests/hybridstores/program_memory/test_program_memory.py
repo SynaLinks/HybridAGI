@@ -66,3 +66,17 @@ CREATE
     assert memory.exists(program_name, label='Program')
     assert memory.exists(subprogram_name, label='Program')
     assert memory.depends_on("program", "subprogram")
+
+def test_load_folders():
+    emb = FakeEmbeddings(dim=250)
+    memory = ProgramMemory(
+        index_name="test",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+
+    memory.add_folders(
+        ["tests/hybridstores/program_memory/test_folder"],
+    )
+
+    assert memory.exists("test_program", label='Program')
