@@ -57,12 +57,12 @@ class TesterUtility():
         """Check how many starting node the program have"""
         result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"Start"}) RETURN n')
-        if len(result) == 0:
+        if len(result.result_set) == 0:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "No starting node detected, please "+\
                 "make sure to start your program correctly")
-        if len(result) > 1:
+        if len(result.result_set) > 1:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "Starting node is connected to more than one node "+\
@@ -72,12 +72,12 @@ class TesterUtility():
         """Check how many ending node the program have"""
         result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"End"}) RETURN n')
-        if len(result) == 0:
+        if len(result.result_set) == 0:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "No ending node detected, please "+\
                 "make sure to end your program correctly")
-        if len(result) > 1:
+        if len(result.result_set) > 1:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "Multiple ending point detected, "+
@@ -87,12 +87,12 @@ class TesterUtility():
         """Check starting node outgoing edges"""
         result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"Start"})-[r]->(m) RETURN r')
-        if len(result) == 0:
+        if len(result.result_set) == 0:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "Starting node is not connected (meaning it doesn't have outgoing edge) "+\
                 "make sure to start your program correctly")
-        if len(result) > 1:
+        if len(result.result_set) > 1:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "Starting node is connected to more than one node "+\
@@ -102,7 +102,7 @@ class TesterUtility():
         """Check starting node incoming edges"""
         result = self.program_memory.playground.query(
             'MATCH (m)-[r]->(n:Control {name:"Start"}) RETURN r')
-        if len(result) > 0:
+        if len(result.result_set) > 0:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "Starting node cannot have incoming edges "+\
@@ -112,7 +112,7 @@ class TesterUtility():
         """Check ending node incoming edges"""
         result = self.program_memory.playground.query(
             'MATCH (m)-[r]->(n:Control {name:"End"}) RETURN r')
-        if len(result) == 0:
+        if len(result.result_set) == 0:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "Ending node should at least have one incoming edge"+\
@@ -122,7 +122,7 @@ class TesterUtility():
         """Check ending node outgoing edges"""
         result = self.program_memory.playground.query(
             'MATCH (n:Control {name:"End"})-[r]->(m) RETURN r')
-        if len(result) > 0:
+        if len(result.result_set) > 0:
             raise RuntimeError(
                 f"Error while loading '{self.program_name}': "+\
                 "Ending node cannot have outgoing edges"+\

@@ -23,13 +23,13 @@ FINISH_COLOR = f"{Fore.YELLOW}"
 CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
-    """Infer the right label between the possible options, always ends with one of the possible label"""
+    """Choose one label between the options, always use the context to answer"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
-    question = dspy.InputField(desc = "The question to assess (the question you have to answer)")
+    question = dspy.InputField(desc = "The question to assess")
     options = dspy.InputField(desc = "The possible options to the assessed question")
-    answer = dspy.OutputField(desc = "The right answer between the possible options along with the explaination")
+    answer = dspy.OutputField(desc = "The final choice (one label between the possible options)")
 
 class FinishSignature(dspy.Signature):
     """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""

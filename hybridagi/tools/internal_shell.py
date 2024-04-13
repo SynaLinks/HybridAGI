@@ -1,5 +1,6 @@
 """The internal shell tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import shlex
 import copy
 import dspy
 from .base import BaseTool
@@ -7,14 +8,24 @@ from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.shell import ShellUtility
 from ..parsers.path import PathOutputParser
 from ..types.state import AgentState
+from ..utility.commands import (
+    ChangeDirectory,
+    ListDirectory,
+    MakeDirectory,
+    Move,
+    PrintWorkingDirectory,
+    Remove,
+    Tree,
+)
+
 
 class InternalShellSignature(dspy.Signature):
-    """Infer the unix shell command to access your filesystem"""
+    """Infer a unix shell command, whitelist: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`, `tree`]"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    unix_shell_command = dspy.OutputField(desc = "The name of the file to read")
+    unix_shell_command = dspy.OutputField(desc = "The unix command between [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`, `tree`]")
 
 class InternalShellTool(BaseTool):
 
@@ -30,6 +41,15 @@ class InternalShellTool(BaseTool):
         self.shell = ShellUtility(
             filesystem = self.filesystem,
             agent_state = self.agent_state,
+            commands = [
+                ChangeDirectory(filesystem=filesystem),
+                ListDirectory(filesystem=filesystem),
+                MakeDirectory(filesystem=filesystem),
+                Move(filesystem=filesystem),
+                PrintWorkingDirectory(filesystem=filesystem),
+                Remove(filesystem=filesystem),
+                Tree(filesystem=filesystem),
+            ]
         )
 
     def execute(self, command: str) -> str:

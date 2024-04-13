@@ -59,13 +59,13 @@ class ProgramSearchTool(BaseTool):
             result = self.retriever(query)
             return dspy.Prediction(
                 query = query,
-                programs = result.programs,
+                routines = result.routines,
             )
         else:
             result = self.retriever(prompt)
             return dspy.Prediction(
                 query = prompt,
-                programs = result.programs,
+                routines = result.routines,
             )
 
     def __deepcopy__(self, memo):

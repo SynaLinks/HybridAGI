@@ -10,10 +10,17 @@ from .update_objective import UpdateObjectiveTool
 from .call_program import CallProgramTool
 
 from .write_file import WriteFileTool
+from .append_file import AppendFileTool
 from .read_file import ReadFileTool
+
+from .write_program import WriteProgramTool
+from .read_program import ReadProgramTool
 
 from .speak import SpeakTool
 from .ask_user import AskUserTool
+
+from .clear_trace import ClearTraceTool
+from .revert_trace import RevertTraceTool
 
 from .internal_shell import InternalShellTool
 
@@ -30,7 +37,17 @@ __all__ = [
     CallProgramTool,
 
     WriteFileTool,
+    AppendFileTool,
     ReadFileTool,
+
+    WriteProgramTool,
+    ReadProgramTool,
+
+    AskUserTool,
+    SpeakTool,
+
+    ClearTraceTool,
+    RevertTraceTool,
 
     InternalShellTool,
 ]

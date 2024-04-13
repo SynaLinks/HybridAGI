@@ -37,9 +37,9 @@ class HybridStore():
             username = username if username else None,
             password = password if password else None,
         )
-        if self.wipe_on_start:
-            self.client.connection.flushall()
         self.hybridstore = self.get_graph(self.graph_index)
+        if self.wipe_on_start:
+            self.clear()
         self.init_index()
 
     def add_texts(
@@ -177,12 +177,6 @@ class HybridStore():
             +' SET n.metadata=$metadata',
             params = params,
         )
-        # for key, value in metadata.items():
-        #     try:
-        #         params = {"index": content_index, "value": value}
-                
-        #     except Exception:
-        #         return False
         return True
 
     def get_content_metadata(self, content_index: str) -> Optional[Dict[Any, Any]]:
@@ -214,7 +208,10 @@ class HybridStore():
         
     def clear(self):
         """Method to clear the hybridstore"""
-        self.hybridstore.delete()
+        try:
+            self.hybridstore.delete()
+        except Exception as e:
+            pass
         self.init_index()
 
     def init_index(self):
@@ -226,4 +223,4 @@ class HybridStore():
                 params,
             )
         except Exception as e:
-            print(e)
+            pass

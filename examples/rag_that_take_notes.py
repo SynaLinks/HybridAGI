@@ -3,7 +3,7 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory, FileSystem, TraceMemory, AgentState
+from hybridagi import ProgramMemory, FileSystem, AgentState
 from hybridagi.tools import (
     PredictTool,
     DocumentSearchTool,
@@ -60,12 +60,6 @@ filesystem = FileSystem(
     embeddings = embeddings,
 )
 
-print("Initializing the trace memory...")
-trace_memory = TraceMemory(
-    index_name = "rag_that_take_notes",
-    embeddings = embeddings,
-)
-
 print("Adding Cypher programs into the program memory...")
 program_memory.add_texts(
     texts = [
@@ -81,7 +75,7 @@ CREATE
 }),
 (is_answer_known:Decision {
     name:"Check if the answer to the objective's question is in the above search",
-    question: "Is the answer in the above passages?"
+    question: "Is the answer in the context?"
 }),
 (websearch:Action {
     name: "Perform a duckduckgo search",
@@ -99,10 +93,9 @@ CREATE
     prompt: "Use the above document search to infer the answer"
 }),
 (save_answer:Action {
-    name: "Save the answer to the objective's question",
+    name: "Save the answer to the objective's question in a .txt file",
     tool: "WriteFile",
-    prompt: "
-Use the final answer to the objective's question to infer the content of the file,
+    prompt: "Use the final answer to the objective's question to infer the content of the file,
 Use the objective's question to infer its snake case filename
 The content should be ONE paragraph only containing the answer.
 Please always ensure to correctly infer the content of the file, don't be lazy."
@@ -171,7 +164,6 @@ optimizer = BootstrapFewShot(
 
 interpreter = GraphProgramInterpreter(
     program_memory = program_memory,
-    trace_memory = trace_memory,
     agent_state = agent_state,
     tools = tools,
 )

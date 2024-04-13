@@ -4,7 +4,7 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory, FileSystem, TraceMemory, AgentState
+from hybridagi import ProgramMemory, AgentState
 from hybridagi.tools import (
     SpeakTool,
     AskUserTool,
@@ -51,18 +51,6 @@ program_memory = ProgramMemory(
     index_name = "rag_that_clarify_question",
     embeddings = embeddings,
     wipe_on_start = True,
-)
-
-print("Initializing the internal filesystem...")
-filesystem = FileSystem(
-    index_name = "rag_that_clarify_question",
-    embeddings = embeddings,
-)
-
-print("Initializing the trace memory...")
-trace_memory = TraceMemory(
-    index_name = "rag_that_clarify_question",
-    embeddings = embeddings,
 )
 
 print("Adding Cypher programs into the program memory...")
@@ -168,7 +156,6 @@ optimizer = BootstrapFewShot(
 # we choose to not output a final answer and use the speak tool instead giving us more control over the interaction
 interpreter = GraphProgramInterpreter(
     program_memory = program_memory,
-    trace_memory = trace_memory,
     agent_state = agent_state,
     tools = tools,
     return_final_answer = False,
@@ -188,13 +175,16 @@ evaluate = dspy.evaluate.Evaluate(
     display_table = 0,
 )
 
-filesystem.clear()
 print("Evaluate baseline model")
-baseline_score = evaluate(interpreter)
-
-filesystem.clear()
+try:
+    baseline_score = evaluate(interpreter)
+except Exception:
+    baseline_score = 0.0
 print("Evaluate optimized model")
-eval_score = evaluate(compiled_interpreter)
+try:
+    eval_score = evaluate(compiled_interpreter)
+except Exception:
+    eval_score = 0.0
 
 print(f"Baseline: {baseline_score}")
 print(f"Score: {eval_score}")

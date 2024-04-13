@@ -47,12 +47,12 @@ class ProgramRetriever(dspy.Retrieve):
                     content = f"{record[0]}: {record[1]}"
                     distance = float(record[2])
                     if distance < self.distance_threshold:
-                        contents.extend([{"programs": dotdict({"definition": content}), "distance": distance}])
+                        contents.extend([{"routines": dotdict({"routine_definition": content}), "distance": distance}])
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],
             reverse=False,
         )[: k or self.k]
         return dspy.Prediction(
-            programs=[el["programs"] for el in sorted_passages]
+            routines=[el["routines"] for el in sorted_passages]
         )

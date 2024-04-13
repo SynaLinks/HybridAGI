@@ -3,7 +3,7 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory, FileSystem, TraceMemory, AgentState
+from hybridagi import ProgramMemory, TraceMemory, AgentState
 from hybridagi.tools import (
     PredictTool,
     SpeakTool,
@@ -54,12 +54,6 @@ program_memory = ProgramMemory(
     wipe_on_start = True,
 )
 
-print("Initializing the internal filesystem...")
-filesystem = FileSystem(
-    index_name = "rag_that_remember",
-    embeddings = embeddings,
-)
-
 print("Initializing the trace memory...")
 trace_memory = TraceMemory(
     index_name = "rag_that_remember",
@@ -81,7 +75,7 @@ CREATE
 }),
 (is_answer_known:Decision {
     name:"Check if the answer to the objective's question is in the above search",
-    question: "Is the answer your past actions?"
+    question: "Is the answer in the context?"
 }),
 (websearch:Action {
     name: "Perform a duckduckgo search",
@@ -173,13 +167,16 @@ evaluate = dspy.evaluate.Evaluate(
     display_table = 0,
 )
 
-filesystem.clear()
 print("Evaluate baseline model")
-baseline_score = evaluate(interpreter)
-
-filesystem.clear()
+try:
+    baseline_score = evaluate(interpreter)
+except Exception:
+    baseline_score = 0.0
 print("Evaluate optimized model")
-eval_score = evaluate(compiled_interpreter)
+try:
+    eval_score = evaluate(compiled_interpreter)
+except Exception:
+    eval_score = 0.0
 
 print(f"Baseline: {baseline_score}")
 print(f"Score: {eval_score}")

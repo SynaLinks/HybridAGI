@@ -1,7 +1,7 @@
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
-from hybridagi import ProgramMemory, FileSystem, TraceMemory
+from hybridagi import ProgramMemory, FileSystem
 from hybridagi.tools import PredictTool, DocumentSearchTool
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
@@ -73,12 +73,6 @@ program_memory = ProgramMemory(
 
 print("Initializing the internal filesystem...")
 filesystem = FileSystem(
-    index_name = "rag_with_filesystem",
-    embeddings = embeddings,
-)
-
-print("Initializing the trace memory...")
-trace_memory = TraceMemory(
     index_name = "rag_with_filesystem",
     embeddings = embeddings,
 )
@@ -159,7 +153,6 @@ optimizer = BootstrapFewShot(
 
 interpreter = GraphProgramInterpreter(
     program_memory = program_memory,
-    trace_memory = trace_memory,
     tools = tools,
 )
 
@@ -178,9 +171,15 @@ evaluate = dspy.evaluate.Evaluate(
 )
 
 print("Evaluate baseline model")
-baseline_score = evaluate(interpreter)
+try:
+    baseline_score = evaluate(interpreter)
+except Exception:
+    baseline_score = 0.0
 print("Evaluate optimized model")
-eval_score = evaluate(compiled_interpreter)
+try:
+    eval_score = evaluate(compiled_interpreter)
+except Exception:
+    eval_score = 0.0
 
 print(f"Baseline: {baseline_score}")
 print(f"Score: {eval_score}")

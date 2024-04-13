@@ -1,7 +1,6 @@
 documentation/
 *.json
 local_cache/
-*.cypher
 *.zip
 htmlcov/
 .env

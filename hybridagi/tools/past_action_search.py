@@ -22,7 +22,7 @@ class PastActionSearchTool(BaseTool):
             self,
             trace_memory: TraceMemory,
             embeddings: BaseEmbeddings,
-            distance_threshold: float = 1.25,
+            distance_threshold: float = 1.3,
             k: int = 3,
         ):
         super().__init__(name = "PastActionSearch")

@@ -75,8 +75,15 @@ def test_load_folders():
         wipe_on_start=True,
     )
 
+    test_program = \
+"""CREATE
+(start:Control {name:'Start'}),
+(end:Control {name:'End'}),
+(start)-[:NEXT]->(end)"""
+
     memory.add_folders(
         ["tests/hybridstores/program_memory/test_folder"],
     )
 
     assert memory.exists("test_program", label='Program')
+    assert memory.get_content("test_program") == test_program

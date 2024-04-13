@@ -46,6 +46,7 @@ class ProgramMemory(HybridStore):
             indexed_label = indexed_label,
             wipe_on_start = wipe_on_start,
         )
+        self.playground = self.get_graph("playground")
 
     def add_folders(
             self,
@@ -159,7 +160,7 @@ class ProgramMemory(HybridStore):
         """Method to get the program names"""
         program_names = []
         result = self.hybridstore.query("MATCH (n:Program) RETURN n.name AS name")
-        for record in result:
+        for record in result.result_set:
             program_names.append(record[0])
         return program_names
 
@@ -199,3 +200,12 @@ class ProgramMemory(HybridStore):
                 " please correct your programs.")
         starting_node = result.result_set[0][0]
         return starting_node
+
+    def clear(self):
+        programs = self.get_program_names()
+        for prog in programs:
+            try:
+                self.get_graph(prog).delete()
+            except:
+                pass
+        super().clear()

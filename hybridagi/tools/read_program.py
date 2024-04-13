@@ -1,40 +1,35 @@
-"""The read file tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+"""The read program tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import copy
 import dspy
 from .base import BaseTool
-from ..hybridstores.filesystem.filesystem import FileSystem
-from ..utility.reader import ReaderUtility
-from ..parsers.path import PathOutputParser
-from ..types.state import AgentState
+from ..hybridstores.program_memory.program_memory import ProgramMemory
+from ..parsers.program_name import ProgramNameOutputParser
 
-class ReadFileSignature(dspy.Signature):
-    """Infer the name of the file to read"""
+class ReadProgramSignature(dspy.Signature):
+    """Infer the name of the program to read"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file to read")
+    filename = dspy.OutputField(desc = "The name of the program to read")
 
-class ReadFileTool(BaseTool):
+class ReadProgramTool(BaseTool):
 
     def __init__(
             self,
-            filesystem: FileSystem,
-            agent_state: AgentState,
+            program_memory: ProgramMemory,
         ):
-        super().__init__(name = "ReadFile")
-        self.predict = dspy.Predict(ReadFileSignature)
-        self.agent_state = agent_state
-        self.filesystem = filesystem
-        self.reader = ReaderUtility(filesystem=self.filesystem)
-        self.path_parser = PathOutputParser()
+        super().__init__(name = "ReadProgram")
+        self.predict = dspy.Predict(ReadProgramSignature)
+        self.program_memory = program_memory
+        self.parser = ProgramNameOutputParser()
 
-    def read_file(self, path: str) -> str:
+    def read_program(self, name: str) -> str:
         try:
-            path = self.path_parser.parse(path)
-            path = self.agent_state.context.eval_path(path)
-            return self.reader.read_document(path)
+            name = self.parser.parse(name)
+            program = self.program_memory.get_content(name)
+            return program
         except Exception as err:
             return str(err)
     
@@ -54,13 +49,13 @@ class ReadFileTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.read_file(prediction.filename)
+            observation = self.read_program(prediction.filename)
             return dspy.Prediction(
                 filename = prediction.filename,
                 content = observation,
             )
         else:
-            observation = self.read_file(prompt)
+            observation = self.read_program(prompt)
             return dspy.Prediction(
                 filename = prompt,
                 content = observation,
@@ -68,8 +63,7 @@ class ReadFileTool(BaseTool):
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
-            filesystem = self.filesystem,
-            agent_state = self.agent_state,
+            program_memory = self.program_memory,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

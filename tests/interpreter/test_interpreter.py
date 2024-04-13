@@ -16,9 +16,10 @@ def test_no_program():
 
     program_memory = ProgramMemory(
         index_name="test",
-        embeddings=emb,
-        wipe_on_start=True,
+        embeddings = emb,
+        wipe_on_start = True,
     )
+    program_memory.clear()
 
     with pytest.raises(RuntimeError) as exc_info:
         _ = GraphProgramInterpreter(

@@ -100,6 +100,57 @@ Proin dictum imperdiet eros nec vehicula."""
     assert memory.is_file(filename2)
     assert memory.get_document(filename2) == text2
 
+def test_append_one_text():
+    emb = FakeEmbeddings(dim=250)
+    memory = FileSystem(
+        index_name = "test",
+        embeddings = emb,
+        wipe_on_start = True,
+    )
+
+    text1 = \
+"""Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Integer molestie pellentesque velit, nec lobortis elit. 
+Curabitur rhoncus vehicula euismod. Donec suscipit justo 
+quis ante congue, sed dictum lorem hendrerit. Curabitur 
+ultricies erat felis, vitae rutrum arcu placerat vel.
+Nulla dapibus dictum arcu, nec varius lacus tempor non.
+Maecenas aliquet porta dui quis aliquam. Proin dictum orci
+auctor orci vulputate, commodo tristique neque posuere.
+Aliquam in eros eu arcu fermentum dignissim nec vehicula diam."""
+
+    text2 = \
+"""Cras suscipit quis lacus eu vulputate. Donec commodo volutpat tellus, 
+sed finibus enim aliquam in. Suspendisse id felis dignissim, 
+pharetra turpis in, convallis velit. Morbi magna felis, porttitor 
+vel volutpat eget, condimentum vitae est. Cras lacus nunc, sagittis
+vel nisi quis, tincidunt aliquam elit. Vivamus sagittis suscipit sem,
+eget pretium nibh. Pellentesque rhoncus velit ut nisi egestas, nec 
+iaculis elit fermentum. Etiam tempus ante lacinia, ornare ante id,
+bibendum arcu. Mauris purus dui, placerat blandit scelerisque in, 
+varius vitae enim. Nullam eu leo a urna tincidunt interdum vitae sed felis. 
+In id nibh in quam sollicitudin egestas non sed est.
+
+Sed interdum, nulla ut tempor lacinia, magna sem accumsan turpis,
+sit amet hendrerit purus odio pretium turpis.
+Curabitur convallis tempor consequat.
+Proin dictum imperdiet eros nec vehicula."""
+
+    filename = "/lorem_ipsum.txt"
+
+    memory.add_texts(
+        texts = [text1],
+        ids = [filename],
+    )
+
+    assert memory.get_document(filename) == text1
+
+    memory.append_texts(
+        texts = [text2],
+        ids = [filename],
+    )
+
+    assert memory.get_document(filename) == "\n".join([text1, text2])
 
 def test_load_folders():
     emb = FakeEmbeddings(dim=250)

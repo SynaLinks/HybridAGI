@@ -1,40 +1,40 @@
-"""The read file tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+"""The append file tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import copy
 import dspy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
-from ..utility.reader import ReaderUtility
 from ..parsers.path import PathOutputParser
 from ..types.state import AgentState
 
-class ReadFileSignature(dspy.Signature):
-    """Infer the name of the file to read"""
+class AppendFileSignature(dspy.Signature):
+    """Infer the filename and content to append into a file"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file to read")
+    filename = dspy.OutputField(desc = "The name of the file (short and concise) to append into without additional details")
+    content = dspy.OutputField(desc = "The content to append to the file")
 
-class ReadFileTool(BaseTool):
+class AppendFileTool(BaseTool):
 
     def __init__(
             self,
             filesystem: FileSystem,
             agent_state: AgentState,
         ):
-        super().__init__(name = "ReadFile")
-        self.predict = dspy.Predict(ReadFileSignature)
+        super().__init__(name = "AppendFile")
+        self.predict = dspy.Predict(AppendFileSignature)
         self.agent_state = agent_state
         self.filesystem = filesystem
-        self.reader = ReaderUtility(filesystem=self.filesystem)
         self.path_parser = PathOutputParser()
 
-    def read_file(self, path: str) -> str:
+    def append_file(self, filename: str, content: str) -> str:
         try:
-            path = self.path_parser.parse(path)
-            path = self.agent_state.context.eval_path(path)
-            return self.reader.read_document(path)
+            filename = self.path_parser.parse(filename)
+            filename = self.agent_state.context.eval_path(filename)
+            self.filesystem.append_texts(texts = [content], ids = [filename])
+            return "Successfully append"
         except Exception as err:
             return str(err)
     
@@ -54,17 +54,22 @@ class ReadFileTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.read_file(prediction.filename)
+            dspy.Suggest(
+                len(prediction.filename) != 0,
+                "The filename should not be empty"
+            )
+            dspy.Suggest(
+                len(prediction.filename) < 100,
+                "The filename should be short and consice"
+            )
+            observation = self.append_file(prediction.filename, prediction.content)
             return dspy.Prediction(
-                filename = prediction.filename,
-                content = observation,
+                filename = filename,
+                content = prediction.content,
+                observation = observation,
             )
         else:
-            observation = self.read_file(prompt)
-            return dspy.Prediction(
-                filename = prompt,
-                content = observation,
-            )
+            raise NotImplementedError("Disabling inference for AppendFile not supported")
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
