@@ -13,8 +13,8 @@ class ProgramRetriever(dspy.Retrieve):
             self,
             program_memory: ProgramMemory,
             embeddings: BaseEmbeddings,
-            distance_threshold: float = 1.2,
-            k: int = 3,
+            distance_threshold: float = 1.3,
+            k: int = 5,
         ):
         """The retriever constructor"""
         super().__init__(k = k)

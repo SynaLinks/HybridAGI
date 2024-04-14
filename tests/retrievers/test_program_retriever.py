@@ -29,4 +29,4 @@ CREATE
         embeddings = emb,
         distance_threshold = 100.0,
     )
-    assert retriever.forward("test").programs[0]["definition"] == "test_program: Test description"
+    assert retriever.forward("test").routines[0]["routine_definition"] == "test_program: Test description"
