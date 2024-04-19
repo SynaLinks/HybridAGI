@@ -23,13 +23,13 @@ FINISH_COLOR = f"{Fore.YELLOW}"
 CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
-    """Choose one label between the options, always use the context to answer"""
+    """Select the right label to the assessed question based on the given context"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
-    context = dspy.InputField(desc = "The previous actions (what you have done)")
+    context = dspy.InputField(desc = "The context (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
     question = dspy.InputField(desc = "The question to assess")
-    options = dspy.InputField(desc = "The possible options to the assessed question")
-    answer = dspy.OutputField(desc = "The final choice (one label between the possible options)")
+    options = dspy.InputField(desc = "The possible labels to the assessed question")
+    selected_label = dspy.OutputField(desc = "One word between the possible labels")
 
 class FinishSignature(dspy.Signature):
     """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""
@@ -47,13 +47,14 @@ class GraphProgramInterpreter(dspy.Module):
             agent_state: Optional[AgentState] = None,
             tools: List[dspy.BaseModule] = [],
             entrypoint: str = "main",
-            num_history: int = 5,
+            num_history: int = 3,
             max_iters: int = 20,
             commit_decision: bool = True,
             commit_program_flow: bool = True,
             return_final_answer: bool = True,
             return_program_trace: bool = True,
             return_chat_history: bool = True,
+            summarize_context: bool = False,
             verbose: bool = True,
         ):
         self.program_memory = program_memory
@@ -68,6 +69,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.return_final_answer = return_final_answer
         self.return_program_trace = return_program_trace
         self.return_chat_history = return_chat_history
+        self.summarize_context = summarize_context
         self.verbose = verbose
         # DSPy reasoners
         self.tools = {tool.name: tool for tool in tools}
@@ -102,7 +104,7 @@ class GraphProgramInterpreter(dspy.Module):
                     else:
                         action_prompt = ""
                     if "disable_inference" in current_node.properties:
-                        disable_inference = current_node.properties["disable_inference"].lower == "true"
+                        disable_inference = current_node.properties["disable_inference"].lower() == "true"
                     else:
                         disable_inference = False
                 except ValueError:
@@ -214,10 +216,11 @@ class GraphProgramInterpreter(dspy.Module):
             question = question,
             options = possible_answers,
         )
-        answer = self.decision_parser.parse(prediction.answer, options=options)
+        rationale = prediction.rationale
+        answer = self.decision_parser.parse(prediction.selected_label, options=options)
         dspy.Suggest(
             answer in options,
-            f"Error occured: The Answer should ends with one of the following label: {possible_answers}"
+            f"Got {answer}.\n\nSelected Label should be only ONE of the following label: {possible_answers}"
         )
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(
@@ -232,7 +235,7 @@ class GraphProgramInterpreter(dspy.Module):
             question = question,
             options = options,
             answer = answer,
-            log = prediction.rationale
+            log = rationale,
         )
         self.agent_state.set_current_node(next_node)
         return decision

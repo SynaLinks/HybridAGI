@@ -2,6 +2,7 @@
 
 import dspy
 from .base import BaseTool
+from ..parsers.prediction import PredictionOutputParser
 
 class PredictSignature(dspy.Signature):
     """Infer the best answer according to the provided instructions"""
@@ -16,6 +17,7 @@ class PredictTool(BaseTool):
     def __init__(self):
         super().__init__(name = "Predict")
         self.predict = dspy.Predict(PredictSignature)
+        self.prediction_parser = PredictionOutputParser()
     
     def forward(
             self,
@@ -33,12 +35,7 @@ class PredictTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            occurence = prediction.answer.find("\n\nAnswer:")
-            if occurence > 0:
-                answer = prediction.answer[occurence+len("\n\nAnswer:"):]
-            else:
-                answer = prediction.answer
-            answer = answer.strip()
+            answer = self.prediction_parser.parse(prediction.answer, prefix = "Answer:")
             return dspy.Prediction(
                 answer = answer
             )

@@ -9,12 +9,12 @@ from ..hybridstores.filesystem.filesystem import FileSystem
 from ..retrievers.document import DocumentRetriever
 
 class DocumentSearchSignature(dspy.Signature):
-    """Infer one search query to retrieve documents passages"""
+    """Infer one short and concise search queries to retrieve documents passages"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity based search query (only ONE sentence)")
+    search_query = dspy.OutputField(desc = "The search query (only few words)")
 
 class DocumentSearchTool(BaseTool):
 
@@ -55,16 +55,16 @@ class DocumentSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = prediction.query
+            query = prediction.search_query.replace("\"", "")
             result = self.retriever(query)
             return dspy.Prediction(
-                query = query,
+                search_query = query,
                 passages = result.passages,
             )
         else:
             result = self.retriever(prompt)
             return dspy.Prediction(
-                query = prompt,
+                search_query = prompt,
                 passages = result.passages,
             )
 

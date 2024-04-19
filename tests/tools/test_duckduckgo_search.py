@@ -14,7 +14,7 @@ def test_duckduckgo_search_tool():
         prompt = "test prompt",
         disable_inference = False,
     )
-    assert prediction.query == "HybridAGI framework on github"
+    assert prediction.search_query == "HybridAGI framework on github"
     assert len(prediction.results) > 0
 
 def test_duckduckgo_search_tool_without_inference():
@@ -30,7 +30,7 @@ def test_duckduckgo_search_tool_without_inference():
         prompt = "HybridAGI framework on github",
         disable_inference = True,
     )
-    assert prediction.query == "HybridAGI framework on github"
+    assert prediction.search_query == "HybridAGI framework on github"
     assert len(prediction.results) > 0
 
 

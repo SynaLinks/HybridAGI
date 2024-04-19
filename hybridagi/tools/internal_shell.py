@@ -6,7 +6,7 @@ import dspy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.shell import ShellUtility
-from ..parsers.path import PathOutputParser
+from ..parsers.prediction import PredictionOutputParser
 from ..types.state import AgentState
 from ..utility.commands import (
     ChangeDirectory,
@@ -51,6 +51,7 @@ class InternalShellTool(BaseTool):
                 Tree(filesystem=filesystem),
             ]
         )
+        self.prediction_parser = PredictionOutputParser()
 
     def execute(self, command: str) -> str:
         command = command.strip("`")
@@ -83,9 +84,13 @@ class InternalShellTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.execute(prediction.unix_shell_command)
+            unix_shell_command = self.prediction_parser.parse(
+                prediction.unix_shell_command,
+                prefix = "Unix Shell Command:",
+            )
+            observation = self.execute(unix_shell_command)
             return dspy.Prediction(
-                unix_shell_command = prediction.unix_shell_command,
+                unix_shell_command = unix_shell_command,
                 observation = observation,
             )
         else:

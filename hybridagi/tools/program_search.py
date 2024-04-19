@@ -9,12 +9,12 @@ from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..retrievers.program import ProgramRetriever
 
 class ProgramSearchSignature(dspy.Signature):
-    """Infer one search query to retrieve routine programs"""
+    """Infer one short and concise query to retrieve routine programs"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity based search query (only ONE sentence)")
+    search_query = dspy.OutputField(desc = "The search query (only few words)")
 
 class ProgramSearchTool(BaseTool):
 
@@ -22,8 +22,8 @@ class ProgramSearchTool(BaseTool):
             self,
             program_memory: ProgramMemory,
             embeddings: BaseEmbeddings,
-            distance_threshold: float = 1.25,
-            k: int = 3,
+            distance_threshold: float = 1.5,
+            k: int = 5,
         ):
         super().__init__(name = "ProgramSearch")
         self.predict = dspy.Predict(ProgramSearchSignature)
@@ -55,16 +55,16 @@ class ProgramSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = prediction.query
+            query = prediction.search_query.replace("\"", "")
             result = self.retriever(query)
             return dspy.Prediction(
-                query = query,
+                search_query = query,
                 routines = result.routines,
             )
         else:
             result = self.retriever(prompt)
             return dspy.Prediction(
-                query = prompt,
+                search_query = prompt,
                 routines = result.routines,
             )
 

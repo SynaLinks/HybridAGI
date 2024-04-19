@@ -13,6 +13,7 @@ duckduckgo-search = ">=5.2.1"
 falkordb = ">=1.0.3"
 dspy = { git = "https://github.com/stanfordnlp/dspy.git"}
 colorama = ">=0.4.6"
+mistralai = "^0.1.8"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.1.1"

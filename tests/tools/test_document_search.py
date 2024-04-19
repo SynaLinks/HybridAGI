@@ -38,7 +38,7 @@ def test_document_search():
         disable_inference = False,
     )
 
-    assert prediction.query == "test prediction"
+    assert prediction.search_query == "test prediction"
     assert len(prediction.passages) == 1
 
 def test_document_search_without_inference():
@@ -75,5 +75,5 @@ def test_document_search_without_inference():
         disable_inference = True,
     )
 
-    assert prediction.query == "test prompt"
+    assert prediction.search_query == "test prompt"
     assert len(prediction.passages) == 1

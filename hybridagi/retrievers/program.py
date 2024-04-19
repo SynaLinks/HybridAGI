@@ -33,15 +33,17 @@ class ProgramRetriever(dspy.Retrieve):
         query_vectors = self.embeddings.embed_text(query_or_queries)
         contents = []
         for vector in query_vectors:
-            params = {"vector": list(vector), "k": k or self.k}
-            #TODO update the Cypher query to only return the non-protected programs
+            params = {"indexed_label": self.program_memory.indexed_label, "vector": list(vector), "k": k or self.k}
+            # print(params)
             query = " ".join([
-                "CALL db.idx.vector.queryNodes('"+self.program_memory.indexed_label+"', 'embeddings_vector', $k, vecf32($vector)) YIELD node, score",
-                "RETURN node.name AS name, node.description AS description, score"])
+                'CALL db.idx.vector.queryNodes($indexed_label, "embeddings_vector", $k, vecf32($vector)) YIELD node, score',
+                'WHERE NOT (:Program {name:"main"})-[:DEPENDS_ON*]->(node) AND NOT node.name="main"',
+                'RETURN node.name AS name, node.description AS description, score'])
             result = self.program_memory.hybridstore.query(
                 query,
                 params = params,
             )
+            # print(result.result_set)
             if len(result.result_set) > 0:
                 for record in result.result_set:
                     content = f"{record[0]}: {record[1]}"

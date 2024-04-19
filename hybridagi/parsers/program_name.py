@@ -9,8 +9,9 @@ class ProgramNameOutputParser(BaseOutputParser):
     """
     def parse(self, output:str) -> str:
         """Fix and validate the given Cypher query."""
-        output = output.strip("\"'. \n")
+        output = output.replace("\"", "")
         output = output.replace("\\_", "_")
+        output = output.strip("\"'. \n")
         output = output.replace(".cypher", "")
         output = re.sub('(?!^)([A-Z]+)', r'_\1', output).lower()
         return output.strip()

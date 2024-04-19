@@ -1,8 +1,10 @@
 import dspy
+import os
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, TraceMemory, FileSystem, AgentState
 from hybridagi.tools import (
+    DuckDuckGoSearchTool,
     ProgramSearchTool,
     DocumentSearchTool,
     CallProgramTool,
@@ -16,11 +18,12 @@ from hybridagi.tools import (
     UpdateObjectiveTool,
 )
 from pydantic import BaseModel
-from dspy.teleprompt import BootstrapFewShot
+from dspy.teleprompt import BootstrapFewShotWithRandomSearch
 
 print("Loading LLM & embeddings models...")
 student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
 teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
+# teacher_llm = dspy.Mistral(model='mistral-large-latest', max_tokens=1024, api_key=os.getenv("MISTRAL_API_KEY"))
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -83,10 +86,38 @@ program_memory.add_texts(
 CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
+(is_objective_question:Decision {
+    name: "Check if the objective is a question or an instruction",
+    question: "Is the objective a question or an instruction?"
+}),
+(answer:Action {
+    name: "Answer the objective's question",
+    tool: "Predict",
+    prompt: "Answer the objective's question"
+}),
+(fulfill_objective:Program {
+    name: "Fullfil the objective",
+    program: "fulfill_objective"
+}),
+(start)-[:NEXT]->(is_objective_question),
+(is_objective_question)-[:QUESTION]->(answer),
+(is_objective_question)-[:INSTRUCTION]->(fulfill_objective),
+(fulfill_objective)-[:NEXT]->(end),
+(answer)-[:NEXT]->(end)
+""",
+"""
+// @desc: Try to call an existing program to fulfill the objective
+CREATE
+(start:Control {name:"Start"}),
+(end:Control {name:"End"}),
 (program_search:Action {
-    name:"Search for existing routine to fulfill the objective and list the top-5 most relevant", 
+    name:"Search for existing routine to fulfill the objective", 
     tool:"ProgramSearch",
     prompt:"Use the objective to describe in ONE short sentence the action to take"
+}),
+(is_program_known:Decision {
+    name: "Check if the routine to fulfill the objective is in the previous search",
+    question: "Is the routine to fulfill the objective in the above search?"
 }),
 (call_program:Action {
     name:"Pick the most appropriate routine from the previous search", 
@@ -94,34 +125,37 @@ CREATE
     prompt:"Use the context to known which program to pick. Only infer the name of the program without addtionnal details."
 }),
 (start)-[:NEXT]->(program_search),
-(program_search)-[:NEXT]->(call_program),
+(program_search)-[:NEXT]->(is_program_known),
+(is_program_known)-[:YES]->(call_program),
+(is_program_known)-[:NO]->(end),
 (call_program)-[:NEXT]->(end)
-""",
+"""
     ],
     ids = [
         "main",
+        "fulfill_objective",
     ]
 )
 
 dataset = [
     dspy.Example(objective="Create a folder called Test").with_inputs("objective"),
     dspy.Example(objective="Write a poem about AI and nature into a file called poem.txt").with_inputs("objective"),
-    dspy.Example(objective="What is prompt self-refinement?").with_inputs("objective"),
-    dspy.Example(objective="How might advancements in artificial intelligence impact the future job market?").with_inputs("objective"),
-    dspy.Example(objective="What ethical considerations should be taken into account regarding the integration of AI into various job sectors?").with_inputs("objective"),
-    dspy.Example(objective="What are some potential societal implications of widespread automation driven by AI?").with_inputs("objective"),
-    dspy.Example(objective="How might AI influence the skills and competencies that are in demand in the job market?").with_inputs("objective"),
-    dspy.Example(objective="How can governments and policymakers ensure that the benefits of AI are distributed equitably across society, particularly in terms of employment opportunities?").with_inputs("objective"),
-    dspy.Example(objective="What measures can be taken to ensure that AI technologies are used responsibly in the context of employment and recruitment?").with_inputs("objective"),
-    dspy.Example(objective="How might AI assist in addressing challenges related to workplace diversity, equity, and inclusion?").with_inputs("objective"),
+    dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
+    dspy.Example(objective="Write a python script for a snake game into a file").with_inputs("objective"),
+    dspy.Example(objective="Navigate into the folder Test").with_inputs("objective"),
+    dspy.Example(objective="List the Test directory").with_inputs("objective"),
+    dspy.Example(objective="Read the file called poem.txt").with_inputs("objective"),
+    dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
+    dspy.Example(objective="List your home directory").with_inputs("objective"),
+    dspy.Example(objective="List your home directory").with_inputs("objective"),
 ]
 
 testset = [
-    dspy.Example(objective="What are the risks and benefits associated with the use of AI in performance evaluation and decision-making processes within organizations?").with_inputs("objective"),
-    dspy.Example(objective="What are the potential effects of AI on job mobility and geographical distribution of employment opportunities?").with_inputs("objective"),
-    dspy.Example(objective="What are the negative implications of AI for the gig economy and freelance work?").with_inputs("objective"),
-    dspy.Example(objective="What are some potential industries or professions that could be significantly affected by AI in the coming years? list 5 of them").with_inputs("objective"),
-    dspy.Example(objective="How can individuals prepare themselves for a future where AI plays a more prominent role in the workforce?").with_inputs("objective"),
+    dspy.Example(objective="Write a poem into a file").with_inputs("objective"),
+    dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
+    dspy.Example(objective="Search for HybridAGI on internet").with_inputs("objective"),
+    dspy.Example(objective="Print the current working directory").with_inputs("objective"),
+    dspy.Example(objective="List the Test directory").with_inputs("objective"),
 ]
 
 print("Initializing the graph interpreter...")
@@ -129,6 +163,7 @@ print("Initializing the graph interpreter...")
 agent_state = AgentState()
 
 tools = [
+    DuckDuckGoSearchTool(),
     PredictTool(),
     ProgramSearchTool(
         program_memory = program_memory,
@@ -170,7 +205,8 @@ print("Optimizing underlying prompts...")
 
 config = dict(max_bootstrapped_demos=4, max_labeled_demos=4)
 
-optimizer = BootstrapFewShot(
+optimizer = BootstrapFewShotWithRandomSearch(
+    num_threads = 1,
     teacher_settings=dict({'lm': teacher_llm}),
     metric = program_success,
     **config,

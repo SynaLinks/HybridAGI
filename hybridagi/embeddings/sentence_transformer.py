@@ -40,7 +40,7 @@ class SentenceTransformerEmbeddings(BaseEmbeddings):
         self.proxy_device = 'cuda' if self.is_gpu else 'cpu'
 
         self.model = SentenceTransformer(self.model_name_or_path, device=self.proxy_device)
-        self.model.max_seq_length = self.max_seq_length    
+        self.model.max_seq_length = self.max_seq_length
 
     def embed_text(self, query_or_queries: Union[str, List[str]]) -> np._typing.NDArray:
         text_to_vectorize = [query_or_queries] if not isinstance(query_or_queries, list) else query_or_queries

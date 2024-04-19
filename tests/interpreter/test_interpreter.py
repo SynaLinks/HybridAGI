@@ -128,7 +128,7 @@ def test_one_decision_program():
     emb = FakeEmbeddings(dim=250)
 
     answers = [
-""" answer, the objective contains the character `?` denoting a question.\n\nAnswer: <YES>
+""" answer, the objective contains the character `?` denoting a question.\n\nSelected Label: <YES>
 """
 ]
 
@@ -250,7 +250,7 @@ End Program: main"""
 def test_multi_step_program():
     emb = FakeEmbeddings(dim=250)
 
-    answers = [" answer, the objective contains the character `?` denoting a question.\n\nAnswer:YES", "Toulouse"]
+    answers = [" answer, the objective contains the character `?` denoting a question.\n\nSelected Label: YES", "Toulouse"]
 
     dspy.settings.configure(lm=DummyLM(answers=answers))
 

@@ -9,12 +9,12 @@ from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..retrievers.action import ActionRetriever
 
 class ActionSearchSignature(dspy.Signature):
-    """Infer one search query to retrieve past actions"""
+    """Infer one short and concise query to retrieve past actions"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity based search query (only ONE sentence)")
+    search_query = dspy.OutputField(desc = "The search query")
 
 class PastActionSearchTool(BaseTool):
 
@@ -55,7 +55,7 @@ class PastActionSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = prediction.query
+            query = prediction.search_query.replace("\"", "")
             result = self.retriever(query)
             return dspy.Prediction(
                 query = query,

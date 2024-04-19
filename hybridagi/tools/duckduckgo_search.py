@@ -6,12 +6,12 @@ from typing import Optional
 from duckduckgo_search import DDGS
 
 class DuckDuckGoSearchSignature(dspy.Signature):
-    """Infer one DuckDuckGo search query to answer a question"""
+    """Infer one short and concise search query to search on DuckDuckGo"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The DuckDuckGo search query (ONE question only)")
+    search_query = dspy.OutputField(desc = "The DuckDuckGo search query (only few words)")
 
 class DuckDuckGoSearchTool(BaseTool):
 
@@ -37,15 +37,15 @@ class DuckDuckGoSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = prediction.query.replace("\"", "").strip()
+            query = prediction.search_query.replace("\"", "").strip()
             result = DDGS().text(query, max_results=k if k else self.k)
             return dspy.Prediction(
-                query = query,
+                search_query = query,
                 results = result,
             )
         else:
             result = DDGS().text(prompt, max_results=k if k else self.k)
             return dspy.Prediction(
-                query = prompt,
+                search_query = prompt,
                 results = result,
             )
