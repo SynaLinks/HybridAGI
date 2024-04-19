@@ -62,8 +62,6 @@ program_memory = ProgramMemory(
     wipe_on_start = True,
 )
 
-program_memory.add_folders(["examples/primitives"])
-
 print("Initializing the trace memory...")
 trace_memory = TraceMemory(
     index_name = "dynamic_call_agent",
@@ -81,30 +79,6 @@ filesystem = FileSystem(
 print("Adding programs into memory...")
 program_memory.add_texts(
     texts = [
-"""
-// @desc: Try to call an existing program
-CREATE
-(start:Control {name:"Start"}),
-(end:Control {name:"End"}),
-(is_objective_question:Decision {
-    name: "Check if the objective is a question or an instruction",
-    question: "Is the objective a question or an instruction?"
-}),
-(answer:Action {
-    name: "Answer the objective's question",
-    tool: "Predict",
-    prompt: "Answer the objective's question"
-}),
-(fulfill_objective:Program {
-    name: "Fullfil the objective",
-    program: "fulfill_objective"
-}),
-(start)-[:NEXT]->(is_objective_question),
-(is_objective_question)-[:QUESTION]->(answer),
-(is_objective_question)-[:INSTRUCTION]->(fulfill_objective),
-(fulfill_objective)-[:NEXT]->(end),
-(answer)-[:NEXT]->(end)
-""",
 """
 // @desc: Try to call an existing program to fulfill the objective
 CREATE
@@ -129,13 +103,39 @@ CREATE
 (is_program_known)-[:YES]->(call_program),
 (is_program_known)-[:NO]->(end),
 (call_program)-[:NEXT]->(end)
+""",
 """
+// @desc: Try to call an existing program
+CREATE
+(start:Control {name:"Start"}),
+(end:Control {name:"End"}),
+(is_objective_question:Decision {
+    name: "Check if the objective is a question or an instruction",
+    question: "Is the objective a question or an instruction?"
+}),
+(answer:Action {
+    name: "Answer the objective's question",
+    tool: "Predict",
+    prompt: "Answer the objective's question"
+}),
+(fulfill_objective:Program {
+    name: "Fullfil the objective",
+    program: "fulfill_objective"
+}),
+(start)-[:NEXT]->(is_objective_question),
+(is_objective_question)-[:QUESTION]->(answer),
+(is_objective_question)-[:INSTRUCTION]->(fulfill_objective),
+(fulfill_objective)-[:NEXT]->(end),
+(answer)-[:NEXT]->(end)
+""",
     ],
     ids = [
-        "main",
         "fulfill_objective",
+        "main",
     ]
 )
+
+program_memory.add_folders(["examples/primitives"])
 
 dataset = [
     dspy.Example(objective="Create a folder called Test").with_inputs("objective"),
