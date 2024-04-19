@@ -13,7 +13,7 @@ Become the *first Prompt Programmers in history*; be a part of the AI revolution
 
 ## Key Features 🎉
 
-- **🚀Automatic prompt optimization & finetuning:** Thanks to the integration of [DSPy](https://dspy-docs.vercel.app), HybridAGI can now self-refine its own prompt automatically. This new feature helps the system optimize itself based on the examples you provide. You can even use the LLM as a tutor and train your AI in a self-supervised fashion with ease or finetuning it. See the [examples](examples) for more information.
+- **Automatic prompt optimization & finetuning:** Thanks to the integration of [DSPy](https://dspy-docs.vercel.app), HybridAGI can self-refine its own prompt automatically. This new feature helps the system optimize itself based on the examples you provide. You can use the LLM as a judge and train your AI with ease or even finetuning it. See the [examples](examples) for more information.
 
 - **For AI makers:** This framework is intended for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. This product requires some programming and prompt engineering knowledge to get the best out of it. It's a Build Yourself product where the focus is on human creativity rather than AI autonomy. If you are new to prompt engineering, start by looking at [this guide](https://www.promptingguide.ai/).
 
@@ -181,15 +181,7 @@ Many more systems are possible, interactive or non-interactive ones, this is jus
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
-### Install from pip
-
-```bash
-virtualenv venv
-source venv/bin/activate
-pip install git+https://github.com/SynaLinks/HybridAGI
-```
-
-### Install from source
+### Install
 
 ```bash
 git clone https://github.com/SynaLinks/HybridAGI.git
@@ -205,7 +197,6 @@ poetry install
 Then setup the knowledge base & sandbox using docker:
 
 ```
-cd HybridAGI
 docker compose up
 ```
 
