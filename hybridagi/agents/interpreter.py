@@ -47,7 +47,7 @@ class GraphProgramInterpreter(dspy.Module):
             agent_state: Optional[AgentState] = None,
             tools: List[dspy.BaseModule] = [],
             entrypoint: str = "main",
-            num_history: int = 3,
+            num_history: int = 5,
             max_iters: int = 20,
             commit_decision: bool = True,
             commit_program_flow: bool = True,

@@ -5,6 +5,7 @@ import dspy
 from .base import BaseTool
 from typing import Optional, Callable
 from ..types.state import AgentState
+from ..parsers.prediction import PredictionOutputParser
 
 class UpdateObjectiveSignature(dspy.Signature):
     """Infer your new objective"""
@@ -12,7 +13,7 @@ class UpdateObjectiveSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    new_objective = dspy.OutputField(desc = "The new objective (few words only)")
+    new_objective = dspy.OutputField(desc = "The new objective")
 
 class UpdateObjectiveTool(BaseTool):
 
@@ -23,6 +24,7 @@ class UpdateObjectiveTool(BaseTool):
         super().__init__(name = "UpdateObjective")
         self.agent_state = agent_state
         self.predict = dspy.Predict(UpdateObjectiveSignature)
+        self.prediction_parser = PredictionOutputParser()
         
     def forward(
             self,
@@ -40,7 +42,11 @@ class UpdateObjectiveTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            self.agent_state.objective = prediction.new_objective
+            new_objective = self.prediction_parser.parse(
+                prediction.new_objective,
+                "New Objective:"
+            )
+            self.agent_state.objective = new_objective
             observation = "Successfully updated"
             return dspy.Prediction(
                 new_objective = prediction.new_objective,

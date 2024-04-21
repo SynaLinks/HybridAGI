@@ -1,6 +1,7 @@
 # This example is here to illustrate the capability of the system to simulate user interaction to optimize the quality of the interaction
 # This example first clarify the objective given by the user, then update the AI objective and answer it
 
+import os
 import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
@@ -83,8 +84,8 @@ CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
 (is_anything_unclear:Decision {
-    name:"Find out if there is anything unclear in the Objective", 
-    question:"Is the Objective unclear?"
+    name:"Check if the objective is unclear", 
+    question:"Is the objective still unclear?"
 }),
 (ask_question:Action {
     name:"Ask question to clarify the objective",
@@ -94,7 +95,7 @@ CREATE
 (refine_objective:Action {
     name:"Clarify the given objective",
     tool:"UpdateObjective", 
-    prompt:"The refined Objective"
+    prompt:"Clarify the objective based on the context"
 }),
 // Structure declaration
 (start)-[:NEXT]->(is_anything_unclear),
@@ -109,11 +110,11 @@ CREATE
 )
 
 dataset = [
-    dspy.Example(objective="Can you tell me how to be successful?").with_inputs("objective"),
-    dspy.Example(objective="What career path should I pursue?").with_inputs("objective"),
-    dspy.Example(objective="What's the key to living a fulfilling retirement?").with_inputs("objective"),
-    dspy.Example(objective="What should I do about my relationship problems?").with_inputs("objective"),
-    dspy.Example(objective="I want to make a python game").with_inputs("objective"),
+    dspy.Example(objective="Can you tell me how to be successful and be happy?").with_inputs("objective"),
+    dspy.Example(objective="What's the meaning of life?").with_inputs("objective"),
+    dspy.Example(objective="What's the key to improve?").with_inputs("objective"),
+    dspy.Example(objective="Wander the winding paths of words, where each turn may lead to a new interpretation, a new revelation, or a new puzzle to solve.").with_inputs("objective"),
+    dspy.Example(objective="I want to make a snake python game").with_inputs("objective"),
     dspy.Example(objective="Are there any potential risks or obstacles we should be aware of?").with_inputs("objective"),
     dspy.Example(objective="What's the best way to travel on a budget?").with_inputs("objective"),
     dspy.Example(objective="How do I achieve work-life balance?").with_inputs("objective"),
@@ -125,7 +126,7 @@ testset = [
     dspy.Example(objective="What's the best way to improve my life?").with_inputs("objective"),
     dspy.Example(objective="What's the meaning of life?").with_inputs("objective"),
     dspy.Example(objective="When did the French Revolution occur?").with_inputs("objective"),
-    dspy.Example(objective="How can I make more money?").with_inputs("objective"),
+    dspy.Example(objective="How can I be happy?").with_inputs("objective"),
     dspy.Example(objective="What is the recipe of lasagna?").with_inputs("objective"),
 ]
 

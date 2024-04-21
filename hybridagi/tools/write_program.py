@@ -9,20 +9,13 @@ from ..parsers.cypher import CypherOutputParser
 from ..utility.tester import TesterUtility
 
 class WriteProgramSignature(dspy.Signature):
-    """Infer the filename and content to write a cypher program into memory
-    
-    The content should have the following format:
-
-    ```
-    CREATE 
-    ```
-    """
+    """Infer the filename and content to write a cypher query into a file"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     filename = dspy.OutputField(desc = "The name of the cypher file (short and concise) to write without additional details")
-    cypher_create_query = dspy.OutputField(desc = "The cypher query to write")
+    cypher_create_query = dspy.OutputField(desc = "The cypher query to write into the file")
 
 class WriteProgramTool(BaseTool):
 
