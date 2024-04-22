@@ -13,7 +13,7 @@ class UpdateObjectiveSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    new_objective = dspy.OutputField(desc = "The new objective")
+    objective = dspy.OutputField(desc = "The new objective")
 
 class UpdateObjectiveTool(BaseTool):
 
@@ -43,13 +43,13 @@ class UpdateObjectiveTool(BaseTool):
                 prompt = prompt,
             )
             new_objective = self.prediction_parser.parse(
-                prediction.new_objective,
-                "New Objective:"
+                prediction.objective,
+                "Objective:"
             )
             self.agent_state.objective = new_objective
             observation = "Successfully updated"
             return dspy.Prediction(
-                new_objective = prediction.new_objective,
+                new_objective = new_objective,
                 observation = observation,
             )
         else:
