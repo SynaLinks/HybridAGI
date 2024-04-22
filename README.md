@@ -65,8 +65,8 @@ CREATE
 (start:Control {name:"Start"}),
 (end:Control {name:"End"}),
 (is_anything_unclear:Decision {
-    name:"Find out if there is anything unclear in the Objective", 
-    question:"Is the Objective unclear?"
+    name:"Check if the objective is unclear", 
+    question:"Is the objective still unclear?"
 }),
 (ask_question:Action {
     name:"Ask question to clarify the objective",
