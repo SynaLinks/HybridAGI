@@ -31,13 +31,13 @@ jobs:
       - name: Install FalkorDB dependencies
         run: sudo apt-get install -y build-essential cmake m4 automake peg libtool autoconf python3 python3-pip
       - name: Install and setup FalkorDB
-        run: git clone --recurse-submodules -j8 https://github.com/FalkorDB/FalkorDB.git && cd FalkorDB && make && redis-server --daemonize yes && redis-server --loadmodule /bin/linux-x64-release/src/falkordb.so
+        run: git clone --recurse-submodules -j8 https://github.com/FalkorDB/FalkorDB.git && cd FalkorDB && make && redis-server --daemonize yes --loadmodule /bin/linux-x64-release/src/falkordb.so
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
           pip install ruff poetry pytest
       - name: Install HybridAGI
-        run: pip install .
+        run: poetry install
       # - name: Lint with ruff
       #   run: |
       #     # stop the build if there are Python syntax errors or undefined names

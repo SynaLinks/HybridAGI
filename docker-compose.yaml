@@ -5,6 +5,7 @@ services:
     container_name: hybrid-agi-db
     ports:
       - 6379:6379
+      - 3000:3000
   hybrid-agi-db-browser:
     image: redislabs/redisinsight:1.14.0
     container_name: hybrid-agi-db-browser
