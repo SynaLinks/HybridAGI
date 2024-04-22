@@ -48,14 +48,16 @@ class TraceMemory(HybridStore):
         content_index = ""
         if isinstance(step, AgentAction):
             new_commit = str(uuid.uuid4().hex)
-            if step.prediction:
+            # avoid recursive recall by not indexing the past action search
+            if step.prediction and step.tool != "PastActionSearch":
                 prediction = json.dumps(dict(step.prediction), indent=2)
-                indexes = self.add_texts(
-                    texts = [prediction],
-                )
+                indexes = self.add_texts(texts = [prediction])
                 content_index = indexes[0]
             else:
-                prediction = "None"
+                if step.tool == "PastActionSearch":
+                    prediction = json.dumps(dict(step.prediction), indent=2)
+                else:
+                    prediction = "None"
             params = {
                 "index" : new_commit,
                 "hop" : step.hop,

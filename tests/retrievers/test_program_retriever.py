@@ -29,7 +29,7 @@ CREATE
         embeddings = emb,
         distance_threshold = 100.0,
     )
-    assert retriever.forward("test").routines[0]["routine_definition"] == "test_program: Test description"
+    assert retriever.forward("test").routines[0]["routine"] == "test_program: Test description"
 
 def test_forward_multiple():
     emb = FakeEmbeddings(dim=250)
