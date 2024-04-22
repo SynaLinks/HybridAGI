@@ -1,55 +1,51 @@
-# # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-# name: Python package
+name: Python package
 
-# on:
-#   push:
-#     branches: [ "main" ]
-#   pull_request:
-#     branches: [ "main" ]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-# jobs:
-#   build:
+jobs:
+  build:
 
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         python-version: ["3.10", "3.11"]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
 
-#     steps:
-#       - uses: actions/checkout@v3
-#       - name: Set up Python ${{ matrix.python-version }}
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: ${{ matrix.python-version }}
-#       - name: Display Python version
-#         run: python -c "import sys; print(sys.version)"
-#       - name: Install Redis
-#         run: sudo apt-get install -y redis
-#       - name: Install FalkorDB dependencies
-#         run: sudo apt-get install -y build-essential cmake m4 automake peg libtool autoconf python3 python3-pip
-#       - name: Install FalkorDB
-#         run: git clone --recurse-submodules -j8 https://github.com/FalkorDB/FalkorDB.git && cd FalkorDB && make
-#       - name: Install build dependencies
-#         run: |
-#           python -m pip install --upgrade pip
-#           pip install ruff poetry pytest
-#       - name: Install HybridAGI
-#         run: pip install .
-#       # - name: Lint with ruff
-#       #   run: |
-#       #     # stop the build if there are Python syntax errors or undefined names
-#       #     ruff --output-format=github --select=E9,F63,F7,F82 --target-version=py37 .
-#       #     # default set of ruff rules with GitHub Annotations
-#       #     ruff --output-format=github --target-version=py37 .
-#       - name: Launch Redis server
-#         run: redis-server --daemonize yes
-#       - name: Verify that Redis is up
-#         run: redis-cli ping
-#       - name: Load FalkorDB module into Redis
-#         run: redis-cli MODULE LOAD /home/runner/work/HybridAGI/FalkorDB/bin/linux-x64-release/src/falkordb.so
-#       - name: Run the tests
-#         run: |
-#           poetry run pytest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install Redis
+        run: sudo apt-get install -y redis
+      - name: Install FalkorDB dependencies
+        run: sudo apt-get install -y build-essential cmake m4 automake peg libtool autoconf python3 python3-pip
+      - name: Install and setup FalkorDB
+        run: git clone --recurse-submodules -j8 https://github.com/FalkorDB/FalkorDB.git && cd FalkorDB && make && redis-server --daemonize yes && redis-server --loadmodule /bin/linux-x64-release/src/falkordb.so
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff poetry pytest
+      - name: Install HybridAGI
+        run: pip install .
+      # - name: Lint with ruff
+      #   run: |
+      #     # stop the build if there are Python syntax errors or undefined names
+      #     ruff --output-format=github --select=E9,F63,F7,F82 --target-version=py37 .
+      #     # default set of ruff rules with GitHub Annotations
+      #     ruff --output-format=github --target-version=py37 .
+      - name: Verify that FalkorDB is up
+        run: redis-cli ping
+      - name: Run the tests
+        run: |
+          poetry run pytest -vv
