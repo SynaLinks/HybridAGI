@@ -234,7 +234,7 @@ Because this system can only execute actions that are in the graph, businesses c
 
 ### Can HybridAGI be used for tasks other than robotics?
 
-Yes, HybridAGI can be used for a wide range of tasks beyond robotics. The system is designed to be flexible and adaptable, making it suitable for any application that requires complex reasoning and decision-making, such as retrieval-augmented generation (RAG), chatbots, knowledge scrapers, personal assistant, and more generally, any agent-based application.
+Yes, HybridAGI can be used for a wide range of tasks beyond robotics. The system is designed to be flexible and adaptable, making it suitable for any application that requires complex reasoning and decision-making, such as retrieval-augmented generation (RAG), chatbots, knowledge scrapers, personal assistants, and more generally, any agent-based application.
 
 ### How can I contribute to HybridAGI?
 
