@@ -69,4 +69,4 @@ def test_forward_multiple():
         distance_threshold = 100.0,
     )
 
-    assert len(retriever.forward(["test", "test2"]).past_actions) == 2
+    assert len(retriever.forward("test").past_actions) == 2

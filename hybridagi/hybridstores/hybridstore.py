@@ -1,5 +1,6 @@
 """The hybridstore. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import numpy as np
 import uuid
 import json
 import base64
@@ -53,7 +54,7 @@ class HybridStore():
         indexes = []
         for idx, text in enumerate(texts):
             content_index = str(uuid.uuid4().hex) if not ids else ids[idx]
-            description = "" if not descriptions else descriptions[idx]
+            description = text if not descriptions else descriptions[idx]
             metadata = {} if not metadatas else metadatas[idx]
             vector = self.embeddings.embed_text(description)
             params = {

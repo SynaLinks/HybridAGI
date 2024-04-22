@@ -23,7 +23,7 @@ from dspy.teleprompt import BootstrapFewShotWithRandomSearch
 print("Loading LLM & embeddings models...")
 student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
 teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
-# teacher_llm = dspy.Mistral(model='mistral-large-latest', max_tokens=1024, api_key=os.getenv("MISTRAL_API_KEY"))
+#teacher_llm = dspy.Mistral(model='mistral-large-latest', max_tokens=1024, api_key=os.getenv("MISTRAL_API_KEY"))
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 

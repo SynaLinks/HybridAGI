@@ -218,7 +218,7 @@ We believe that agent systems are the future of general artificial intelligence 
 
 ### How is HybridAGI different from a toolbox?
 
-Our aim is to develop an entire ecosystem around our technology. Like an autonomous car is composed of several sub-systems, robotic softwares are composed by different and complementary sub-systems coordinating themselves. With neuro-symbolic systems, you need to train your neural networks with the whole architecture to increase efficiency by taking into account the contraints and new knowledge created by this neuro-symbolic architecture. We plan to release soon small finetuned models to allow the system to accuratly navigate into the graph and with programming knowledge about our DSL to enable long-term planning agent. By lowering the costs of long-term agent workers, we enable new usecases for the entire industry.
+Our aim is to develop an entire ecosystem around our technology. Like an autonomous car is composed of several sub-systems, robotic softwares are composed by different and complementary sub-systems coordinating themselves. With neuro-symbolic systems, you need to train your neural networks with the whole architecture to increase efficiency by taking into account the constraints and new knowledge created by this neuro-symbolic architecture. We plan to release soon small finetuned models to allow the system to accuratly navigate into the graph and with programming knowledge about our DSL to enable long-term planning agent. By lowering the costs of long-term agent workers, we enable new usecases for the entire industry.
 
 ### What is the difference between LangGraph and HybridAGI?
 

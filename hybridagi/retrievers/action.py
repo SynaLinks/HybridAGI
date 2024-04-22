@@ -34,8 +34,8 @@ class ActionRetriever(dspy.Retrieve):
         query_vectors = self.embeddings.embed_text(query_or_queries)
         contents = []
         for vector in query_vectors:
-            params = {"indexed_label": self.trace_memory.indexed_label, "vector": list(vector), "k": k or self.k}
-            # print(params)
+            # For an obscure reason falkordb needs a bigger k to find more indexed items
+            params = {"indexed_label": self.trace_memory.indexed_label, "vector": list(vector), "k": 2*int(k or self.k)}
             query = " ".join([
                 'CALL db.idx.vector.queryNodes($indexed_label, "embeddings_vector", $k, vecf32($vector)) YIELD node, score',
                 'RETURN node.name AS name, score'])
@@ -43,7 +43,6 @@ class ActionRetriever(dspy.Retrieve):
                 query,
                 params = params,
             )
-            # print(result.result_set)
             if len(result.result_set) > 0:
                 for record in result.result_set:
                     content = self.trace_memory.get_content(record[0])

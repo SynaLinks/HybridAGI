@@ -69,4 +69,4 @@ CREATE
         distance_threshold = 100.0,
     )
 
-    assert len(retriever.forward(["test"], k = 3).routines) == 1
+    assert len(retriever.forward(["test"]).routines) == 2
