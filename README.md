@@ -214,7 +214,7 @@ poetry run pytest -vv
 
 ### What do you mean by neuro-symbolic AGI?
 
-We believe that agent systems are the future of general artificial intelligence. Our goal is to build an agent system that solves real-world problems by using an intermediary language interpretable by both humans and machines. If we want to keep humans in the loop in the coming years, we need to design AI systems for that purpose. Coming from a robotic background, we understand how the debate in the ML community between multi-agent systems and neuro-symbolic ones will unfold.
+We believe that agent systems are the future of general artificial intelligence and robotics. Our goal is to build an agent system that solves real-world problems by using an intermediary language interpretable by both humans and machines. If we want to keep humans in the loop in the coming years, we need to design AI systems for that purpose. Coming from a robotic background, we understand how the debate in the ML community between multi-agent systems and neuro-symbolic ones will unfold.
 
 ### How is HybridAGI different from a toolbox?
 
