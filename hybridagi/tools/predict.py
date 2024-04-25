@@ -6,7 +6,6 @@ from ..parsers.prediction import PredictionOutputParser
 
 class PredictSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
     Using the prompt to help you, you will infer the correct answer"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")

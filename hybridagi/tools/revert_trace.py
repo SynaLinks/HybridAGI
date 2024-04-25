@@ -12,7 +12,6 @@ class Integer(BaseModel):
 
 class RevertTraceSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
     Using the prompt to help you, you will infer the correct number of steps to revert"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")

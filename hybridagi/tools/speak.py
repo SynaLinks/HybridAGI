@@ -9,8 +9,7 @@ from ..types.state import AgentState
 
 class SpeakSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
-    Using the prompt to help you, you will infer the correcy message to the user"""
+    Using the prompt to help you, you will infer the correct message to send to the user"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")

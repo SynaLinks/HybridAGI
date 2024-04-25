@@ -20,7 +20,6 @@ from ..utility.commands import (
 
 class InternalShellSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
     Using the prompt to help you, you will infer the correct unix shell command, whitelist: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`, `tree`]"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")

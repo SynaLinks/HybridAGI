@@ -9,7 +9,6 @@ from ..types.state import AgentState
 
 class AskUserSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
     Using the prompt to help you, you will infer the correct question"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")

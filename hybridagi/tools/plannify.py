@@ -1,18 +1,18 @@
-"""The call program tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+"""The plannify tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import copy
 import dspy
 from .base import BaseTool
 from typing import Optional, Callable
-from hybridagi import ProgramMemory
+from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.state import AgentState
 from ..parsers.program_name import ProgramNameOutputParser
 from ..parsers.prediction import PredictionOutputParser
 
 class PlannifySignature(dspy.Signature):
-    """You will be given an objective, purpose and context
-    
-    Using the prompt to help you, you will infer the correct plan"""
+    """You will be given an objective, purpose and context.
+    Using the prompt to help you, you will infer the correct plan.
+    Make sure to specifiy decision making steps and their outcome."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -26,12 +26,24 @@ class PlannifyProgramTool(BaseTool):
             program_memory: ProgramMemory,
             agent_state: AgentState,
         ):
-        super().__init__(name = "CallProgram")
+        super().__init__(name = "Plannify")
         self.agent_state = agent_state
         self.program_memory = program_memory
         self.program_name_parser = ProgramNameOutputParser()
         self.prediction_parser = PredictionOutputParser()
-        self.predict = dspy.Predict(CallProgramSignature)
+        self.predict = dspy.Predict(PlannifySignature)
+        self.program_tester = TesterUtility(program_memory=program_memory)
+
+    def write_program(self, filename: str, content: str) -> str:
+        try:
+            self.program_tester.verify_programs(
+                [filename],
+                [content],
+            )
+            self.program_memory.add_texts(texts = [content], ids = [filename])
+            return "Successfully created"
+        except Exception as err:
+            return str(err)
 
     def call_program(self, program_name: str):
         """Method to call a program"""
@@ -64,21 +76,14 @@ class PlannifyProgramTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            selected_program = self.prediction_parser.parse(
-                prediction.selected_routine, prefix="Selected Routine:", stop=["\n"]
+            plan = self.prediction_parser.parse(
+                prediction.selected_routine, prefix="Plan:",
             )
-            selected_program = self.program_name_parser.parse(selected_program)
-            observation = self.call_program(selected_program)
-            return dspy.Prediction(
-                selected_program = selected_program,
-                observation = observation,
-            )
+            # TODO Convert the plan into Cypher
+            raise NotImplementedError("Not implemented yet.")
         else:
-            observation = self.call_program(prompt)
-            return dspy.Prediction(
-                selected_program = prompt,
-                observation = observation,
-            )
+            # TODO
+            raise NotImplementedError("Not implemented yet.")
 
     def __deepcopy__(self, memo):
         cpy = (type)(self)(

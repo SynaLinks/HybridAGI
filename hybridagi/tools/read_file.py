@@ -10,7 +10,6 @@ from ..types.state import AgentState
 
 class ReadFileSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
     Using the prompt to help you, you will infer the correct filename"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
@@ -32,11 +31,9 @@ class ReadFileTool(BaseTool):
         self.reader = ReaderUtility(filesystem=self.filesystem)
         self.path_parser = PathOutputParser()
 
-    def read_file(self, path: str) -> str:
+    def read_file(self, filename: str) -> str:
         try:
-            path = self.path_parser.parse(path)
-            path = self.agent_state.context.eval_path(path)
-            return self.reader.read_document(path)
+            return self.reader.read_document(filename)
         except Exception as err:
             return str(err)
     
@@ -56,9 +53,15 @@ class ReadFileTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.read_file(prediction.filename)
+            filename = self.prediction_parser.parse(
+                prediction.filename,
+                prefix="Filename:",
+            )
+            filename = self.path_parser.parse(filename)
+            filename = self.agent_state.context.eval_path(filename)
+            observation = self.read_file(filename)
             return dspy.Prediction(
-                filename = prediction.filename,
+                filename = filename,
                 content = observation,
             )
         else:

@@ -4,14 +4,13 @@ import copy
 import dspy
 from .base import BaseTool
 from typing import Optional, Callable
-from hybridagi import ProgramMemory
+from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.state import AgentState
 from ..parsers.program_name import ProgramNameOutputParser
 from ..parsers.prediction import PredictionOutputParser
 
 class CallProgramSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
     Using the prompt to help you, you will infer the correct routine to select"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
