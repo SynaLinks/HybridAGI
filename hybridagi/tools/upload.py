@@ -31,7 +31,7 @@ class UploadTool(BaseTool):
         self.agent_state = agent_state
         self.filesystem = filesystem
         downloads_directory = downloads_directory if downloads_directory else os.getcwd()
-        self.reader = ArchiverUtility(
+        self.archiver = ArchiverUtility(
             filesystem=self.filesystem,
             downloads_directory=downloads_directory,
         )
