@@ -41,15 +41,15 @@ class TesterUtility():
             self.program_memory.playground.query(program)
         except Exception as err:
             raise RuntimeError(
-                f"Error while loading '{program_name}': {err}. "+\
-                "Please change your program")
+                f"Error occured: {err}. "+\
+                "Invalid Cypher query, please correct it")
         self.program_name = program_name
 
     def check_protected_program(self, program_name: str):
         """Check if the system try to modify a protected program"""
         if self.program_memory.is_protected(program_name):
             raise RuntimeError(
-                f"Error while loading '{program_name}': "+\
+                "Error occured: "+\
                 "Trying to modify a protected program. "+\
                 "Change the name of the program")
 
@@ -59,12 +59,12 @@ class TesterUtility():
             'MATCH (n:Control {name:"Start"}) RETURN n')
         if len(result.result_set) == 0:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "No starting node detected, please "+\
                 "make sure to start your program correctly")
         if len(result.result_set) > 1:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "Starting node is connected to more than one node "+\
                 "make sure to start your program correctly")
 
@@ -74,12 +74,12 @@ class TesterUtility():
             'MATCH (n:Control {name:"End"}) RETURN n')
         if len(result.result_set) == 0:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "No ending node detected, please "+\
                 "make sure to end your program correctly")
         if len(result.result_set) > 1:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "Multiple ending point detected, "+
                 "please correct your programs.")
 
@@ -89,12 +89,12 @@ class TesterUtility():
             'MATCH (n:Control {name:"Start"})-[r]->(m) RETURN r')
         if len(result.result_set) == 0:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "Starting node is not connected (meaning it doesn't have outgoing edge) "+\
                 "make sure to start your program correctly")
         if len(result.result_set) > 1:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "Starting node is connected to more than one node "+\
                 "make sure to start your program correctly")
 
@@ -104,7 +104,7 @@ class TesterUtility():
             'MATCH (m)-[r]->(n:Control {name:"Start"}) RETURN r')
         if len(result.result_set) > 0:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "Starting node cannot have incoming edges "+\
                 "make sure to start your program correctly")
 
@@ -114,7 +114,7 @@ class TesterUtility():
             'MATCH (m)-[r]->(n:Control {name:"End"}) RETURN r')
         if len(result.result_set) == 0:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "Ending node should at least have one incoming edge"+\
                 "make sure to end your program correctly")
 
@@ -124,22 +124,22 @@ class TesterUtility():
             'MATCH (n:Control {name:"End"})-[r]->(m) RETURN r')
         if len(result.result_set) > 0:
             raise RuntimeError(
-                f"Error while loading '{self.program_name}': "+\
+                "Error occured: "+\
                 "Ending node cannot have outgoing edges"+\
                 "make sure to end your program correctly")
 
     def check_program_dependencies(self):
         result = self.program_memory.playground.query(
             'MATCH (p:Program) RETURN p.program AS program')
-        for record in result:
+        for record in result.result_set:
             subprogram = record[0]
-            if self.is_protected(subprogram):
+            if self.program_memory.is_protected(subprogram):
                 raise RuntimeError(
                     f"Error while loading '{self.program_name}'. "+\
                     f"Trying to call a protected program '{subprogram}'. Try to remove it")
             if not self.program_memory.exists(subprogram):
                 raise RuntimeError(
-                    f"Error while loading '{self.program_name}': "+\
+                    "Error occured: "+\
                     f"The sub-program '{subprogram}' does not exist. "+\
                     "Please correct your program")
                 
@@ -155,7 +155,8 @@ class TesterUtility():
 
             self.load_program_into_playground(
                 program_name,
-                program)
+                program,
+            )
             
             self.check_starting_node_count()
             self.check_starting_node_input()

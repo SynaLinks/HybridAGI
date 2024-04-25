@@ -13,6 +13,7 @@ from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 from ..types.state import AgentState
 from ..parsers.decision import DecisionOutputParser
+from ..parsers.prediction import PredictionOutputParser
 
 random.seed(123)
 
@@ -23,19 +24,24 @@ FINISH_COLOR = f"{Fore.YELLOW}"
 CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
-    """Select the right label to the assessed question based on the given context"""
+    """You will be given an objective, purpose and context
+    
+    Using the question and options, you will infer the correct label to select
+    If you don't know choose the most probable based on the question and context"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The context (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
     question = dspy.InputField(desc = "The question to assess")
     options = dspy.InputField(desc = "The possible labels to the assessed question")
-    selected_label = dspy.OutputField(desc = "One word between the possible labels")
+    selected_label = dspy.OutputField(desc = "ONE word ONLY between the one of the possible labels")
 
 class FinishSignature(dspy.Signature):
-    """Generate a short and concise final answer if the objective is a question or a summary of the previous actions otherwise"""
+    """You will be given an objective, and trace
+    
+    Using the trace, you will infer the correct answer to the objective's question"""
     trace = dspy.InputField(desc="The previous actions (what you have done)")
     objective = dspy.InputField(desc="Long-term objective (what you tried to accomplish or answer)")
-    answer = dspy.OutputField(desc="Final answer if the objective is a question or a summary of the previous actions otherwise")
+    answer = dspy.OutputField(desc="The answer to the objective's question")
 
 class GraphProgramInterpreter(dspy.Module):
     """The graph program interpreter (aka the reasoning module of HybridAGI)"""
@@ -54,9 +60,9 @@ class GraphProgramInterpreter(dspy.Module):
             return_final_answer: bool = True,
             return_program_trace: bool = True,
             return_chat_history: bool = True,
-            summarize_context: bool = False,
             verbose: bool = True,
         ):
+        super().__init__()
         self.program_memory = program_memory
         self.trace_memory = trace_memory
         self.agent_state = agent_state if agent_state is not None else AgentState()
@@ -66,16 +72,21 @@ class GraphProgramInterpreter(dspy.Module):
         self.commit_decision = commit_decision
         self.commit_program_flow = commit_program_flow
         self.decision_parser = DecisionOutputParser()
+        self.prediction_parser = PredictionOutputParser()
         self.return_final_answer = return_final_answer
         self.return_program_trace = return_program_trace
         self.return_chat_history = return_chat_history
-        self.summarize_context = summarize_context
         self.verbose = verbose
         # DSPy reasoners
+        # The interpreter model used to navigate, only contains decision signatures
+        # With that, DSPy should better optimize the graph navigation task
+        self.interpreter = [
+            dspy.ChainOfThought(DecisionSignature) for i in range(0, self.max_iters)
+        ]
+        # Agent tools optimized by DSPy
         self.tools = {tool.name: tool for tool in tools}
-        self.decision = dspy.ChainOfThought(DecisionSignature)
+        # Finish signature optimized by DSPy
         self.finish = dspy.Predict(FinishSignature)
-        super().__init__()
 
     def run_step(self) -> Union[AgentAction, AgentDecision, ProgramCall, ProgramEnd]:
         """Method to run a step of the program"""
@@ -208,16 +219,18 @@ class GraphProgramInterpreter(dspy.Module):
             trace = "\n".join(self.agent_state.program_trace[-self.num_history:])
         else:
             trace = "Nothing done yet"
-        possible_answers = " or ".join(["<"+opt+">" for opt in options])
-        prediction = self.decision(
+        possible_answers = " or ".join(options)
+        prediction = self.interpreter[self.agent_state.decision_hop](
             objective = self.agent_state.objective,
             context = trace,
             purpose = purpose,
             question = question,
             options = possible_answers,
         )
+        self.agent_state.decision_hop += 1
         rationale = prediction.rationale
-        answer = self.decision_parser.parse(prediction.selected_label, options=options)
+        answer = self.prediction_parser.parse(prediction.selected_label, prefix = "Answer:", stop=["\n"])
+        answer = self.decision_parser.parse(answer, options=options)
         dspy.Suggest(
             answer in options,
             f"Got {answer}.\n\nSelected Label should be only ONE of the following label: {possible_answers}"
@@ -253,7 +266,7 @@ class GraphProgramInterpreter(dspy.Module):
                 trace = "\n".join(self.agent_state.program_trace),
                 objective = self.agent_state.objective,
             )
-            final_answer = prediction.answer
+            final_answer = self.prediction_parser.parse(prediction.answer, prefix="Answer:", stop=["---"])
             self.agent_state.chat_history.append(
                 {"role": "AI", "message": final_answer}
             )
@@ -347,7 +360,8 @@ class GraphProgramInterpreter(dspy.Module):
             return_final_answer = self.return_final_answer,
             return_program_trace = self.return_program_trace,
         )
+        cpy.agent_state.init()
         cpy.tools = copy.deepcopy(self.tools)
-        cpy.decision = copy.deepcopy(self.decision)
+        cpy.interpreter = copy.deepcopy(self.interpreter)
         cpy.finish = copy.deepcopy(self.finish)
         return cpy

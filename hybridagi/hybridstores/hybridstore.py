@@ -52,6 +52,10 @@ class HybridStore():
         ) -> List[str]:
         """Method to add texts"""
         indexes = []
+        if ids:
+            assert(len(texts) == len(ids))
+        if metadatas:
+            assert(len(texts) == len(metadatas))
         for idx, text in enumerate(texts):
             content_index = str(uuid.uuid4().hex) if not ids else ids[idx]
             description = text if not descriptions else descriptions[idx]

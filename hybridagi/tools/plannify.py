@@ -9,17 +9,17 @@ from ..types.state import AgentState
 from ..parsers.program_name import ProgramNameOutputParser
 from ..parsers.prediction import PredictionOutputParser
 
-class CallProgramSignature(dspy.Signature):
+class PlannifySignature(dspy.Signature):
     """You will be given an objective, purpose and context
     
-    Using the prompt to help you, you will infer the correct routine to select"""
+    Using the prompt to help you, you will infer the correct plan"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    selected_routine = dspy.OutputField(desc = "The selected routine")
+    plan = dspy.OutputField(desc = "The plan to execute")
 
-class CallProgramTool(BaseTool):
+class PlannifyProgramTool(BaseTool):
 
     def __init__(
             self,

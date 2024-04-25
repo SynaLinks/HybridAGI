@@ -5,16 +5,19 @@ import dspy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..parsers.path import PathOutputParser
+from ..parsers.prediction import PredictionOutputParser
 from ..types.state import AgentState
 
 class WriteFileSignature(dspy.Signature):
-    """Infer the filename and content to write into a file"""
+    """You will be given an objective, purpose and context
+    
+    Using the prompt to help you, you will infer the correct filename and content"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file (short and concise) to write into without additional details")
-    content = dspy.OutputField(desc = "The content to write into the file")
+    filename = dspy.OutputField(desc = "The name of the file (short and concise)")
+    content = dspy.OutputField(desc = "The content to write")
 
 class WriteFileTool(BaseTool):
 
@@ -28,12 +31,19 @@ class WriteFileTool(BaseTool):
         self.agent_state = agent_state
         self.filesystem = filesystem
         self.path_parser = PathOutputParser()
+        self.prediction_parser = PredictionOutputParser()
 
     def write_file(self, filename: str, content: str) -> str:
         try:
-            filename = self.path_parser.parse(filename)
-            filename = self.agent_state.context.eval_path(filename)
-            self.filesystem.add_texts(texts = [content], ids = [filename])
+            if self.filesystem.is_folder(filename):
+                return "Error: Cannot override a directory"
+            metadata = {}
+            metadata["filename"] = filename
+            self.filesystem.add_texts(
+                texts = [content],
+                ids = [filename],
+                metadatas = [metadata],
+            )
             return "Successfully created"
         except Exception as err:
             return str(err)
@@ -54,21 +64,26 @@ class WriteFileTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            filename = prediction.filename.replace("\\_", "_")
-            filename = filename.replace("\"", "")
-            filename = filename.replace(":", "")
+            filename = self.prediction_parser.parse(prediction.filename, prefix="Prediction:", stop=["\n"])
+            filename = self.path_parser.parse(filename)
+            filename = self.agent_state.context.eval_path(filename)
+            content = self.prediction_parser.parse(prediction.content, prefix="Content:")
+            dspy.Suggest(
+                len(content) != 0,
+                "Content must not be empty"
+            )
             dspy.Suggest(
                 len(filename) != 0,
-                "The filename should not be empty"
+                "Filename must not be empty"
             )
             dspy.Suggest(
-                len(filename) < 100,
-                "The filename should be short and consice"
+                len(filename) < 250,
+                "Filename must be short and consice"
             )
-            observation = self.write_file(filename, prediction.content)
+            observation = self.write_file(filename, content)
             return dspy.Prediction(
                 filename = filename,
-                content = prediction.content,
+                content = content,
                 observation = observation,
             )
         else:

@@ -7,14 +7,18 @@ from typing import Optional
 from ..embeddings.base import BaseEmbeddings
 from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..retrievers.action import ActionRetriever
+from ..parsers.list_query import ListQueryOutputParser
+from ..parsers.prediction import PredictionOutputParser
 
 class ActionSearchSignature(dspy.Signature):
-    """Infer one short and concise query to retrieve past actions"""
+    """You will be given an objective, purpose and context
+    
+    Using the prompt to help you, you will infer the correct similarity search query"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    search_query = dspy.OutputField(desc = "The search query")
+    query = dspy.OutputField(desc = "The similarity search query")
 
 class PastActionSearchTool(BaseTool):
 
@@ -37,6 +41,8 @@ class PastActionSearchTool(BaseTool):
             distance_threshold = self.distance_threshold,
             k = self.k,
         )
+        self.query_parser = ListQueryOutputParser()
+        self.prediction_parser = PredictionOutputParser()
     
     def forward(
             self,
@@ -55,7 +61,8 @@ class PastActionSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = prediction.search_query.replace("\"", "")
+            query = self.prediction_parser.parse(prediction.query, prefix="Query:", stop=["\n"])
+            query = self.query_parser.parse(query)
             result = self.retriever(query)
             return dspy.Prediction(
                 query = query,

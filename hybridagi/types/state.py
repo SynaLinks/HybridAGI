@@ -40,6 +40,7 @@ class AgentState():
     def init(self):
         self.objective = "N/A"
         self.current_hop = 0
+        self.decision_hop = 0
         self.program_trace = []
         self.program_stack = deque()
         self.context = FileSystemContext()

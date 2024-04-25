@@ -102,6 +102,8 @@ class FileSystem(HybridStore):
         """Method to add texts"""
         indexes = []
         assert(len(texts) == len(ids))
+        if metadatas:
+            assert(len(texts) == len(metadatas))
         for idx, text in enumerate(texts):
             path = ids[idx]
             metadata = metadatas[idx] if metadatas else {}
@@ -114,7 +116,7 @@ class FileSystem(HybridStore):
             )
             subdocs_texts = text_splitter.split_text(text)
             if metadata:
-                subdocs_metadatas = [metadata for _ in range(subdocs_texts)]
+                subdocs_metadatas = [metadata for _ in range(len(subdocs_texts))]
             else:
                 subdocs_metadatas = []
             indexes = super().add_texts(

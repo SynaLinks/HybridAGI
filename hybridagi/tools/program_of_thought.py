@@ -1,10 +1,10 @@
-"""The predict tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+"""The program of thought tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import dspy
 from .base import BaseTool
 from ..parsers.prediction import PredictionOutputParser
 
-class PredictSignature(dspy.Signature):
+class ProgramOfThoughtSignature(dspy.Signature):
     """You will be given an objective, purpose and context
     
     Using the prompt to help you, you will infer the correct answer"""
@@ -12,13 +12,13 @@ class PredictSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    answer = dspy.OutputField(desc = "The right answer with the right format")
+    answer = dspy.OutputField(desc = "The answer")
 
-class PredictTool(BaseTool):
+class ProgramOfThoughtTool(BaseTool):
 
     def __init__(self):
-        super().__init__(name = "Predict")
-        self.predict = dspy.Predict(PredictSignature)
+        super().__init__(name = "ProgramOfThought")
+        self.program_of_thought = dspy.ProgramOfThought(ProgramOfThoughtSignature)
         self.prediction_parser = PredictionOutputParser()
     
     def forward(
@@ -31,7 +31,7 @@ class PredictTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            prediction = self.program_of_thought(
                 objective = objective,
                 context = context,
                 purpose = purpose,

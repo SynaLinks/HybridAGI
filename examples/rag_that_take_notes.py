@@ -182,11 +182,9 @@ evaluate = dspy.evaluate.Evaluate(
     display_table = 0,
 )
 
-filesystem.clear()
 print("Evaluate baseline model")
 baseline_score = evaluate(interpreter)
 
-filesystem.clear()
 print("Evaluate optimized model")
 eval_score = evaluate(compiled_interpreter)
 

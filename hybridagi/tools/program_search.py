@@ -9,12 +9,14 @@ from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..retrievers.program import ProgramRetriever
 
 class ProgramSearchSignature(dspy.Signature):
-    """Infer one short and concise query to retrieve routine programs"""
+    """You will be given an objective, purpose and context
+    
+    Using the prompt to help you, you will infer the correct similarity search query"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    search_query = dspy.OutputField(desc = "The search query (only few words)")
+    search_query = dspy.OutputField(desc = "The similarity search query (only few words)")
 
 class ProgramSearchTool(BaseTool):
 

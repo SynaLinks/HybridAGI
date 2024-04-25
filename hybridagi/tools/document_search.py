@@ -7,14 +7,18 @@ from typing import Optional
 from ..embeddings.base import BaseEmbeddings
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..retrievers.document import DocumentRetriever
+from ..parsers.list_query import ListQueryOutputParser
+from ..parsers.prediction import PredictionOutputParser
 
 class DocumentSearchSignature(dspy.Signature):
-    """Infer one short and concise search queries to retrieve documents passages"""
+    """You will be given an objective, purpose and context
+    
+    Using the prompt to help you, you will infer the correct similarity search query"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    search_query = dspy.OutputField(desc = "The search query (only few words)")
+    query = dspy.OutputField(desc = "The search query (only few words)")
 
 class DocumentSearchTool(BaseTool):
 
@@ -37,6 +41,8 @@ class DocumentSearchTool(BaseTool):
             distance_threshold = self.distance_threshold,
             k = self.k,
         )
+        self.query_parser = ListQueryOutputParser()
+        self.prediction_parser = PredictionOutputParser()
     
     def forward(
             self,
@@ -55,7 +61,8 @@ class DocumentSearchTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = prediction.search_query.replace("\"", "")
+            query = self.prediction_parser.parse(prediction.query, prefix="Query:", stop=["\n"])
+            query = self.query_parser.parse(query)
             result = self.retriever(query)
             return dspy.Prediction(
                 search_query = query,

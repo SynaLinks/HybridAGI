@@ -14,7 +14,7 @@ embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence
 
 dspy.settings.configure(lm=student_llm)
 
-model_path = "rag_with_optional_websearch.json"
+model_path = "rag_with_optional_search.json"
 
 class AssessAnswer(dspy.Signature):
     """Assess the success of the trace according to the objective"""

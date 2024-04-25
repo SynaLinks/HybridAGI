@@ -51,6 +51,37 @@ Aliquam in eros eu arcu fermentum dignissim nec vehicula diam."""
     assert memory.is_file(filename)
     assert memory.get_document(filename) == text
 
+def test_add_one_text_with_metadata():
+    emb = FakeEmbeddings(dim=250)
+    memory = FileSystem(
+        index_name = "test",
+        embeddings = emb,
+        wipe_on_start = True,
+    )
+
+    text = \
+"""Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Integer molestie pellentesque velit, nec lobortis elit. 
+Curabitur rhoncus vehicula euismod. Donec suscipit justo 
+quis ante congue, sed dictum lorem hendrerit. Curabitur 
+ultricies erat felis, vitae rutrum arcu placerat vel.
+Nulla dapibus dictum arcu, nec varius lacus tempor non.
+Maecenas aliquet porta dui quis aliquam. Proin dictum orci
+auctor orci vulputate, commodo tristique neque posuere.
+Aliquam in eros eu arcu fermentum dignissim nec vehicula diam."""
+
+    filename = "/lorem_ipsum.txt"
+
+    metadata = {"filename": filename}
+
+    memory.add_texts(
+        texts = [text],
+        ids = [filename],
+        metadatas = [metadata],
+    )
+    assert memory.is_file(filename)
+    assert memory.get_document(filename) == text
+
 def test_add_two_texts():
     emb = FakeEmbeddings(dim=250)
     memory = FileSystem(

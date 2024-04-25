@@ -6,16 +6,19 @@ from .base import BaseTool
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..parsers.program_name import ProgramNameOutputParser
 from ..parsers.cypher import CypherOutputParser
+from ..parsers.prediction import PredictionOutputParser
 from ..utility.tester import TesterUtility
 
 class WriteProgramSignature(dspy.Signature):
-    """Infer the filename and content to write a cypher query into a file"""
+    """You will be given an objective, purpose and context
+    
+    Using the prompt to help you, you will infer the correct filename and cypher query"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the cypher file (short and concise) to write without additional details")
-    cypher_create_query = dspy.OutputField(desc = "The cypher query to write into the file")
+    filename = dspy.OutputField(desc="The name of the .cypher file (short and concise)")
+    cypher_query = dspy.OutputField(desc = "The Cypher query to write into memory (make sure to comment non-Cypher lines)")
 
 class WriteProgramTool(BaseTool):
 
@@ -28,17 +31,16 @@ class WriteProgramTool(BaseTool):
         self.program_memory = program_memory
         self.program_name_parser = ProgramNameOutputParser()
         self.cypher_parser = CypherOutputParser()
-        self.program_tester = TesterUtility()
+        self.prediction_parser = PredictionOutputParser()
+        self.program_tester = TesterUtility(program_memory=program_memory)
 
     def write_program(self, filename: str, content: str) -> str:
         try:
-            program_name = self.program_name_parser.parse(filename)
-            content = self.cypher_parser.parse(content)
             self.program_tester.verify_programs(
-                [program_name],
+                [filename],
                 [content],
             )
-            self.program_memory.add_texts(texts = [content], ids = [program_name])
+            self.program_memory.add_texts(texts = [content], ids = [filename])
             return "Successfully created"
         except Exception as err:
             return str(err)
@@ -59,18 +61,21 @@ class WriteProgramTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
+            filename = self.program_name_parser.parse(prediction.filename)
+            content = self.prediction_parser.parse(prediction.cypher_query, prefix="\n```cypher", stop=["\n```\n\n"])
+            content = self.cypher_parser.parse(content)
             dspy.Suggest(
                 len(filename) != 0,
-                "The filename should not be empty"
+                "Filename should not be empty"
             )
             dspy.Suggest(
-                len(filename) < 100,
-                "The filename should be short and consice"
+                len(filename) < 250,
+                "Filename should be short and consice"
             )
-            observation = self.write_file(filename, prediction.cypher_create_query)
+            observation = self.write_program(filename, content)
             return dspy.Prediction(
                 filename = filename,
-                content = prediction.content,
+                content = content,
                 observation = observation,
             )
         else:

@@ -8,13 +8,15 @@ from ..parsers.path import PathOutputParser
 from ..types.state import AgentState
 
 class AppendFileSignature(dspy.Signature):
-    """Infer the filename and content to append into a file"""
+    """You will be given an objective, purpose and context
+    
+    Using the prompt to help you, you will infer the filename and content"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file (short and concise) to append into without additional details")
-    content = dspy.OutputField(desc = "The content to append to the file")
+    filename = dspy.OutputField(desc = "The name of the file (short and concise)")
+    content = dspy.OutputField(desc = "The content to append")
 
 class AppendFileTool(BaseTool):
 

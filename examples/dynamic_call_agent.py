@@ -77,6 +77,9 @@ filesystem = FileSystem(
 )
 
 print("Adding programs into memory...")
+
+program_memory.add_folders(["examples/primitives"])
+
 program_memory.add_texts(
     texts = [
 """
@@ -111,7 +114,7 @@ CREATE
 (end:Control {name:"End"}),
 (is_objective_question:Decision {
     name: "Check if the objective is a question or an instruction",
-    question: "Is the objective a question or an instruction?"
+    question: "Choose between INSTRUCTION or QUESTION using the objective"
 }),
 (answer:Action {
     name: "Answer the objective's question",
@@ -135,8 +138,6 @@ CREATE
     ]
 )
 
-program_memory.add_folders(["examples/primitives"])
-
 dataset = [
     dspy.Example(objective="Create a folder called Test").with_inputs("objective"),
     dspy.Example(objective="Write a poem about AI and nature into a file called poem.txt").with_inputs("objective"),
@@ -147,7 +148,7 @@ dataset = [
     dspy.Example(objective="Read the file called poem.txt").with_inputs("objective"),
     dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
     dspy.Example(objective="List your home directory").with_inputs("objective"),
-    dspy.Example(objective="List your home directory").with_inputs("objective"),
+    dspy.Example(objective="List the Test directory").with_inputs("objective"),
 ]
 
 testset = [

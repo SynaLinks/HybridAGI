@@ -46,9 +46,10 @@ class DocumentRetriever(dspy.Retrieve):
             if len(result.result_set) > 0:
                 for record in result.result_set:
                     content = self.filesystem.get_content(record[0])
+                    metadata = self.filesystem.get_content_metadata(record[0])
                     distance = float(record[1])
                     if distance < self.distance_threshold:
-                        contents.extend([{"passage": dotdict({"long_text": content}), "distance": distance}])
+                        contents.extend([{"passage": dotdict({"long_text": content, "metadata": metadata}), "distance": distance}])
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],
