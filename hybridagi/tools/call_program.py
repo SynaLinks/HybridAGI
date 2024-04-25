@@ -16,7 +16,7 @@ class CallProgramSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    selected_routine = dspy.OutputField(desc = "The selected routine")
+    selected_routine = dspy.OutputField(desc = "The name of the selected routine")
 
 class CallProgramTool(BaseTool):
 

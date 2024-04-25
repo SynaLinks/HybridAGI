@@ -30,10 +30,10 @@ class UploadTool(BaseTool):
         self.predict = dspy.Predict(UploadSignature)
         self.agent_state = agent_state
         self.filesystem = filesystem
-        downloads_directory = downloads_directory if downloads_directory else os.getcwd()
+        self.downloads_directory = downloads_directory if downloads_directory else os.getcwd()
         self.archiver = ArchiverUtility(
             filesystem=self.filesystem,
-            downloads_directory=downloads_directory,
+            downloads_directory=self.downloads_directory,
         )
         self.path_parser = PathOutputParser()
 

@@ -15,7 +15,7 @@ class WriteFileSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file (short and concise)")
+    file_name = dspy.OutputField(desc = "The name of the file (short and concise)")
     content = dspy.OutputField(desc = "The content to write")
 
 class WriteFileTool(BaseTool):
@@ -63,10 +63,11 @@ class WriteFileTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            filename = self.prediction_parser.parse(prediction.filename, prefix="Prediction:", stop=["\n"])
+            filename = self.prediction_parser.parse(prediction.file_name, prefix="File Name:", stop=["\n"])
             filename = self.path_parser.parse(filename)
             filename = self.agent_state.context.eval_path(filename)
             content = self.prediction_parser.parse(prediction.content, prefix="Content:")
+            content = self.prediction_parser.parse(content, prefix="\n\n```", stop=["\n```\n\n"])
             dspy.Suggest(
                 len(content) != 0,
                 "Content must not be empty"

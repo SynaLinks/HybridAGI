@@ -16,6 +16,7 @@ from hybridagi.tools import (
     SpeakTool,
     AskUserTool,
     UpdateObjectiveTool,
+    UploadTool,
 )
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShotWithRandomSearch
@@ -191,6 +192,10 @@ tools = [
         agent_state = agent_state,
     ),
     ReadFileTool(
+        filesystem = filesystem,
+        agent_state = agent_state,
+    ),
+    UploadTool(
         filesystem = filesystem,
         agent_state = agent_state,
     ),

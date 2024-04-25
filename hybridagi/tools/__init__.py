@@ -24,6 +24,8 @@ from .revert_trace import RevertTraceTool
 
 from .internal_shell import InternalShellTool
 
+from .upload import UploadTool
+
 __all__ = [
     PredictTool,
 
@@ -50,4 +52,6 @@ __all__ = [
     RevertTraceTool,
 
     InternalShellTool,
+
+    UploadTool,
 ]

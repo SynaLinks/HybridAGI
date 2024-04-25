@@ -16,7 +16,7 @@ class WriteProgramSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc="The name of the .cypher file (short and concise)")
+    file_name = dspy.OutputField(desc="The name of the .cypher file (short and concise)")
     cypher_query = dspy.OutputField(desc = "The Cypher query to write into memory (make sure to comment non-Cypher lines)")
 
 class WriteProgramTool(BaseTool):
@@ -60,7 +60,8 @@ class WriteProgramTool(BaseTool):
                 purpose = purpose,
                 prompt = prompt,
             )
-            filename = self.program_name_parser.parse(prediction.filename)
+            filename = self.prediction_parser.parse(prediction.file_name, prefix="File Name:", stop=["\n"])
+            filename = self.program_name_parser.parse(filename)
             content = self.prediction_parser.parse(prediction.cypher_query, prefix="\n```cypher", stop=["\n```\n\n"])
             content = self.cypher_parser.parse(content)
             dspy.Suggest(
