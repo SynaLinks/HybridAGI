@@ -41,9 +41,10 @@ class ArchiverUtility():
             zip_file:zipfile.ZipFile
         ):
         """Method to recursively add folder and files"""
+        params = {"folder_path": current_folder_path}
         result_query = self.filesystem.hybridstore.query(
-            'MATCH (f:Folder {name:"'+current_folder_path+'"})-[:CONTAINS]->(n:Folder)'+
-            ' RETURN n'
+            "MATCH (f:Folder {name:$folder_path})-[:CONTAINS]->(n:Folder) RETURN n",
+            params = params,
         )
         for record in result_query.result_set:
             subfolder_path = record[0].properties["name"]
@@ -52,10 +53,10 @@ class ArchiverUtility():
                 subfolder_path,
                 zip_file
             )
+        params = {"folder_path": current_folder_path}
         result_query = self.filesystem.hybridstore.query(
-            'MATCH (f:Folder {name:"'+current_folder_path+
-            '"})-[:CONTAINS]->(n:Document)'+
-            ' RETURN n'
+            "MATCH (f:Folder {name:$folder_path})-[:CONTAINS]->(n:Document) RETURN n",
+            params = params,
         )
         for record in result_query.result_set:
             document_path = record[0].properties["name"]

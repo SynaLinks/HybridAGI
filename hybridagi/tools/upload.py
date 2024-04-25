@@ -18,7 +18,7 @@ class UploadSignature(dspy.Signature):
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     filename = dspy.OutputField(desc = "The name of the file or folder to upload to the user")
 
-class ReadFileTool(BaseTool):
+class UploadTool(BaseTool):
 
     def __init__(
             self,
@@ -81,6 +81,7 @@ class ReadFileTool(BaseTool):
         cpy = (type)(self)(
             filesystem = self.filesystem,
             agent_state = self.agent_state,
+            downloads_directory = self.downloads_directory,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy
