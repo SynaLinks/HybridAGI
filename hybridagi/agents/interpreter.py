@@ -25,9 +25,8 @@ CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    
     Using the question and options, you will infer the correct label to select
-    If you don't know choose the most probable based on the question and context"""
+    If you don't know choose the most probable based on the question, context and options"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The context (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
@@ -37,7 +36,6 @@ class DecisionSignature(dspy.Signature):
 
 class FinishSignature(dspy.Signature):
     """You will be given an objective, and trace
-    
     Using the trace, you will infer the correct answer to the objective's question"""
     trace = dspy.InputField(desc="The previous actions (what you have done)")
     objective = dspy.InputField(desc="Long-term objective (what you tried to accomplish or answer)")
