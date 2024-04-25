@@ -33,6 +33,7 @@ class ActionRetriever(dspy.Retrieve):
             query_or_queries = [query_or_queries]
         query_vectors = self.embeddings.embed_text(query_or_queries)
         contents = []
+        indexes = {}
         for vector in query_vectors:
             # For an obscure reason falkordb needs a bigger k to find more indexed items
             params = {"indexed_label": self.trace_memory.indexed_label, "vector": list(vector), "k": 2*int(k or self.k)}
@@ -45,6 +46,10 @@ class ActionRetriever(dspy.Retrieve):
             )
             if len(result.result_set) > 0:
                 for record in result.result_set:
+                    if record[0] not in indexes:
+                        indexes[record[0]] = True
+                    else:
+                        continue
                     content = self.trace_memory.get_content(record[0])
                     distance = float(record[1])
                     if distance < self.distance_threshold:

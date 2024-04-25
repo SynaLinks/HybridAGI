@@ -33,6 +33,7 @@ class ProgramRetriever(dspy.Retrieve):
             query_or_queries = [query_or_queries]
         query_vectors = self.embeddings.embed_text(query_or_queries)
         contents = []
+        indexes = {}
         for vector in query_vectors:
             # For an obscure reason falkordb needs a bigger k to find more indexed items
             params = {"indexed_label": self.program_memory.indexed_label, "vector": list(vector), "k": 2*int(k or self.k)}
@@ -46,6 +47,10 @@ class ProgramRetriever(dspy.Retrieve):
             )
             if len(result.result_set) > 0:
                 for record in result.result_set:
+                    if record[0] not in indexes:
+                        indexes[record[0]] = True
+                    else:
+                        continue
                     content = f"{record[0]}: {record[1]}"
                     distance = float(record[2])
                     if distance < self.distance_threshold:
