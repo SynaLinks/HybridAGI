@@ -32,7 +32,6 @@ class AppendFileTool(BaseTool):
 
     def append_file(self, filename: str, content: str) -> str:
         try:
-            filename = self.path_parser.parse(filename)
             filename = self.agent_state.context.eval_path(filename)
             self.filesystem.append_texts(texts = [content], ids = [filename])
             return "Successfully append"
@@ -49,24 +48,28 @@ class AppendFileTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
+            pred.filename = self.prediction_parser.parse(pred.filename, prefix="Filename:", stop=["\n"])
+            pred.filename = self.path_parser.parse(pred.filename)
+            pred.content = self.prediction_parser.parse(pred.content, prefix="Content:")
+            pred.content = self.prediction_parser.parse(pred.content, prefix="\n\n```\n", stop=["\n```\n\n"])
             dspy.Suggest(
-                len(prediction.filename) != 0,
+                len(pred.filename) != 0,
                 "The filename should not be empty"
             )
             dspy.Suggest(
-                len(prediction.filename) < 100,
+                len(pred.filename) < 100,
                 "The filename should be short and consice"
             )
-            observation = self.append_file(prediction.filename, prediction.content)
+            observation = self.append_file(pred.filename, pred.content)
             return dspy.Prediction(
-                filename = filename,
-                content = prediction.content,
+                filename = pred.filename,
+                content = pred.content,
                 observation = observation,
             )
         else:

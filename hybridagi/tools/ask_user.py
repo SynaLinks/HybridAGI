@@ -6,6 +6,7 @@ import json
 import dspy
 from .base import BaseTool
 from ..types.state import AgentState
+from ..parsers.prediction import PredictionOutputParser
 
 class AskUserSignature(dspy.Signature):
     """You will be given an objective, purpose and context
@@ -39,6 +40,7 @@ class AskUserTool(BaseTool):
         self.agent_state = agent_state
         self.num_history = num_history
         self.ask_user_func = ask_user_func
+        self.prediction_parser = PredictionOutputParser()
 
     def ask_user(self, question : str) -> str:
         if self.ask_user_func:
@@ -49,13 +51,16 @@ class AskUserTool(BaseTool):
 
     def simulate_ask_user(self, question: str):
         chat_history = json.dumps(self.agent_state.chat_history[:-self.num_history], indent=2)
-        simulation = self.simulate(
+        pred = self.simulate(
             objective = self.agent_state.objective,
             chat_history = chat_history,
             question = question,
         )
-        answer = simulation.user_answer
-        return answer
+        pred.answer = self.prediction_parser.parse(
+            pred.user_answer,
+            prefix = "User Answer:",
+        )
+        return pred.answer
 
     def forward(
             self,
@@ -67,25 +72,28 @@ class AskUserTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            question = prediction.question
+            pred.question = self.prediction_parser.parse(
+                pred.question,
+                prefix = "Question:",
+            )
             self.agent_state.chat_history.append(
-                {"role": "AI", "message": question}
+                {"role": "AI", "message": pred.question}
             )
             if self.simulated:
-                answer = self.simulate_ask_user(question)
+                answer = self.simulate_ask_user(pred.question)
             else:
-                answer = self.ask_user(question)
+                answer = self.ask_user(pred.question)
             self.agent_state.chat_history.append(
                 {"role": "User", "message": answer}
             )
             return dspy.Prediction(
-                question = question,
+                question = pred.question,
                 answer = answer,
             )
         else:
@@ -93,7 +101,7 @@ class AskUserTool(BaseTool):
                 {"role": "AI", "message": prompt}
             )
             if self.simulated:
-                answer = self.simulate_ask_user(question)
+                answer = self.simulate_ask_user(prompt)
             else:
                 answer = self.ask_user(message)
             self.agent_state.chat_history.append(

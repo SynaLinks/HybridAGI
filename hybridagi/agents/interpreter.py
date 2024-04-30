@@ -36,7 +36,7 @@ class DecisionSignature(dspy.Signature):
 
 class FinishSignature(dspy.Signature):
     """You will be given an objective, and trace
-    Using the trace, you will infer the correct answer to the objective's question"""
+    Using the trace, you will infer the correct answer to the objective's question or a summary of what have been done"""
     trace = dspy.InputField(desc="The previous actions (what you have done)")
     objective = dspy.InputField(desc="Long-term objective (what you tried to accomplish or answer)")
     answer = dspy.OutputField(desc="The answer to the objective's question")
@@ -218,7 +218,7 @@ class GraphProgramInterpreter(dspy.Module):
         else:
             trace = "Nothing done yet"
         possible_answers = " or ".join(options)
-        prediction = self.interpreter[self.agent_state.decision_hop](
+        pred = self.interpreter[self.agent_state.decision_hop](
             objective = self.agent_state.objective,
             context = trace,
             purpose = purpose,
@@ -226,16 +226,15 @@ class GraphProgramInterpreter(dspy.Module):
             options = possible_answers,
         )
         self.agent_state.decision_hop += 1
-        rationale = prediction.rationale
-        answer = self.prediction_parser.parse(prediction.selected_label, prefix = "Answer:", stop=["\n"])
-        answer = self.decision_parser.parse(answer, options=options)
-        dspy.Suggest(
-            answer in options,
-            f"Got {answer}.\n\nSelected Label should be only ONE of the following label: {possible_answers}"
+        pred.selected_label = self.prediction_parser.parse(pred.selected_label, prefix = "Answer:", stop=["\n"])
+        pred.selected_label = self.decision_parser.parse(pred.selected_label, options=options)
+        dspy.Assert(
+            pred.selected_label in options,
+            f"Got {pred.selected_label}.\n\nSelected Label should be only ONE of the following label: {possible_answers}"
         )
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(
-            'MATCH (:Decision {name:$purpose})-[:'+answer+']->(n) RETURN n',
+            'MATCH (:Decision {name:$purpose})-[:'+pred.selected_label+']->(n) RETURN n',
             params = params,
         )
         next_node = result.result_set[0][0]
@@ -245,8 +244,8 @@ class GraphProgramInterpreter(dspy.Module):
             purpose = purpose,
             question = question,
             options = options,
-            answer = answer,
-            log = rationale,
+            answer = pred.selected_label,
+            log = pred.rationale,
         )
         self.agent_state.set_current_node(next_node)
         return decision

@@ -36,17 +36,17 @@ class DuckDuckGoSearchTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = self.prediction_parser.parse(prediction.query, prefix="Query:", stop=["\n"])
-            query = self.query_parser.parse(query)
-            result = DDGS().text(query, max_results=k if k else self.k)
+            pred.query = self.prediction_parser.parse(pred.query, prefix="Query:", stop=["\n"])
+            pred.query = self.query_parser.parse(pred.query)
+            result = DDGS().text(pred.query, max_results=k if k else self.k)
             return dspy.Prediction(
-                search_query = query,
+                search_query = pred.query,
                 results = result,
             )
         else:

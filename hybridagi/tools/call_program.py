@@ -57,25 +57,25 @@ class CallProgramTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 context = context,
                 objective = objective,
                 purpose = purpose,
                 prompt = prompt,
             )
-            selected_program = self.prediction_parser.parse(
-                prediction.selected_routine, prefix="Selected Routine:", stop=["\n"]
+            pred.selected_routine = self.prediction_parser.parse(
+                pred.selected_routine, prefix="Selected Routine:", stop=["\n"]
             )
-            selected_program = self.program_name_parser.parse(selected_program)
-            observation = self.call_program(selected_program)
+            pred.selected_routine = self.program_name_parser.parse(pred.selected_routine)
+            observation = self.call_program(pred.selected_routine)
             return dspy.Prediction(
-                selected_program = selected_program,
+                selected_routine = pred.selected_routine,
                 observation = observation,
             )
         else:
             observation = self.call_program(prompt)
             return dspy.Prediction(
-                selected_program = prompt,
+                selected_routine = prompt,
                 observation = observation,
             )
 

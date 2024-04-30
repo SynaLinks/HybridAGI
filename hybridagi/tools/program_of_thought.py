@@ -30,15 +30,15 @@ class ProgramOfThoughtTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.program_of_thought(
+            pred = self.program_of_thought(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            answer = self.prediction_parser.parse(prediction.answer, prefix = "Answer:")
+            pred.answer = self.prediction_parser.parse(pred.answer, prefix = "Answer:")
             return dspy.Prediction(
-                answer = answer
+                answer = pred.answer
             )
         else:
             return dspy.Prediction(

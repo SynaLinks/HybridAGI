@@ -15,7 +15,7 @@ class WriteFileSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    file_name = dspy.OutputField(desc = "The name of the file (short and concise)")
+    filename = dspy.OutputField(desc = "The name of the file (short and concise)")
     content = dspy.OutputField(desc = "The content to write")
 
 class WriteFileTool(BaseTool):
@@ -36,6 +36,7 @@ class WriteFileTool(BaseTool):
         try:
             if self.filesystem.is_folder(filename):
                 return "Error: Cannot override a directory"
+            filename = self.agent_state.context.eval_path(filename)
             metadata = {}
             metadata["filename"] = filename
             self.filesystem.add_texts(
@@ -57,33 +58,32 @@ class WriteFileTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            filename = self.prediction_parser.parse(prediction.file_name, prefix="File Name:", stop=["\n"])
-            filename = self.path_parser.parse(filename)
-            filename = self.agent_state.context.eval_path(filename)
-            content = self.prediction_parser.parse(prediction.content, prefix="Content:")
-            content = self.prediction_parser.parse(content, prefix="\n\n```", stop=["\n```\n\n"])
+            pred.filename = self.prediction_parser.parse(pred.filename, prefix="Filename:", stop=["\n"])
+            pred.filename = self.path_parser.parse(pred.filename)
+            pred.content = self.prediction_parser.parse(pred.content, prefix="Content:")
+            pred.content = self.prediction_parser.parse(pred.content, prefix="\n\n```\n", stop=["\n```\n\n"])
             dspy.Suggest(
-                len(content) != 0,
+                len(pred.content) != 0,
                 "Content must not be empty"
             )
             dspy.Suggest(
-                len(filename) != 0,
+                len(pred.filename) != 0,
                 "Filename must not be empty"
             )
             dspy.Suggest(
-                len(filename) < 250,
+                len(pred.filename) < 250,
                 "Filename must be short and consice"
             )
-            observation = self.write_file(filename, content)
+            observation = self.write_file(pred.filename, pred.content)
             return dspy.Prediction(
-                filename = filename,
-                content = content,
+                filename = pred.filename,
+                content = pred.content,
                 observation = observation,
             )
         else:

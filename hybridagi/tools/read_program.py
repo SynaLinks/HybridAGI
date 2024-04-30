@@ -28,7 +28,6 @@ class ReadProgramTool(BaseTool):
 
     def read_program(self, name: str) -> str:
         try:
-            name = self.parser.parse(name)
             program = self.program_memory.get_content(name)
             return program
         except Exception as err:
@@ -44,15 +43,16 @@ class ReadProgramTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            observation = self.read_program(prediction.filename)
+            pred.filename = self.parser.parse(pred.filename)
+            observation = self.read_program(pred.filename)
             return dspy.Prediction(
-                filename = prediction.filename,
+                filename = pred.filename,
                 content = observation,
             )
         else:

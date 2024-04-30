@@ -39,6 +39,30 @@ Many people think prompt engineering is an already dead discipline. The truth is
 
 *✨Finding the best prompt algorithm to fit your use case and quickly create AI that **behave as expected**✨*
 
+### Native Tools
+
+| Tool         | Description                               |
+|--------------|:------------------------------------------:|
+| `WriteFile` | Write into a file, or override if existing |
+| `AppendFile`|  Append data to a file, or create one if non-existing |
+| `ReadFile` | Read data chunk by chunk (use multiple times to scroll) |
+| `InternalShell` | Replicate unix commands to navigate inside the hybrid database: [`cd`, `ls`, `mkdir`, `mv`, `pwd`, `rm`, `tree`] |
+| `RemoteShell` | Allow command execution in the sandbox container |
+| `Upload` | Archive and upload the target folder or file to the User |
+| `DocumentSearch` | Perform a similarity based search in the filesystem and fetch the passages |
+| `ReadProgram` | Read a program based on its name |
+| `ProgramSearch` | Perform a similarity based search into the program memory |
+| `PastActionSearch` | Perform a similarity based search into the trace memory |
+| `WriteProgram` | Load a program, override if existing |
+| `CallProgram` | Call a program based on its name |
+| `UpdateObjective` | Update the long-term objective |
+| `Predict` | Populate the prompt with intermediary data for reasoning |
+| `RevertTrace` | Remove from the trace the N last steps |
+| `ClearTrace` | Clear the trace from the prompt |
+| `AskUser` | Ask a question to the user |
+| `Speak` | Tell something to the User |
+| `DuckDuckGoSearch` | Perform a DuckDuckGo search |
+
 ## The Domain Specific Language (DSL) of HybridAGI
 
 Like any programming language, it starts with a main prompt program...
@@ -232,7 +256,7 @@ LangGraph, being a Python low-code framework, it is actually more complex to bui
 
 HybridAGI is specifically tailored for building interactive and reasoning agents quickly and effortlessly. The DSL allows for algorithmic flexibility while making it possible to describe every type of system without having to implement it from scratch. Plus, we focus our work on an open-source vector/graph database, allowing people and businesses to maintain control of their data.
 
-### How does HybridAGI help me regarding the EU AI Act or future regulation on your country for non-EU?
+### How does HybridAGI helps regarding the EU AI Act or future regulation in your country for non-EU?
 
 Because this system can only execute actions that are in the graph, businesses can use the graph to classify the behavior of their AI system and document it. However, this is not sufficient, and you should always conduct specific safety tests in accordance with the safety practices of your domain, in particular red-teaming of the model. We plan to release tools to help regarding these aspects.
 

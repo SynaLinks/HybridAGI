@@ -110,7 +110,7 @@ tools = [
 
 print("Optimizing underlying prompts...")
 
-config = dict(max_bootstrapped_demos=4, max_labeled_demos=4)
+config = dict(max_bootstrapped_demos=4, max_labeled_demos=0)
 
 optimizer = BootstrapFewShot(
     teacher_settings=dict({'lm': teacher_llm}),

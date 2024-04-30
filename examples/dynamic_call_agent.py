@@ -22,9 +22,8 @@ from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShotWithRandomSearch
 
 print("Loading LLM & embeddings models...")
-student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
-teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
-#teacher_llm = dspy.Mistral(model='mistral-large-latest', max_tokens=1024, api_key=os.getenv("MISTRAL_API_KEY"))
+student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n", "\n\n---\n"])
+teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n", "\n\n---\n"])
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -153,11 +152,11 @@ dataset = [
 ]
 
 testset = [
-    dspy.Example(objective="Write a poem into a file").with_inputs("objective"),
+    dspy.Example(objective="Write a poem into a .txt file").with_inputs("objective"),
     dspy.Example(objective="What is a neuro-symbolic artificial intelligence?").with_inputs("objective"),
     dspy.Example(objective="Search for HybridAGI on internet").with_inputs("objective"),
     dspy.Example(objective="Print the current working directory").with_inputs("objective"),
-    dspy.Example(objective="List the Test directory").with_inputs("objective"),
+    dspy.Example(objective="List the Test folder in you filesystem").with_inputs("objective"),
 ]
 
 print("Initializing the graph interpreter...")
@@ -209,7 +208,7 @@ tools = [
 
 print("Optimizing underlying prompts...")
 
-config = dict(max_bootstrapped_demos=4, max_labeled_demos=4)
+config = dict(max_bootstrapped_demos=4, max_labeled_demos=0)
 
 optimizer = BootstrapFewShotWithRandomSearch(
     num_threads = 1,

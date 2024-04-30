@@ -4,7 +4,7 @@ from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory
 from hybridagi.tools import PredictTool
 from pydantic import BaseModel
-from dspy.teleprompt import BootstrapFewShot
+from dspy.teleprompt import BootstrapFewShotWithRandomSearch
 
 print("Loading LLM & embeddings models...")
 student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n"])
@@ -98,9 +98,10 @@ tools = [
 
 print("Optimizing underlying prompts...")
 
-config = dict(max_bootstrapped_demos=4, max_labeled_demos=4)
+config = dict(max_bootstrapped_demos=4, max_labeled_demos=0)
 
-optimizer = BootstrapFewShot(
+optimizer = BootstrapFewShotWithRandomSearch(
+    num_threads = 1,
     teacher_settings=dict({'lm': teacher_llm}),
     metric = program_success,
     **config,

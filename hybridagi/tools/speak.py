@@ -6,6 +6,7 @@ from colorama import Fore, Style
 import dspy
 from .base import BaseTool
 from ..types.state import AgentState
+from ..parsers.prediction import PredictionOutputParser
 
 class SpeakSignature(dspy.Signature):
     """You will be given an objective, purpose and context
@@ -29,6 +30,7 @@ class SpeakTool(BaseTool):
         self.simulated = simulated
         self.agent_state = agent_state
         self.speak_func = speak_func
+        self.prediction_parser = PredictionOutputParser()
 
     def speak(self, message: str):
         if self.speak_func:
@@ -48,20 +50,23 @@ class SpeakTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            message = prediction.message.strip()
+            pred.message = self.prediction_parser.parse(
+                pred.message,
+                prefix = "Message:",
+            )
             self.agent_state.chat_history.append(
-                {"role": "AI", "message": message}
+                {"role": "AI", "message": pred.message}
             )
             if not self.simulated:
-                self.speak(message)
+                self.speak(pred.message)
             return dspy.Prediction(
-                message = message
+                message = pred.message
             )
         else:
             self.agent_state.chat_history.append(

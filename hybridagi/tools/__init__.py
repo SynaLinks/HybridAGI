@@ -23,6 +23,7 @@ from .clear_trace import ClearTraceTool
 from .revert_trace import RevertTraceTool
 
 from .internal_shell import InternalShellTool
+from .remote_shell import RemoteShellTool
 
 from .upload import UploadTool
 
@@ -52,6 +53,7 @@ __all__ = [
     RevertTraceTool,
 
     InternalShellTool,
+    RemoteShellTool,
 
     UploadTool,
 ]

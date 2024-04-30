@@ -95,7 +95,7 @@ CREATE
 (refine_objective:Action {
     name:"Clarify the given objective",
     tool:"UpdateObjective", 
-    prompt:"Clarify the objective based on the context"
+    prompt:"Clarify the objective based on the user answer"
 }),
 // Structure declaration
 (start)-[:NEXT]->(is_anything_unclear),
@@ -146,7 +146,7 @@ tools = [
 
 print("Optimizing underlying prompts...")
 
-config = dict(max_bootstrapped_demos=4, max_labeled_demos=4)
+config = dict(max_bootstrapped_demos=4, max_labeled_demos=0)
 
 optimizer = BootstrapFewShot(
     teacher_settings=dict({'lm': teacher_llm}),

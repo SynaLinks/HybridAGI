@@ -54,14 +54,14 @@ class DocumentSearchTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = self.prediction_parser.parse(prediction.query, prefix="Query:", stop=["\n"])
-            query = self.query_parser.parse(query)
+            pred.query = self.prediction_parser.parse(pred.query, prefix="Query:", stop=["\n"])
+            query = self.query_parser.parse(pred.query)
             result = self.retriever(query)
             return dspy.Prediction(
                 search_query = query,

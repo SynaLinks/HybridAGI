@@ -14,7 +14,7 @@ class UpdateObjectiveSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    objective = dspy.OutputField(desc = "The new objective")
+    new_objective = dspy.OutputField(desc = "The new objective")
 
 class UpdateObjectiveTool(BaseTool):
 
@@ -37,20 +37,24 @@ class UpdateObjectiveTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 context = context,
                 objective = objective,
                 purpose = purpose,
                 prompt = prompt,
             )
-            new_objective = self.prediction_parser.parse(
-                prediction.objective,
-                "Objective:"
+            pred.new_objective = self.prediction_parser.parse(
+                pred.new_objective,
+                prefix="New Objective:"
             )
-            self.agent_state.objective = new_objective
+            pred.new_objective = self.prediction_parser.parse(
+                pred.new_objective,
+                prefix="Objective:"
+            )
+            self.agent_state.objective = pred.new_objective
             observation = "Successfully updated"
             return dspy.Prediction(
-                new_objective = new_objective,
+                new_objective = pred.new_objective,
                 observation = observation,
             )
         else:

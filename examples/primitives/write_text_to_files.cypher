@@ -5,9 +5,9 @@ CREATE
 (write_file:Action {
     name:"Write a file into memory",
     tool:"WriteFile",
-    prompt:"Use the context to infer the content of the file.
-Use the context to infer the snake case or camel case filename.
-Never assume anything and do what you was asked for.
-Please always ensure to correctly infer the content of the file without additonal information, don't be lazy."}),
+    prompt:"Use the context to infer the snake case or camel case filename.
+Make sure to use the appropriate file extension based on the content of the file.
+Use the context and objective to infer the content of the file.
+Avoid any placeholder in the content of the file."}),
 (start)-[:NEXT]->(write_file),
 (write_file)-[:NEXT]->(end)

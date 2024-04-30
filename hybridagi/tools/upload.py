@@ -39,6 +39,7 @@ class UploadTool(BaseTool):
 
     def upload(self, filename: str) -> str:
         try:
+            filename = self.agent_state.context.eval_path(filename)
             return self.archiver.upload(filename)
         except Exception as err:
             return str(err)
@@ -53,21 +54,20 @@ class UploadTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            filename = self.prediction_parser.parse(
-                prediction.filename,
+            pred.filename = self.prediction_parser.parse(
+                pred.filename,
                 prefix="Filename:",
             )
-            filename = self.path_parser.parse(filename)
-            filename = self.agent_state.context.eval_path(filename)
-            observation = self.upload(filename)
+            pred.filename = self.path_parser.parse(pred.filename)
+            observation = self.upload(pred.filename)
             return dspy.Prediction(
-                filename = filename,
+                filename = pred.filename,
                 content = observation,
             )
         else:

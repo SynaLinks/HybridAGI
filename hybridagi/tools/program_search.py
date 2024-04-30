@@ -7,6 +7,8 @@ from typing import Optional
 from ..embeddings.base import BaseEmbeddings
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..retrievers.program import ProgramRetriever
+from ..parsers.prediction import PredictionOutputParser
+from ..parsers.list_query import ListQueryOutputParser
 
 class ProgramSearchSignature(dspy.Signature):
     """You will be given an objective, purpose and context
@@ -15,7 +17,7 @@ class ProgramSearchSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    search_query = dspy.OutputField(desc = "The similarity search query (only few words)")
+    query = dspy.OutputField(desc = "The similarity search query (only few words)")
 
 class ProgramSearchTool(BaseTool):
 
@@ -38,6 +40,8 @@ class ProgramSearchTool(BaseTool):
             distance_threshold = self.distance_threshold,
             k = self.k,
         )
+        self.prediction_parser = PredictionOutputParser()
+        self.query_parser = ListQueryOutputParser()
     
     def forward(
             self,
@@ -50,22 +54,23 @@ class ProgramSearchTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            query = prediction.search_query.replace("\"", "")
+            pred.query = self.prediction_parser.parse(pred.query, prefix="Query:", stop=["\n"])
+            query = self.query_parser.parse(pred.query)
             result = self.retriever(query)
             return dspy.Prediction(
-                search_query = query,
+                query = query,
                 routines = result.routines,
             )
         else:
             result = self.retriever(prompt)
             return dspy.Prediction(
-                search_query = prompt,
+                query = prompt,
                 routines = result.routines,
             )
 

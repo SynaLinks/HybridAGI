@@ -29,7 +29,7 @@ class RevertTraceTool(BaseTool):
         self.agent_state = agent_state
         self.predict = dspy.TypedPredictor(RevertTraceSignature)
 
-    def revert_trace(k: int):
+    def revert_trace(self, k: int):
         self.agent_state.program_trace = self.agent_state.program_trace[:len(self.agent_state.program_trace)-k]
         
     def forward(
@@ -42,13 +42,13 @@ class RevertTraceTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            nb = prediction.number.integer
+            nb = pred.number.integer
             self.revert_trace(nb)
             return None
         else:

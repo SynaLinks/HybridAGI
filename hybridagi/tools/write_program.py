@@ -16,7 +16,7 @@ class WriteProgramSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    file_name = dspy.OutputField(desc="The name of the .cypher file (short and concise)")
+    filename = dspy.OutputField(desc="The name of the .cypher file (short and concise)")
     cypher_query = dspy.OutputField(desc = "The Cypher query to write into memory (make sure to comment non-Cypher lines)")
 
 class WriteProgramTool(BaseTool):
@@ -54,28 +54,28 @@ class WriteProgramTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            filename = self.prediction_parser.parse(prediction.file_name, prefix="File Name:", stop=["\n"])
-            filename = self.program_name_parser.parse(filename)
-            content = self.prediction_parser.parse(prediction.cypher_query, prefix="\n```cypher", stop=["\n```\n\n"])
-            content = self.cypher_parser.parse(content)
+            pred.filename = self.prediction_parser.parse(pred.filename, prefix="File Name:", stop=["\n"])
+            pred.filename = self.program_name_parser.parse(pred.filename)
+            pred.cypher_query = self.prediction_parser.parse(pred.cypher_query, prefix="\n```cypher", stop=["\n```\n\n"])
+            pred.cypher_query = self.cypher_parser.parse(pred.cypher_query)
             dspy.Suggest(
-                len(filename) != 0,
+                len(pred.filename) != 0,
                 "Filename should not be empty"
             )
             dspy.Suggest(
-                len(filename) < 250,
+                len(pred.filename) < 250,
                 "Filename should be short and consice"
             )
-            observation = self.write_program(filename, content)
+            observation = self.write_program(pred.filename, pred.cypher_query)
             return dspy.Prediction(
-                filename = filename,
-                content = content,
+                filename = pred.filename,
+                content = pred.cypher_query,
                 observation = observation,
             )
         else:

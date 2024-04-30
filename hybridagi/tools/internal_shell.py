@@ -78,20 +78,20 @@ class InternalShellTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            prediction = self.predict(
+            pred = self.predict(
                 objective = objective,
                 context = context,
                 purpose = purpose,
                 prompt = prompt,
             )
-            unix_shell_command = self.prediction_parser.parse(
-                prediction.unix_shell_command,
+            pred.unix_shell_command = self.prediction_parser.parse(
+                pred.unix_shell_command,
                 prefix = "Unix Shell Command:",
                 stop = ["\n"],
             )
-            observation = self.execute(unix_shell_command)
+            observation = self.execute(pred.unix_shell_command)
             return dspy.Prediction(
-                unix_shell_command = unix_shell_command,
+                unix_shell_command = pred.unix_shell_command,
                 observation = observation,
             )
         else:
