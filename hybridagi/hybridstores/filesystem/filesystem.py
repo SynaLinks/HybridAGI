@@ -63,8 +63,7 @@ class FileSystem(HybridStore):
                 if dirpath.startswith("__") > 0 or dirpath.startswith(".") > 0:
                     continue
                 for dir_name in dirnames:
-                    if not dir_name.startswith("__") \
-                            and not dir_name.startswith("."):
+                    if not(dir_name.startswith("__") or dir_name.startswith(".") or dir_name == "venv"):
                         path = join([dirpath.replace(folder, folder_name), dir_name])
                         self.create_folder(path)
                 for filename in filenames:

@@ -58,11 +58,13 @@ class InternalShellTool(BaseTool):
         s = shlex.shlex(command, punctuation_chars=True)
         args = list(s)
         invalid_symbols = ["|", "||", "&", "&&", ">", ">>", "<", "<<", ";"]
+        invalid = False
         if len(list(set(invalid_symbols).intersection(args))) > 0:
-            raise ValueError(
-                    "Piping, redirection and multiple commands are not supported:"+
-                    " Use one command at a time, without semicolon."
-                )
+            invalid = True
+            dspy.Suggest( invalid,
+                "Piping, redirection and multiple commands are not supported:"+
+                " Use one command at a time, without semicolon."
+            )
         try:
             return self.shell.execute(args)
         except Exception as err:

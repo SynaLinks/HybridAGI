@@ -32,11 +32,14 @@ def test_forward_multiple():
         wipe_on_start=True,
     )
     text = "This the a test text"
-    text_name = "test_text"
+    text_name = "test_text.txt"
+
+    text2 = "This the a test text 2"
+    text_name2 = "test_text_2.txt"
 
     memory.add_texts(
-        texts = [text],
-        ids = [text_name]
+        texts = [text, text2],
+        ids = [text_name, text_name2]
     )
 
     retriever = DocumentRetriever(

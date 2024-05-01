@@ -75,7 +75,7 @@ CREATE
         disable_inference = False,
     )
     print(interpreter.agent_state.program_stack)
-    assert prediction.selected_program == "subprogram"
+    assert prediction.selected_routine == "subprogram"
     assert prediction.observation == "Successfully called"
 
 def test_call_program_tool_protected():
@@ -133,7 +133,7 @@ CREATE
         prompt = "test prompt",
         disable_inference = False,
     )
-    assert prediction.selected_program == "subprogram"
+    assert prediction.selected_routine == "subprogram"
     assert prediction.observation == "Error occured: Trying to call a protected program"
 
 
@@ -193,7 +193,7 @@ CREATE
         prompt = "test prompt",
         disable_inference = False,
     )
-    assert prediction.selected_program == "subprogram"
+    assert prediction.selected_routine == "subprogram"
     assert prediction.observation == "Error occured: This program does not exist, verify its name"
 
 
@@ -265,4 +265,4 @@ CREATE
         prompt = "test prompt",
         disable_inference = True,
     )
-    assert prediction.selected_program == "test prompt"
+    assert prediction.selected_routine == "test prompt"

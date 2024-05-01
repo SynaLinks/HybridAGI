@@ -76,6 +76,8 @@ filesystem = FileSystem(
     wipe_on_start = True,
 )
 
+filesystem.add_folders(["."], [])
+
 print("Adding programs into memory...")
 
 program_memory.add_folders(["examples/primitives"])
