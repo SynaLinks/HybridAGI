@@ -3,10 +3,12 @@ from .hybridstores.filesystem.context import FileSystemContext
 from .hybridstores.filesystem.filesystem import FileSystem
 from .hybridstores.program_memory.program_memory import ProgramMemory
 from .hybridstores.trace_memory.trace_memory import TraceMemory
+from .hybridstores.fact_memory.fact_memory import FactMemory
 
 from .retrievers.document import DocumentRetriever
 from .retrievers.program import ProgramRetriever
 from .retrievers.action import ActionRetriever
+from .retrievers.entity import EntityRetriever
 
 from .text_splitter.base import BaseTextSplitter
 from .text_splitter.sentence import SentenceTextSplitter
@@ -56,10 +58,12 @@ __all__ = [
     FileSystem,
     ProgramMemory,
     TraceMemory,
+    FactMemory,
 
     DocumentRetriever,
     ProgramRetriever,
     ActionRetriever,
+    EntityRetriever,
 
     GraphProgramInterpreter,
 

@@ -1,4 +1,5 @@
 """The sentence splitter. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+# modifed from llama-index
 # The MIT License
 
 # Copyright (c) Jerry Liu

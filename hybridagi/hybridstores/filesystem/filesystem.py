@@ -106,6 +106,7 @@ class FileSystem(HybridStore):
         for idx, text in enumerate(texts):
             path = ids[idx]
             metadata = metadatas[idx] if metadatas else {}
+            metadata["location"] = path
             if self.exists(path):
                 self.remove_documents([path])
             text_splitter = \

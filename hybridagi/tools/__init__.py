@@ -1,4 +1,6 @@
 from .predict import PredictTool
+from .chain_of_thought import ChainOfThoughtTool
+from .program_of_thought import ProgramOfThoughtTool
 
 from .duckduckgo_search import DuckDuckGoSearchTool
 from .document_search import DocumentSearchTool
@@ -29,6 +31,8 @@ from .upload import UploadTool
 
 __all__ = [
     PredictTool,
+    ChainOfThoughtTool,
+    ProgramOfThoughtTool,
 
     DuckDuckGoSearchTool,
     DocumentSearchTool,

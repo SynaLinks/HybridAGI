@@ -22,8 +22,8 @@ from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShotWithRandomSearch
 
 print("Loading LLM & embeddings models...")
-student_llm = dspy.OllamaLocal(model='mistral:instruct', max_tokens=1024, stop=["\n\n\n", "\n\n---\n", "<|eot_id|>"])
-teacher_llm = dspy.OllamaLocal(model='mistral:instruct', max_tokens=1024, stop=["\n\n\n", "\n\n---\n", "<|eot_id|>"])
+student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n", "\n\n---\n"])
+teacher_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n", "\n\n---\n"])
 
 embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence-transformers/all-MiniLM-L6-v2")
 

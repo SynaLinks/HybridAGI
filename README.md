@@ -209,7 +209,7 @@ Many more systems are possible, interactive or non-interactive ones, this is jus
 
 Learn more about Graph-based Prompt Programming by reading our [documentation](https://synalinks.github.io/documentation/basics/graph-prompt-programming).
 
-### Install
+### Install using virtualenv
 
 ```bash
 git clone https://github.com/SynaLinks/HybridAGI.git
