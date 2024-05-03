@@ -114,25 +114,25 @@ class FactMemory(HybridStore):
         relationships = self.hybridstore.query("CALL db.RELATIONSHIPTYPES()")
 
         self.schema = f"""
-        Properties: {node_properties}
-        Relationships: {relationships}
-        """
+Properties: {node_properties.result_set}
+Relationships: {relationships.result_set}
+"""
 
-    def get_schema(self, refresh: bool = False) -> str:
+    def get_schema(self, refresh: bool = True) -> str:
         """Get the schema of the hybridstore."""
         if self.schema and not refresh:
             return self.schema
         self.refresh_schema()
         return self.schema
 
-    def get(self, subj: str) -> List[List[str]]:
+    def get_triplets(self, subj: str) -> List[List[str]]:
         """Get triplets."""
         get_query = f"""
             MATCH (n1:`{self.indexed_label}`)-[r]->(n2:`{self.indexed_label}`)
             WHERE n1.id = $subj RETURN type(r), n2.id
         """
         result = self.hybridstore.query(
-            get_query, params={"subj": subj}, read_only=True
+            get_query, params={"subj": subj}
         )
         return result.result_set
 
@@ -176,7 +176,7 @@ class FactMemory(HybridStore):
                 WHERE n1.name = $entity RETURN count(*)
             """
             result = self.hybridstore.query(
-                query, params={"entity": entity}, read_only=True
+                query, params={"entity": entity}
             )
             return bool(result.result_set)
 
