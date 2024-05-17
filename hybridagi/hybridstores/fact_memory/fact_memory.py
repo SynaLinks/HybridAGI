@@ -56,7 +56,6 @@ class FactMemory(HybridStore):
             wipe_on_start = wipe_on_start,
         )
         self.schema = ""
-        self.init()
 
     def get_rel_map(
         self, subjs: Optional[List[str]] = None, depth: int = 2, limit: int = 30
@@ -138,11 +137,10 @@ Relationships: {relationships.result_set}
 
     def add_triplet(self, subj: str, rel: str, obj: str) -> None:
         """Add triplet."""
-        self.add_texts(texts=[subj, obj], ids=[subj, obj])
 
         query = """
-            MATCH (n1:`%s` {name:$subj})
-            MATCH (n2:`%s` {name:$obj})
+            MERGE (n1:`%s` {name:$subj})
+            MERGE (n2:`%s` {name:$obj})
             MERGE (n1)-[:`%s`]->(n2)
         """
 
@@ -185,9 +183,3 @@ Relationships: {relationships.result_set}
             delete_entity(subj)
         if not check_edges(obj):
             delete_entity(obj)
-
-    def init(self):
-        try:
-            self.hybridstore.query(f"CREATE INDEX FOR (n:`{self.indexed_label}`) ON (n.name)")
-        except Exception:
-            pass

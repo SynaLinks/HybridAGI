@@ -60,7 +60,7 @@ class FileSystem(HybridStore):
             folder_name = ctxt.eval_path(folder_name)
             self.create_folder(folder_name)
             for dirpath, dirnames, filenames in os.walk(folder):
-                if dirpath.startswith("__") > 0 or dirpath.startswith(".") > 0:
+                if "venv" in dirpath or dirpath.startswith("__") > 0 or dirpath.startswith(".") > 0:
                     continue
                 for dir_name in dirnames:
                     if not(dir_name.startswith("__") or dir_name.startswith(".") or dir_name == "venv"):
@@ -106,7 +106,7 @@ class FileSystem(HybridStore):
         for idx, text in enumerate(texts):
             path = ids[idx]
             metadata = metadatas[idx] if metadatas else {}
-            metadata["location"] = path
+            metadata["filename"] = path
             if self.exists(path):
                 self.remove_documents([path])
             text_splitter = \

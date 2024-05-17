@@ -13,6 +13,7 @@ RESERVED_NAMES = [
     "filesystem",
     "program_memory",
     "trace_memory",
+    "fact_memory",
     "\u006D\u0061\u0069\u006E",
     "\u0070\u006C\u0061\u0079\u0067\u0072\u006F\u0075\u006E\u0064",
     "\u0066\u0069\u006C\u0065\u0073\u0079\u0073\u0074\u0065\u006D",

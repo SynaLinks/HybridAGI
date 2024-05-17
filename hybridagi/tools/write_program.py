@@ -40,7 +40,7 @@ class WriteProgramTool(BaseTool):
                 [content],
             )
             self.program_memory.add_texts(texts = [content], ids = [filename])
-            return "Successfully created"
+            return "Successfully written"
         except Exception as err:
             return str(err)
     

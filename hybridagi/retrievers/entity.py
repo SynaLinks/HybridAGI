@@ -39,7 +39,7 @@ class EntityRetriever(dspy.Retrieve):
             params = {"indexed_label": self.fact_memory.indexed_label, "vector": list(vector), "k": 2*int(k or self.k)}
             query = " ".join([
                 'CALL db.idx.vector.queryNodes($indexed_label, "embeddings_vector", $k, vecf32($vector)) YIELD node, score',
-                'RETURN node.name AS name, score'])
+                'RETURN node.name AS name, node.description AS description, score'])
             result = self.fact_memory.hybridstore.query(
                 query,
                 params = params,
@@ -50,10 +50,11 @@ class EntityRetriever(dspy.Retrieve):
                         indexes[record[0]] = True
                     else:
                         continue
-                    content = self.fact_memory.get_content(record[0])
+                    content = f"{record[0]}: {self.fact_memory.get_content(record[0])}"
+                    metadata = self.filesystem.get_content_metadata(record[0])
                     distance = float(record[1])
                     if distance < self.distance_threshold:
-                        contents.extend([{"entities": dotdict({"entity": content}), "distance": distance}])
+                        contents.extend([{"entities": dotdict({"entity": content, "metadata": metadata}), "distance": distance}])
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],

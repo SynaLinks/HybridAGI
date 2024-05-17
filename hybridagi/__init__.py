@@ -48,6 +48,9 @@ from .utility.commands import (
 
 from .agents.interpreter import GraphProgramInterpreter
 
+from .utility.code_parser import CodeParserUtility
+from .utility.code_interpreter import CodeInterpreterUtility
+
 __all__ = [
     CypherOutputParser,
     PathOutputParser,
@@ -90,4 +93,7 @@ __all__ = [
     PrintWorkingDirectory,
     Remove,
     Tree,
+
+    CodeParserUtility,
+    CodeInterpreterUtility,
 ]

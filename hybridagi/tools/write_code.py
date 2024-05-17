@@ -1,5 +1,6 @@
-"""The write file tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+"""The write code tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
+import asyncio
 import copy
 import dspy
 from .base import BaseTool
@@ -7,32 +8,42 @@ from ..hybridstores.filesystem.filesystem import FileSystem
 from ..parsers.path import PathOutputParser
 from ..parsers.prediction import PredictionOutputParser
 from ..types.state import AgentState
+from codeshield.cs import CodeShield
 
-class WriteFileSignature(dspy.Signature):
+class WriteCodeSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct filename and content"""
+    Using the prompt to help you, you will infer the correct filename and code"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     filename = dspy.OutputField(desc = "The name of the file (short and concise)")
-    content = dspy.OutputField(desc = "The content to write")
+    code = dspy.OutputField(desc = "The code to write")
 
-class WriteFileTool(BaseTool):
+class WriteCodeTool(BaseTool):
 
     def __init__(
             self,
             filesystem: FileSystem,
             agent_state: AgentState,
         ):
-        super().__init__(name = "WriteFile")
-        self.predict = dspy.Predict(WriteFileSignature)
+        super().__init__(name = "WriteCode")
+        self.predict = dspy.Predict(WriteCodeSignature)
         self.agent_state = agent_state
         self.filesystem = filesystem
         self.path_parser = PathOutputParser()
         self.prediction_parser = PredictionOutputParser()
 
-    def write_file(self, filename: str, content: str) -> str:
+    def write_code(self, filename: str, content: str) -> str:
+        observation = ""
+        code_shield_observation = ""
+        result = asyncio.run(CodeShield.scan_code(content))
+        if result.is_insecure:
+            if result.recommended_treatment == "block":
+                code_shield_observation = "Error: Code Security issues found, blocking the code"
+                return code_shield_observation
+            if result.recommended_treatment == "warn":
+                code_shield_observation = "Warning: The generated snippet contains insecure code"
         try:
             if self.filesystem.is_folder(filename):
                 return "Error: Cannot override a directory"
@@ -44,9 +55,10 @@ class WriteFileTool(BaseTool):
                 ids = [filename],
                 metadatas = [metadata],
             )
-            return "Successfully written"
+            observation = "Successfully written"
         except Exception as err:
-            return str(err)
+            return str(err) + code_shield_observation
+        return observation + code_shield_observation
     
     def forward(
             self,
@@ -66,7 +78,7 @@ class WriteFileTool(BaseTool):
             )
             pred.filename = self.prediction_parser.parse(pred.filename, prefix="Filename:", stop=["\n"])
             pred.filename = self.path_parser.parse(pred.filename)
-            pred.content = self.prediction_parser.parse(pred.content, prefix="Content:")
+            pred.content = self.prediction_parser.parse(pred.content, prefix="Code:")
             pred.content = self.prediction_parser.parse(pred.content, prefix="\n\n```\n", stop=["\n```\n\n"])
             dspy.Suggest(
                 len(pred.content) != 0,
@@ -80,7 +92,7 @@ class WriteFileTool(BaseTool):
                 len(pred.filename) < 250,
                 "Filename must be short and consice"
             )
-            observation = self.write_file(pred.filename, pred.content)
+            observation = self.write_code(pred.filename, pred.content)
             return dspy.Prediction(
                 filename = pred.filename,
                 content = pred.content,

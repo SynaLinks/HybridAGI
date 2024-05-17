@@ -13,7 +13,6 @@ PIPE_PREFIX = "│   "
 SPACE_PREFIX = "    "
 
 class Tree(BaseShellCommand):
-    path_parser: PathOutputParser = PathOutputParser()
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
@@ -21,6 +20,7 @@ class Tree(BaseShellCommand):
             name = "tree",
             description = "display the given directory structure",
         )
+        self.path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to display the directory structure"""

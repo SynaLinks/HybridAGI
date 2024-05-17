@@ -3,7 +3,6 @@
 import numpy as np
 import uuid
 import json
-import base64
 from falkordb import FalkorDB, Graph
 from typing import List, Optional, Dict, Any
 from ..embeddings.base import BaseEmbeddings
@@ -66,14 +65,22 @@ class HybridStore():
                 "index": content_index,
                 "metadata": json.dumps(metadata, indent=2),
                 "description": description,
+                "content": text,
             }
-            self.hybridstore.query(
-                "MERGE (n:"+self.indexed_label+" {name:$index, "+
-                "embeddings_vector:vecf32($vector), "+
-                "metadata:$metadata, description:$description})",
-                params,
-            )
-            self.set_content(content_index, text)
+            if self.exists(content_index):
+                self.hybridstore.query(
+                    "MATCH (n:"+self.indexed_label+" {name:$index}) SET "+
+                    "n.embeddings_vector=vecf32($vector), "+
+                    "n.metadata=$metadata, n.description=$description, n.content=$content",
+                    params,
+                )
+            else:
+                self.hybridstore.query(
+                    "MERGE (n:"+self.indexed_label+" {name:$index, "+
+                    "embeddings_vector:vecf32($vector), "+
+                    "metadata:$metadata, description:$description, content:$content})",
+                    params,
+                )
             indexes.append(content_index)
         return indexes
 
@@ -105,15 +112,14 @@ class HybridStore():
 
     def set_content(self, content_index: str, text: str) -> bool:
         """Set content into FalkorDB"""
-        encoded_content = base64.b64encode(text.encode('utf-8')).decode('utf-8')
         if not self.exists(content_index):
-            params = {"index": content_index, "content": encoded_content}
+            params = {"index": content_index, "content": text}
             self.hybridstore.query(
                 'MERGE (n:'+self.indexed_label+' {name:$index, content:$content})',
                 params = params,
             )
         else:
-            params = {"index": content_index, "content": encoded_content}
+            params = {"index": content_index, "content": text}
             self.hybridstore.query(
                 'MATCH (n:'+self.indexed_label+' {name:$index}) SET n.content=$content',
                 params = params,
@@ -129,9 +135,7 @@ class HybridStore():
                 params=params,
             )
             if len(result.result_set) > 0:
-                encoded_content = result.result_set[0][0]
-                decoded_content = base64.b64decode(encoded_content.encode('utf-8')).decode('utf-8')
-                return decoded_content
+                return result.result_set[0][0]
         return ""
 
     def set_content_description(
@@ -220,6 +224,11 @@ class HybridStore():
         self.init_index()
 
     def init_index(self):
+        try:
+            self.hybridstore.query(f"CREATE INDEX FOR (n:`{self.indexed_label}`) ON (n.name)")
+            pass
+        except Exception as e:
+            pass
         try:
             params = {"dim": self.embeddings.dim}
             self.hybridstore.query(
