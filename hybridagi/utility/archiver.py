@@ -22,6 +22,8 @@ class ArchiverUtility():
         if not self.filesystem.exists(path):
             raise ValueError("No such file or directory.")
         name = strftime("%Y-%m-%d_%H:%M:%S_", gmtime())+basename(path)
+        if not self.downloads_directory:
+            self.downloads_directory = os.getcwd()
         filename = os.path.join(self.downloads_directory, name)
         f = zipfile.ZipFile(filename+".zip", mode='a')
         if self.filesystem.is_file(path):
