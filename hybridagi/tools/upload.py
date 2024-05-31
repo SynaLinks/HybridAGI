@@ -42,7 +42,7 @@ class UploadTool(BaseTool):
     def upload(self, filename: str) -> str:
         try:
             filename = self.agent_state.context.eval_path(filename)
-            return self.archiver.upload(filename)
+            return self.archiver.zip_and_download(filename)
         except Exception as err:
             return str(err)
     
