@@ -6,6 +6,7 @@ from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.reader import ReaderUtility
 from ..parsers.path import PathOutputParser
+from ..parsers.prediction import PredictionOutputParser
 from ..types.state import AgentState
 
 class ReadFileSignature(dspy.Signature):
@@ -29,6 +30,7 @@ class ReadFileTool(BaseTool):
         self.agent_state = agent_state
         self.filesystem = filesystem
         self.reader = ReaderUtility(filesystem=self.filesystem)
+        self.prediction_parser = PredictionOutputParser()
         self.path_parser = PathOutputParser()
 
     def read_file(self, filename: str) -> str:
@@ -57,8 +59,13 @@ class ReadFileTool(BaseTool):
             pred.filename = self.prediction_parser.parse(
                 pred.filename,
                 prefix="Filename:",
+                stop = ["\n"],
             )
             pred.filename = self.path_parser.parse(pred.filename)
+            dspy.Suggest(
+                len(pred.filename) < 250,
+                "Filename must be short and consice"
+            )
             observation = self.read_file(pred.filename)
             return dspy.Prediction(
                 filename = pred.filename,

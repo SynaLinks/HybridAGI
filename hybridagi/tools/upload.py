@@ -7,6 +7,7 @@ from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.archiver import ArchiverUtility
 from ..parsers.path import PathOutputParser
+from ..parsers.prediction import PredictionOutputParser
 from ..types.state import AgentState
 
 class UploadSignature(dspy.Signature):
@@ -35,6 +36,7 @@ class UploadTool(BaseTool):
             filesystem=self.filesystem,
             downloads_directory=self.downloads_directory,
         )
+        self.prediction_parser = PredictionOutputParser()
         self.path_parser = PathOutputParser()
 
     def upload(self, filename: str) -> str:
@@ -63,8 +65,13 @@ class UploadTool(BaseTool):
             pred.filename = self.prediction_parser.parse(
                 pred.filename,
                 prefix="Filename:",
+                stop = ["\n"],
             )
             pred.filename = self.path_parser.parse(pred.filename)
+            dspy.Suggest(
+                len(pred.filename) < 250,
+                "Filename must be short and consice"
+            )
             observation = self.upload(pred.filename)
             return dspy.Prediction(
                 filename = pred.filename,
