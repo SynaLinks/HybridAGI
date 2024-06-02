@@ -38,7 +38,7 @@ embeddings = SentenceTransformerEmbeddings(dim=384, model_name_or_path="sentence
 
 dspy.settings.configure(lm=student_llm)
 
-model_path = "model.json"
+model_path = "rag_with_filesystem.json"
 
 class AssessAnswer(dspy.Signature):
     """Assess the success of the trace according to the objective"""
@@ -155,8 +155,6 @@ interpreter = GraphProgramInterpreter(
     program_memory = program_memory,
     tools = tools,
 )
-
-interpreter.load("rag_with_filesystem.json")
 
 compiled_interpreter = optimizer.compile(
     interpreter,
