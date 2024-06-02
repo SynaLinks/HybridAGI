@@ -23,6 +23,7 @@ jupyter-core = "^5.5.0"
 ipykernel = "^6.29.4"
 matplotlib = "^3.8.4"
 pillow = "^10.3.0"
+spacy = "^3.7.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.1.1"
@@ -30,3 +31,6 @@ pytest = ">=8.1.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+download-spacy-model = "python -m spacy download en_core_web_sm"

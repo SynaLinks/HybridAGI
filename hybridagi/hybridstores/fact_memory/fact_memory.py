@@ -128,7 +128,7 @@ Relationships: {relationships.result_set}
         """Get triplets."""
         get_query = f"""
             MATCH (n1:`{self.indexed_label}`)-[r]->(n2:`{self.indexed_label}`)
-            WHERE n1.id = $subj RETURN type(r), n2.id
+            WHERE n1.name = $subj RETURN type(r), n2.name
         """
         result = self.hybridstore.query(
             get_query, params={"subj": subj}
