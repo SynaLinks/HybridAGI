@@ -78,7 +78,7 @@ class FactMemory(HybridStore):
             return rel_map
 
         query = f"""
-            MATCH (n1:{self._node_label})
+            MATCH (n1:{self.indexed_label})
             WHERE n1.name IN $subjs
             WITH n1
             MATCH p=(n1)-[e*1..{depth}]->(z)
