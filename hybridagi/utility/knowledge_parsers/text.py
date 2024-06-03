@@ -1,4 +1,7 @@
+# Text Knowledge Parser implementation based on article: https://medium.com/@erkajalkumari/knowledge-graphs-the-game-changer-in-ai-and-data-science-d56580b15aaa
+
 import spacy
+from spacy.matcher import Matcher
 from .base import KnowledgeParserBase
 from ...hybridstores.fact_memory.fact_memory import FactMemory
 
@@ -6,18 +9,11 @@ NLP = spacy.load("en_core_web_sm")
 
 class TextKnowledgeParser(KnowledgeParserBase):
     
-    def __init__(
-            self,
-            fact_memory: FactMemory,
-            mode: str = "simple"
-        ):
+    def __init__(self, fact_memory: FactMemory):
         super().__init__(fact_memory=fact_memory)
-        self.mode = mode
 
-    def parse(self, filename: str, content: str, mode: str = None):
-        if mode is None:
-            mode = self.mode
-        triplets = self.extract_triplets(content, mode)
+    def parse(self, filename: str, content: str):
+        triplets = self.extract_triplets(content)
         
         for triplet in triplets:
             if len(triplet) != 3:   # Not a valid triplet
@@ -28,70 +24,66 @@ class TextKnowledgeParser(KnowledgeParserBase):
                     self.fact_memory.add_texts(
                         texts=[node],
                         ids=[node],
+                        descriptions=[node],
                         metadatas=[metadata],
                     )
             self.fact_memory.add_triplet(triplet[0], triplet[1], triplet[2])
 
-    def extract_triplets(self, text, mode: str) -> list:
+    def extract_triplets(self, text) -> list:
         doc = NLP(text)
-        
         triplets = []
-        
-        # Extract noun chunks for subjects and objects
-        noun_chunks = list(doc.noun_chunks)
-        
+
         for sent in doc.sents:
-            if mode == "simple":
-                subj = None
-                verb = None
-                obj = None
+            entities = self.get_entities(sent.text)
+            relation = self.get_relation(sent.text)
 
-                for token in sent:
-                    if "subj" in token.dep_:
-                        subj = token
-                    if token.pos_ == "VERB":
-                        verb = token
-                    if "obj" in token.dep_ or token.dep_ == "attr":
-                        obj = token
-                
-                # Map tokens to noun chunks if possible
-                def get_noun_chunk(token):
-                    for chunk in noun_chunks:
-                        if token in chunk:
-                            return chunk.text
-                    return token.text
-                
-                if subj and verb and obj:
-                    triplets.append((get_noun_chunk(subj), verb.lemma_, get_noun_chunk(obj)))
+            if entities[0] and relation and entities[1]:
+                triplets.append((entities[0], relation, entities[1]))
 
-            elif mode == "deep":
-                subjects = []
-                verbs = []
-                objects = []
-                indirect_objects = []
-
-                for token in sent:
-                    if "subj" in token.dep_:
-                        subjects.append(token)
-                    if token.pos_ == "VERB":
-                        verbs.append(token)
-                    if "obj" in token.dep_ or token.dep_ == "attr":
-                        objects.append(token)
-                    if token.dep_ == "iobj":
-                        indirect_objects.append(token)
-                
-                # Map tokens to noun chunks if possible
-                def get_noun_chunk(token):
-                    for chunk in noun_chunks:
-                        if token in chunk:
-                            return chunk.text
-                    return token.text
-                
-                for verb in verbs:
-                    for subj in subjects:
-                        for obj in objects:
-                            triplets.append((get_noun_chunk(subj), verb.lemma_, get_noun_chunk(obj)))
-                        for iobj in indirect_objects:
-                            triplets.append((get_noun_chunk(subj), verb.lemma_, get_noun_chunk(iobj)))
-        
         return triplets
+
+    def get_entities(self, sent):
+        ent1 = ""
+        ent2 = ""
+        prv_tok_dep = ""
+        prv_tok_text = ""
+        prefix = ""
+        modifier = ""
+
+        for tok in NLP(sent):
+            if tok.dep_ != "punct":
+                if tok.dep_ == "compound":
+                    prefix = tok.text
+                    if prv_tok_dep == "compound":
+                        prefix = prv_tok_text + " " + tok.text
+
+                if tok.dep_.endswith("mod"):
+                    modifier = tok.text
+                    if prv_tok_dep == "compound":
+                        modifier = prv_tok_text + " " + tok.text
+
+                if tok.dep_.find("subj") != -1:
+                    ent1 = modifier + " " + prefix + " " + tok.text
+                    prefix = ""
+                    modifier = ""
+                    prv_tok_dep = ""
+                    prv_tok_text = ""
+
+                if tok.dep_.find("obj") != -1:
+                    ent2 = modifier + " " + prefix + " " + tok.text
+
+                prv_tok_dep = tok.dep_
+                prv_tok_text = tok.text
+        return [ent1.strip(), ent2.strip()]
+
+    def get_relation(self, sent):
+        doc = NLP(sent)
+        matcher = Matcher(NLP.vocab)
+        pattern = [{'DEP': 'ROOT'}, {'DEP': 'prep', 'OP': "?"}, {'DEP': 'agent', 'OP': "?"}, {'POS': 'ADJ', 'OP': "?"}]
+        matcher.add("matching_1", [pattern])
+        matches = matcher(doc)
+        if matches:
+            k = len(matches) - 1
+            span = doc[matches[k][1]:matches[k][2]] 
+            return span.text
+        return ""

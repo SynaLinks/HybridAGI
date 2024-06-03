@@ -78,7 +78,7 @@ class FactMemory(HybridStore):
             return rel_map
 
         query = f"""
-            MATCH (n1:{self._node_label})
+            MATCH (n1:{self.indexed_label})
             WHERE n1.name IN $subjs
             WITH n1
             MATCH p=(n1)-[e*1..{depth}]->(z)
@@ -128,7 +128,7 @@ Relationships: {relationships.result_set}
         """Get triplets."""
         get_query = f"""
             MATCH (n1:`{self.indexed_label}`)-[r]->(n2:`{self.indexed_label}`)
-            WHERE n1.name = $subj RETURN type(r), n2.name
+            WHERE n1.name = $subj RETURN type(r), n2.id
         """
         result = self.hybridstore.query(
             get_query, params={"subj": subj}
