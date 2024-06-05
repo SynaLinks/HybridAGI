@@ -116,16 +116,21 @@ dataset = [
     dspy.Example(objective="An object is thrown upward with an initial velocity of 20 m/s. How long does it take for the object to reach a height of 10 m?").with_inputs("objective"),
     dspy.Example(objective="A car accelerates from 0 to 60 mph in 8 seconds. What is the acceleration of the car in m/s²?").with_inputs("objective"),
     dspy.Example(objective="An object is moving in a straight line with a constant acceleration of 2 m/s². If the object's initial velocity is 5 m/s, what is its velocity after 10 seconds?").with_inputs("objective"),
-    dspy.Example(objective="A ball is thrown horizontally with an initial velocity of 10 m/s from a height of 20 m. How long does it take for the ball to hit the ground?").with_inputs("objective"),
+    dspy.Example(objective="A beam of light with a wavelength of 600 nm is incident on a slit with a width of 0.1 mm. What is the angle of the first-order diffraction minimum?").with_inputs("objective"),
     dspy.Example(objective="A plane is flying at a constant speed of 600 mph and has enough fuel to fly for 5 hours. What is the maximum distance the plane can fly?").with_inputs("objective"),
     dspy.Example(objective="A pendulum has a length of 1 m and is released from an angle of 30 degrees. What is the pendulum's angular velocity when it reaches the bottom of its swing?").with_inputs("objective"),
     dspy.Example(objective="A block of mass 5 kg is placed on a frictionless inclined plane that makes an angle of 30 degrees with the horizontal. What is the acceleration of the block down the plane?").with_inputs("objective"),
-    dspy.Example(objective="A projectile is launched with an initial velocity of 50 m/s at an angle of 45 degrees. What is the maximum height the projectile will reach?").with_inputs("objective"),
-
+    dspy.Example(objective="A proton and an electron are separated by a distance of 1 nm. What is the electrostatic potential energy of the system?").with_inputs("objective"),
+    dspy.Example(objective="A cyclist is riding around a circular track with a radius of 50 m. If the cyclist's speed is constant at 10 m/s, what is the magnitude of their acceleration?").with_inputs("objective"),
+    dspy.Example(objective="A satellite is orbiting the Earth in a circular orbit with a radius of 42,000 km. What is the satellite's orbital speed?").with_inputs("objective"),
 ]
 
 testset = [
     dspy.Example(objective="An object is dropped from a height of 10 m. How long does it take for the object to reach the ground?").with_inputs("objective"),
+    dspy.Example(objective="A gas is contained in a cylinder with a movable piston. The gas is heated, causing the piston to move outward and the gas to expand. If the initial pressure of the gas is 100 kPa and the final pressure is 50 kPa, what is the ratio of the final volume to the initial volume?").with_inputs("objective"),
+    dspy.Example(objective="A 10 V battery is connected to a 2 Ω resistor. What is the current in the circuit and the power dissipated by the resistor?").with_inputs("objective"),
+    dspy.Example(objective="A parallel-plate capacitor has a plate area of 0.01 m² and a plate separation of 0.001 m. If the capacitor is charged to a potential difference of 100 V, what is the electric field strength between the plates?").with_inputs("objective"),
+    dspy.Example(objective="A block of mass 3 kg is sliding on a horizontal surface with a speed of 4 m/s. If the coefficient of kinetic friction between the block and the surface is 0.2, how far will the block slide before coming to a stop?").with_inputs("objective"),
 ]
 
 print("Initializing the graph interpreter...")
