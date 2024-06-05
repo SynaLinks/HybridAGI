@@ -4,8 +4,8 @@ import dspy
 from .base import BaseTool
 from typing import Optional
 from duckduckgo_search import DDGS
-from ..parsers.query import QueryOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.query import QueryOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class DuckDuckGoSearchSignature(dspy.Signature):
     """You will be given an objective, purpose and context

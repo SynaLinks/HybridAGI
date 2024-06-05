@@ -2,7 +2,7 @@
 
 import dspy
 from .base import BaseTool
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class ProgramOfThoughtSignature(dspy.Signature):
     """You will be given an objective, purpose and context

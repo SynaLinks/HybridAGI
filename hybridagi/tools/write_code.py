@@ -5,8 +5,8 @@ import copy
 import dspy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
-from ..parsers.path import PathOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.path import PathOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 from ..types.state import AgentState
 from codeshield.cs import CodeShield
 
@@ -78,10 +78,10 @@ class WriteCodeTool(BaseTool):
             )
             pred.filename = self.prediction_parser.parse(pred.filename, prefix="Filename:", stop=["\n"])
             pred.filename = self.path_parser.parse(pred.filename)
-            pred.content = self.prediction_parser.parse(pred.content, prefix="Code:")
-            pred.content = self.prediction_parser.parse(pred.content, prefix="\n\n```\n", stop=["\n```\n\n"])
+            pred.code = self.prediction_parser.parse(pred.code, prefix="Code:")
+            pred.code = self.prediction_parser.parse(pred.code, prefix="```", stop=["\n```\n\n"])
             dspy.Suggest(
-                len(pred.content) != 0,
+                len(pred.code) != 0,
                 "Content must not be empty"
             )
             dspy.Suggest(
@@ -92,10 +92,10 @@ class WriteCodeTool(BaseTool):
                 len(pred.filename) < 250,
                 "Filename must be short and consice"
             )
-            observation = self.write_code(pred.filename, pred.content)
+            observation = self.write_code(pred.filename, pred.code)
             return dspy.Prediction(
                 filename = pred.filename,
-                content = pred.content,
+                code = pred.code,
                 observation = observation,
             )
         else:

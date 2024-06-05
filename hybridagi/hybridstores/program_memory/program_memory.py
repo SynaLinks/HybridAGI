@@ -4,22 +4,8 @@ import uuid
 import os
 from falkordb import Node, Graph
 from typing import List, Dict, Optional, Tuple
-from ..hybridstore import HybridStore
+from ..hybridstore import HybridStore, RESERVED_NAMES
 from ...embeddings.base import BaseEmbeddings
-
-RESERVED_NAMES = [
-    "main",
-    "playground",
-    "filesystem",
-    "program_memory",
-    "trace_memory",
-    "fact_memory",
-    "\u006D\u0061\u0069\u006E",
-    "\u0070\u006C\u0061\u0079\u0067\u0072\u006F\u0075\u006E\u0064",
-    "\u0066\u0069\u006C\u0065\u0073\u0079\u0073\u0074\u0065\u006D",
-    "\u0070\u0072\u006F\u0067\u0072\u0061\u006D\u005F\u006D\u0065\u006D\u006F\u0072\u0079",
-    "\u0074\u0072\u0061\u0063\u0065\u005F\u006D\u0065\u006D\u006F\u0072\u0079",
-]
 
 class ProgramMemory(HybridStore):
     """The program memory"""
@@ -203,6 +189,7 @@ class ProgramMemory(HybridStore):
         return starting_node
 
     def clear(self):
+        """Clear the program memory"""
         programs = self.get_program_names()
         for prog in programs:
             try:

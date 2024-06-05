@@ -4,9 +4,9 @@ import copy
 import dspy
 from .base import BaseTool
 from ..hybridstores.program_memory.program_memory import ProgramMemory
-from ..parsers.program_name import ProgramNameOutputParser
-from ..parsers.cypher import CypherOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.program_name import ProgramNameOutputParser
+from ..output_parsers.cypher import CypherOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 from ..utility.tester import TesterUtility
 
 class WriteProgramSignature(dspy.Signature):

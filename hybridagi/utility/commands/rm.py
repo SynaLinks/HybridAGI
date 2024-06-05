@@ -4,10 +4,9 @@ from typing import List
 from .base import BaseShellCommand
 from ...hybridstores.filesystem.context import FileSystemContext
 from ...hybridstores.filesystem.filesystem import FileSystem
-from ...parsers.path import PathOutputParser
+from ...output_parsers.path import PathOutputParser
 
 class Remove(BaseShellCommand):
-    path_parser: PathOutputParser = PathOutputParser()
 
     def __init__(self, filesystem: FileSystem):
         super().__init__(
@@ -15,6 +14,7 @@ class Remove(BaseShellCommand):
             name = "rm",
             description = "remove the input file or empty folder",
         )
+        self.path_parser = PathOutputParser()
 
     def execute(self, args: List[str], ctx: FileSystemContext) -> str:
         """Method to remove a file or empty folder"""
@@ -31,11 +31,14 @@ class Remove(BaseShellCommand):
             raise ValueError(f"Cannot remove {path}: No such file or directory")
         if not self.filesystem.is_empty(path):
             return ValueError(f"Cannot remove {path}: Not empty directory")
+        params = {"path": path}
         self.filesystem.hybridstore.query(
-            'MATCH (n {name:"'+path+'"})-[:CONTAINS]->(m) DETACH DELETE m'
+            'MATCH (n {name:$path})-[:CONTAINS]->(m) DETACH DELETE m',
+            params = params,
         )
         self.filesystem.hybridstore.query(
-            'MATCH (n {name:"'+path+'"}) DETACH DELETE n'
+            'MATCH (n {name:$path}) DETACH DELETE n',
+            params = params,
         )
         return f"Sucessfully removed {path}"
 

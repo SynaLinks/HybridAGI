@@ -120,7 +120,6 @@ import sys
 sys.modules["ipdb"] = {write_denial_function}
 sys.modules["joblib"] = {write_denial_function}
 sys.modules["resource"] = {write_denial_function}
-sys.modules["psutil"] = {write_denial_function}
 sys.modules["tkinter"] = {write_denial_function}
 """
 
@@ -129,7 +128,10 @@ class JupyterNotebook():
         self.km = KernelManager()
         self.km.start_kernel()
         self.kc = self.km.client()
-        _ = self.add_and_run(TOOLS_CODE)
+        # This throw Exception during subprocesses termination 'function' object has no attribute 'PROCFS_PATH'
+        # I need to find a way to properly protect the filesystem
+        _,_ = self.add_and_run(TOOLS_CODE)
+        _,_ = self.add_and_run(GUARD_CODE)
 
     def clean_output(self, outputs: List[str]):
         outputs_only_str = list()
@@ -233,7 +235,6 @@ class CodeInterpreterUtility:
         return output
 
     def execute_code_and_return_output(self, code_str: str) -> Tuple[str, str]:
-        _, _ = self.nb.add_and_run(GUARD_CODE)
         outputs, error = self.nb.add_and_run(code_str)
         return outputs, error
 
@@ -256,7 +257,6 @@ class CodeInterpreterUtility:
             output, plots = self.extract_plots(output)
         return output, plots, error
         
-
     def reset(self):
         self.nb.close()
         self.nb = JupyterNotebook()

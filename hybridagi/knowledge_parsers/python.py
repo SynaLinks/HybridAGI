@@ -1,7 +1,7 @@
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser, Tree, Node
 from .base import KnowledgeParserBase
-from ...hybridstores.fact_memory.fact_memory import FactMemory
+from ..hybridstores.fact_memory.fact_memory import FactMemory
 
 PY_LANGUAGE = Language(tspython.language())
 
@@ -11,7 +11,10 @@ class PythonKnowledgeParser(KnowledgeParserBase):
             self,
             fact_memory: FactMemory,
         ):
-        super().__init__(fact_memory = fact_memory)
+        super().__init__(
+            fact_memory = fact_memory,
+            valid_extensions = [".py"],
+        )
         self.parser = Parser(PY_LANGUAGE)
 
     def parse(self, filename:str, code: str):

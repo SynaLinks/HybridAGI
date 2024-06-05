@@ -6,7 +6,7 @@ import json
 import dspy
 from .base import BaseTool
 from ..types.state import AgentState
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class AskUserSignature(dspy.Signature):
     """You will be given an objective, purpose and context

@@ -7,8 +7,8 @@ from typing import Optional
 from ..embeddings.base import BaseEmbeddings
 from ..hybridstores.fact_memory.fact_memory import FactMemory
 from ..retrievers.entity import EntityRetriever
-from ..parsers.list_query import ListQueryOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.list_query import ListQueryOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class EntitySearchSignature(dspy.Signature):
     """You will be given an objective, purpose and context

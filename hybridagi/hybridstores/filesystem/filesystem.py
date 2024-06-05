@@ -5,7 +5,7 @@ from ..hybridstore import HybridStore
 from typing import List, Dict, Optional, Any
 from .path import dirname, join
 
-from ...text_splitter.sentence import SentenceTextSplitter
+from ...text_splitters.sentence import SentenceTextSplitter
 
 from .context import FileSystemContext
 from ...embeddings.base import BaseEmbeddings

@@ -6,11 +6,13 @@ from colorama import Fore, Style
 import dspy
 from .base import BaseTool
 from ..types.state import AgentState
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class SpeakSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct message to send to the user"""
+    Using the prompt to help you, you will infer the correct message to send to the user
+    
+    Note: Note: Do not include any explanations or apologies in your responses."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")

@@ -14,6 +14,8 @@ from .call_program import CallProgramTool
 from .write_file import WriteFileTool
 from .append_file import AppendFileTool
 from .read_file import ReadFileTool
+from .internal_shell import InternalShellTool
+from .upload import UploadTool
 
 from .write_program import WriteProgramTool
 from .read_program import ReadProgramTool
@@ -24,10 +26,12 @@ from .ask_user import AskUserTool
 from .clear_trace import ClearTraceTool
 from .revert_trace import RevertTraceTool
 
-from .internal_shell import InternalShellTool
 from .remote_shell import RemoteShellTool
 
-from .upload import UploadTool
+from .query_facts import QueryFactsTool
+
+from .code_interpreter import CodeInterpreterTool
+
 
 __all__ = [
     PredictTool,
@@ -46,6 +50,8 @@ __all__ = [
     WriteFileTool,
     AppendFileTool,
     ReadFileTool,
+    InternalShellTool,
+    UploadTool,
 
     WriteProgramTool,
     ReadProgramTool,
@@ -55,9 +61,10 @@ __all__ = [
 
     ClearTraceTool,
     RevertTraceTool,
-
-    InternalShellTool,
+    
     RemoteShellTool,
 
-    UploadTool,
+    QueryFactsTool,
+
+    CodeInterpreterTool,
 ]

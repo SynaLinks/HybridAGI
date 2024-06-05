@@ -4,7 +4,7 @@ from typing import List
 from .base import BaseShellCommand
 from ...hybridstores.filesystem.context import FileSystemContext
 from ...hybridstores.filesystem.filesystem import FileSystem
-from ...parsers.path import PathOutputParser
+from ...output_parsers.path import PathOutputParser
 
 class ChangeDirectory(BaseShellCommand):
     path_parser: PathOutputParser = PathOutputParser()

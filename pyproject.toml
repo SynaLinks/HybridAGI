@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hybridagi"
-version = "0.2.0"
+version = "0.2.001"
 description = "The Programmable Neuro-Symbolic AGI"
 authors = ["YoanSallami - SynaLinks"]
 readme = "README.md"
@@ -17,12 +17,11 @@ mistralai = ">=0.1.8"
 faiss-cpu = ">=1.8.0"
 tree-sitter = ">=0.22"
 tree-sitter-python = ">=0.21"
-codeshield = "^1.0.1"
-jupyter-client = "^8.3.0"
-jupyter-core = "^5.5.0"
-ipykernel = "^6.29.4"
-matplotlib = "^3.8.4"
-pillow = "^10.3.0"
+codeshield = ">=1.0.1"
+jupyter-client = ">=8.3.0"
+jupyter-core = ">=5.5.0"
+ipykernel = ">=6.29.4"
+pillow = ">=10.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.1.1"

@@ -4,7 +4,7 @@ import copy
 import dspy
 from .base import BaseTool
 from ..hybridstores.filesystem.filesystem import FileSystem
-from ..parsers.path import PathOutputParser
+from ..output_parsers.path import PathOutputParser
 from ..types.state import AgentState
 
 class AppendFileSignature(dspy.Signature):

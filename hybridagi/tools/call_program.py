@@ -6,8 +6,8 @@ from .base import BaseTool
 from typing import Optional, Callable
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..types.state import AgentState
-from ..parsers.program_name import ProgramNameOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.program_name import ProgramNameOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class CallProgramSignature(dspy.Signature):
     """You will be given an objective, purpose and context

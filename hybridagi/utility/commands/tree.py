@@ -5,7 +5,7 @@ from .base import BaseShellCommand
 from ...hybridstores.filesystem.context import FileSystemContext
 from ...hybridstores.filesystem.filesystem import FileSystem
 from ...hybridstores.filesystem.path import basename
-from ...parsers.path import PathOutputParser
+from ...output_parsers.path import PathOutputParser
 
 ELBOW = "└──"
 TEE = "├──"
@@ -78,12 +78,14 @@ class Tree(BaseShellCommand):
 
     def _get_subdirectories(self, path: str) -> List[str]:
         """Retrieve the folders of the given folder."""
-        query = 'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n'
-        result_query = self.filesystem.hybridstore.query(query)
+        params = {"path": path}
+        query = 'MATCH (f:Folder {name:$path})-[:CONTAINS]->(n:Folder) RETURN n'
+        result_query = self.filesystem.hybridstore.query(query, params=params)
         return sorted(record[0].properties["name"] for record in result_query.result_set)
 
     def _get_files(self, path: str) -> List[str]:
         """Retrieve the files of the given folder."""
-        query = 'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n'
-        result_query = self.filesystem.hybridstore.query(query)
+        params = {"path": path}
+        query = 'MATCH (f:Folder {name:$path})-[:CONTAINS]->(n:Document) RETURN n'
+        result_query = self.filesystem.hybridstore.query(query, params=params)
         return sorted(record[0].properties["name"] for record in result_query.result_set)

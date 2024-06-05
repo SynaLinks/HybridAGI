@@ -12,8 +12,8 @@ from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..types.actions import AgentAction, AgentDecision, ProgramCall, ProgramEnd
 from ..types.state import AgentState
-from ..parsers.decision import DecisionOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.decision import DecisionOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 random.seed(123)
 
@@ -36,7 +36,8 @@ class DecisionSignature(dspy.Signature):
 
 class FinishSignature(dspy.Signature):
     """You will be given an objective, and trace
-    Using the trace, you will infer the correct answer to the objective's question or a summary of what have been done"""
+    Using the trace, you will infer the correct answer to the objective's question or a summary of what have been done.
+    If the answer is not in the trace, just say that you don't know."""
     trace = dspy.InputField(desc="The previous actions (what you have done)")
     objective = dspy.InputField(desc="Long-term objective (what you tried to accomplish or answer)")
     answer = dspy.OutputField(desc="The answer to the objective's question")
@@ -53,8 +54,8 @@ class GraphProgramInterpreter(dspy.Module):
             entrypoint: str = "main",
             num_history: int = 5,
             max_iters: int = 20,
-            commit_decision: bool = True,
-            commit_program_flow: bool = True,
+            commit_decision_steps: bool = True,
+            commit_program_flow_steps: bool = True,
             return_final_answer: bool = True,
             return_program_trace: bool = True,
             return_chat_history: bool = True,
@@ -67,8 +68,8 @@ class GraphProgramInterpreter(dspy.Module):
         self.entrypoint = entrypoint
         self.num_history = num_history
         self.max_iters = max_iters
-        self.commit_decision = commit_decision
-        self.commit_program_flow = commit_program_flow
+        self.commit_decision_steps = commit_decision_steps
+        self.commit_program_flow_steps = commit_program_flow_steps
         self.decision_parser = DecisionOutputParser()
         self.prediction_parser = PredictionOutputParser()
         self.return_final_answer = return_final_answer
@@ -100,7 +101,7 @@ class GraphProgramInterpreter(dspy.Module):
                 step = self.call_program(program_purpose, program_name)
                 if self.trace_memory:
                     self.trace_memory.commit(step)
-                if self.commit_program_flow:
+                if self.commit_program_flow_steps:
                     self.agent_state.program_trace.append(str(step))
                     if self.verbose:
                         print(f"{CONTROL_COLOR}{step}{Style.RESET_ALL}")
@@ -152,7 +153,7 @@ class GraphProgramInterpreter(dspy.Module):
                 )
                 if self.trace_memory:
                     self.trace_memory.commit(step)
-                if self.commit_decision:
+                if self.commit_decision_steps:
                     self.agent_state.program_trace.append(str(step))
                     if self.verbose:
                         print(f"{DECISION_COLOR}{step}{Style.RESET_ALL}")
@@ -166,7 +167,7 @@ class GraphProgramInterpreter(dspy.Module):
                     if step is not None:
                         if self.trace_memory:
                             self.trace_memory.commit(step)
-                        if self.commit_program_flow:
+                        if self.commit_program_flow_steps:
                             self.agent_state.program_trace.append(str(step))
                             if self.verbose:
                                 print(f"{CONTROL_COLOR}{step}{Style.RESET_ALL}")

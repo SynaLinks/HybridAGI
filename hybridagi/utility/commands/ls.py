@@ -5,7 +5,7 @@ from .base import BaseShellCommand
 from ...hybridstores.filesystem.context import FileSystemContext
 from ...hybridstores.filesystem.filesystem import FileSystem
 from ...hybridstores.filesystem.path import basename
-from ...parsers.path import PathOutputParser
+from ...output_parsers.path import PathOutputParser
 
 class ListDirectory(BaseShellCommand):
     path_parser: PathOutputParser = PathOutputParser()
@@ -34,14 +34,17 @@ class ListDirectory(BaseShellCommand):
                 raise ValueError(f"Cannot list {path}: Not a directory")
         else:
             raise ValueError(f"Cannot list {path}: No such file or directory")
+        params = {"path": path}
         result_query = self.filesystem.hybridstore.query(
-            'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Folder) RETURN n'
+            'MATCH (f:Folder {name:$path})-[:CONTAINS]->(n:Folder) RETURN n',
+            params = params,
         )
         for record in result_query.result_set:
             folder_name = record[0].properties["name"]
             result_list.append(basename(folder_name))
         result_query = self.filesystem.hybridstore.query(
-            'MATCH (f:Folder {name:"'+path+'"})-[:CONTAINS]->(n:Document) RETURN n'
+            'MATCH (f:Folder {name:$path})-[:CONTAINS]->(n:Document) RETURN n',
+            params = params,
         )
         for record in result_query.result_set:
             document_name = record[0].properties["name"]

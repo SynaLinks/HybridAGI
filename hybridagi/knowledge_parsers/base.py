@@ -1,24 +1,21 @@
 import os
-from collections import deque
-from ..hybridstores.fact_memory.fact_memory import FactMemory
+import abc
 from typing import List
+from ..hybridstores.fact_memory.fact_memory import FactMemory
 
-from .knowledge_parsers.python import PythonKnowledgeParser
-
-class CodeParserUtility():
+class KnowledgeParserBase():
 
     def __init__(
             self,
             fact_memory: FactMemory,
-            language: str,
+            valid_extensions: List[str],
         ):
         self.fact_memory = fact_memory
-        if language == "python":
-            self.language = language
-            self.extension = ".py"
-            self.parser = PythonKnowledgeParser(fact_memory=fact_memory)
-        else:
-            raise NotImplementedError(f"{language} parsing not implemented")
+        self.valid_extensions = valid_extensions
+
+    @abc.abstractmethod
+    def parse(self, filename: str, content: str):
+        pass
 
     def add_folders(
             self,
@@ -29,11 +26,12 @@ class CodeParserUtility():
             for dirpath, dirnames, filenames in os.walk(folder):
                 for filename in filenames:
                     if not filename.startswith("."):
-                        if filename.endswith(self.extension):
+                        _, extension = os.path.splitext(filename)
+                        if extension in self.valid_extensions:
                             source = os.path.join(dirpath, filename)
                             try:
                                 f = open(source, "r")
                                 file_content = f.read()
-                                self.parser.parse(filename, file_content)
+                                self.parse(filename, file_content)
                             except Exception:
                                 continue

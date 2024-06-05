@@ -5,7 +5,7 @@ from .base import BaseShellCommand
 from ...hybridstores.filesystem.context import FileSystemContext
 from ...hybridstores.filesystem.filesystem import FileSystem
 from ...hybridstores.filesystem.path import dirname
-from ...parsers.path import PathOutputParser
+from ...output_parsers.path import PathOutputParser
 
 class MakeDirectory(BaseShellCommand):
     path_parser: PathOutputParser = PathOutputParser()

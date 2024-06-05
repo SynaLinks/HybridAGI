@@ -7,8 +7,8 @@ from typing import Optional
 from ..embeddings.base import BaseEmbeddings
 from ..hybridstores.trace_memory.trace_memory import TraceMemory
 from ..retrievers.action import ActionRetriever
-from ..parsers.list_query import ListQueryOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.list_query import ListQueryOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class ActionSearchSignature(dspy.Signature):
     """You will be given an objective, purpose and context

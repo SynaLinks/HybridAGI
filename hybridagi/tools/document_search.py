@@ -7,8 +7,8 @@ from typing import Optional
 from ..embeddings.base import BaseEmbeddings
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..retrievers.document import DocumentRetriever
-from ..parsers.list_query import ListQueryOutputParser
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.list_query import ListQueryOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class DocumentSearchSignature(dspy.Signature):
     """You will be given an objective, purpose and context

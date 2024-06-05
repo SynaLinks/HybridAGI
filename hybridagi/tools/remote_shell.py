@@ -5,7 +5,7 @@ import shlex
 import copy
 import dspy
 from .base import BaseTool
-from ..parsers.prediction import PredictionOutputParser
+from ..output_parsers.prediction import PredictionOutputParser
 
 class RemoteShellSignature(dspy.Signature):
     """You will be given an objective, purpose and context

@@ -1,8 +1,8 @@
 from hybridagi import FactMemory
 from hybridagi import FakeEmbeddings
-from hybridagi import CodeParserUtility
+from hybridagi import PythonKnowledgeParser
 
-def test_code_parser():
+def test_python_parser():
     emb = FakeEmbeddings(dim=250)
     memory = FactMemory(
         index_name="test",
@@ -10,12 +10,11 @@ def test_code_parser():
         wipe_on_start=True,
     )
 
-    code_parser = CodeParserUtility(
+    parser = PythonKnowledgeParser(
         fact_memory = memory,
-        language = "python",
     )
 
-    code_parser.parser.parse(filename="test.py", code=\
+    parser.parse(filename="test.py", code=\
 """
 class HelloClass2(object, Base):
 
@@ -50,9 +49,8 @@ def test_code_parser_with_large_project():
         wipe_on_start=True,
     )
 
-    code_parser = CodeParserUtility(
+    parser = PythonKnowledgeParser(
         fact_memory = memory,
-        language = "python",
     )
     
-    code_parser.add_folders(["hybridagi/"])
+    parser.add_folders(["hybridagi/"])

@@ -10,17 +10,17 @@ from .retrievers.program import ProgramRetriever
 from .retrievers.action import ActionRetriever
 from .retrievers.entity import EntityRetriever
 
-from .text_splitter.base import BaseTextSplitter
-from .text_splitter.sentence import SentenceTextSplitter
+from .text_splitters.base import BaseTextSplitter
+from .text_splitters.sentence import SentenceTextSplitter
 
 from .embeddings.base import BaseEmbeddings
 from .embeddings.fake import FakeEmbeddings
 from .embeddings.sentence_transformer import SentenceTransformerEmbeddings
 
-from .parsers.cypher import CypherOutputParser
-from .parsers.path import PathOutputParser
-from .parsers.file import FileOutputParser
-from .parsers.decision import DecisionOutputParser
+from .output_parsers.cypher import CypherOutputParser
+from .output_parsers.path import PathOutputParser
+from .output_parsers.file import FileOutputParser
+from .output_parsers.decision import DecisionOutputParser
 
 from .types.actions import (
     AgentAction,
@@ -34,6 +34,7 @@ from .utility.shell import ShellUtility
 from .utility.reader import ReaderUtility
 from .utility.archiver import ArchiverUtility
 from .utility.tester import TesterUtility
+from .utility.code_interpreter import CodeInterpreterUtility
 
 from .utility.commands import (
     BaseShellCommand,
@@ -48,8 +49,7 @@ from .utility.commands import (
 
 from .agents.interpreter import GraphProgramInterpreter
 
-from .utility.code_parser import CodeParserUtility
-from .utility.code_interpreter import CodeInterpreterUtility
+from .knowledge_parsers.python import PythonKnowledgeParser
 
 __all__ = [
     CypherOutputParser,
@@ -94,6 +94,5 @@ __all__ = [
     Remove,
     Tree,
 
-    CodeParserUtility,
     CodeInterpreterUtility,
 ]
