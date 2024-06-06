@@ -5,7 +5,6 @@ from hybridagi import ProgramMemory, AgentState
 from hybridagi.tools import (
     PredictTool,
     CodeInterpreterTool,
-    PredictTool,
     SpeakTool,
 )
 from pydantic import BaseModel
@@ -37,14 +36,14 @@ class CritiqueToScoreSignature(dspy.Signature):
 
 def program_success(example, pred, trace=None):
     question = example.objective
+    if pred.finish_reason == "max iters":
+        return False
     with dspy.context(lm=teacher_llm):
         prediction = dspy.ChainOfThought(AssessAnswer)(
             assessed_answer = pred.final_answer,
             assessed_question = question,
         )
         # If the agent is stuck in a loop we discard the example
-        if pred.finish_reason == "max iters":
-            return False
         result = dspy.TypedPredictor(CritiqueToScoreSignature)(critique=prediction.critique)
     return result.score.score
 
@@ -157,6 +156,7 @@ optimizer = BootstrapFewShot(
 
 interpreter = GraphProgramInterpreter(
     program_memory = program_memory,
+    agent_state = agent_state,
     tools = tools,
     num_history=5,
     max_iters=10, # after 10 steps we consider the agent stuck in a loop

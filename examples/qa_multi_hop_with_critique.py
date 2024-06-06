@@ -32,14 +32,14 @@ class CritiqueToScoreSignature(dspy.Signature):
 
 def program_success(example, pred, trace=None):
     question = example.objective
+    # If the agent is stuck in a loop we discard the example
+    if pred.finish_reason == "max iters":
+        return False
     with dspy.context(lm=teacher_llm):
         prediction = dspy.ChainOfThought(AssessAnswer)(
             assessed_answer = pred.final_answer,
             assessed_question = question,
         )
-        # If the agent is stuck in a loop we discard the example
-        if pred.finish_reason == "max iters":
-            return False
         result = dspy.TypedPredictor(CritiqueToScoreSignature)(critique=prediction.critique)
     return result.score.score
 
