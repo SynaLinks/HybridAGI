@@ -2,8 +2,19 @@
 name = "hybridagi"
 version = "0.2.001"
 description = "The Programmable Neuro-Symbolic AGI"
-authors = ["YoanSallami - SynaLinks"]
 readme = "README.md"
+authors = ["Yoan Sallami"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+
+[project.urls]
+homepage = "https://github.com/SynaLinks/HybridAGI"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
@@ -15,13 +26,17 @@ dspy-ai = ">=2.4.9"
 colorama = ">=0.4.6"
 mistralai = ">=0.1.8"
 faiss-cpu = ">=1.8.0"
-tree-sitter = ">=0.22"
-tree-sitter-python = ">=0.21"
+pillow = ">=10.3.0"
 codeshield = ">=1.0.1"
+tree-sitter = ">=0.22.3"
+tree-sitter-python = [
+    {platform = "darwin", git="https://github.com/tree-sitter/tree-sitter-python", tag="v0.21.0"},
+    {platform = "linux", version="0.21.0"},
+]
 jupyter-client = ">=8.3.0"
 jupyter-core = ">=5.5.0"
 ipykernel = ">=6.29.4"
-pillow = ">=10.3.0"
+matplotlib = ">=3.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.1.1"

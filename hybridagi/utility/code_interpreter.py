@@ -15,6 +15,7 @@
 # limitations under the License.
 
 from jupyter_client import KernelManager
+
 import threading
 import re
 import os
@@ -65,15 +66,9 @@ show_plot = """def show(*args, **kwargs) -> None:
     plt.savefig(buffer, format="png")
     buffer.seek(0)
     encoded_img = base64.b64encode(buffer.read())
-    print(f"<image>{encoded_img.decode('utf8')}</image>")"""
+    print(f"<matplot>{encoded_img.decode('utf8')}</matplot>")"""
 
 GUARD_CODE = f"""
-{show_plot}
-
-import matplotlib.pyplot as plt
-
-plt.show = show
-
 import os
 
 os.kill = {write_denial_function}
@@ -121,6 +116,12 @@ sys.modules["ipdb"] = {write_denial_function}
 sys.modules["joblib"] = {write_denial_function}
 sys.modules["resource"] = {write_denial_function}
 sys.modules["tkinter"] = {write_denial_function}
+
+{show_plot}
+
+import matplotlib.pyplot as plt
+
+plt.show = show
 """
 
 class JupyterNotebook():
@@ -240,10 +241,10 @@ class CodeInterpreterUtility:
 
     def extract_plots(self, output: str) -> List[Image.Image]:
         plots = []
-        pattern = r"<image>(.*?)</image>"
+        pattern = r"<matplot>(.*?)</matplot>"
         matches = re.findall(pattern, output, re.DOTALL)
         for m in matches:
-            output = output.replace("<image>"+m+"</image>", "")
+            output = output.replace("<matplot>"+m+"</matplot>", "")
             msg = base64.b64decode(m)
             buffer = io.BytesIO(msg)
             img = Image.open(buffer)

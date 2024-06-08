@@ -1,5 +1,7 @@
+
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser, Tree, Node
+
 from .base import KnowledgeParserBase
 from ..hybridstores.fact_memory.fact_memory import FactMemory
 

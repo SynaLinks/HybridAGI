@@ -1,10 +1,12 @@
-from hybridagi import CodeInterpreterUtility
 
 def test_code_interpreter_plots():
+    from hybridagi import CodeInterpreterUtility
     interpreter = CodeInterpreterUtility()
 
     code = \
 """
+import matplotlib.pyplot as plt
+
 # Générer des données aléatoires
 x = np.arange(10)  # Générer une séquence de 10 nombres (0 à 9)
 y = np.random.rand(10)  # Générer 10 nombres aléatoires
@@ -21,11 +23,13 @@ plt.ylabel('Valeur aléatoire')
 plt.show()
 """
     result, plots, err = interpreter.add_and_run(code)
+    print(result)
     assert len(plots) == 1
     assert result == ""
     assert err == False
 
 def test_code_interpreter_panda():
+    from hybridagi import CodeInterpreterUtility
     interpreter = CodeInterpreterUtility()
 
     code = \
