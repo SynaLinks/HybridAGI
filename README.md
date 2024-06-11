@@ -9,11 +9,12 @@
 ---
 [![Discord Channel](https://dcbadge.vercel.app/api/server/82nt97uXcM)](https://discord.gg/82nt97uXcM)
 
-
 <p align="center">
-  ![HybridAGI fact memory](img/architecture.svg)
+  <img alt="HybridAGI architecture" src="img/architecture.svg"/>
   <figcaption align="center"><b>HybridAGI's AgentOS architecture. The Graph Program Interpreter orchestrate every other component using tools as Action. It can also interact with the user during the execution of a program.</b></figcaption>
 </p>
+
+---
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=ZNjXU4L1OsU">
@@ -198,7 +199,7 @@ The memory is another aspect where HybridAGI is unique. First we centralize know
 
 <figure>
   <p align="center">
-    ![HybridAGI memories](img/memories.svg)
+    <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
     <figcaption align="center"><b>Fig.1 - HybridAGI's memories. Each memory system can be used in combinaiton with each other providing the best of vectors and graph retrieval.</b></figcaption>
   </p>
 </figure>
