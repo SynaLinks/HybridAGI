@@ -35,6 +35,7 @@ from .utility.reader import ReaderUtility
 from .utility.archiver import ArchiverUtility
 from .utility.tester import TesterUtility
 from .utility.code_interpreter import CodeInterpreterUtility
+from .utility.browser import BrowserUtility
 
 from .utility.commands import (
     BaseShellCommand,
@@ -95,4 +96,5 @@ __all__ = [
     Tree,
 
     CodeInterpreterUtility,
+    BrowserUtility,
 ]

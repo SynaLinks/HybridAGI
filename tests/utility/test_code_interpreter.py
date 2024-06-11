@@ -1,6 +1,7 @@
+from hybridagi import CodeInterpreterUtility
 
 def test_code_interpreter_plots():
-    from hybridagi import CodeInterpreterUtility
+    
     interpreter = CodeInterpreterUtility()
 
     code = \

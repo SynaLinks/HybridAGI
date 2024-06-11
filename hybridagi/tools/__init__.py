@@ -26,12 +26,10 @@ from .ask_user import AskUserTool
 from .clear_trace import ClearTraceTool
 from .revert_trace import RevertTraceTool
 
-from .remote_shell import RemoteShellTool
-
 from .query_facts import QueryFactsTool
 
 from .code_interpreter import CodeInterpreterTool
-
+from .browse_website import BrowseWebsiteTool
 
 __all__ = [
     PredictTool,
@@ -61,10 +59,9 @@ __all__ = [
 
     ClearTraceTool,
     RevertTraceTool,
-    
-    RemoteShellTool,
 
     QueryFactsTool,
 
     CodeInterpreterTool,
+    BrowseWebsiteTool,
 ]

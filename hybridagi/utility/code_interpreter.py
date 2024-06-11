@@ -15,6 +15,7 @@
 # limitations under the License.
 
 from jupyter_client import KernelManager
+from jupyter_core.paths import jupyter_data_dir, jupyter_runtime_dir, secure_write
 
 import threading
 import re
@@ -125,12 +126,15 @@ plt.show = show
 """
 
 class JupyterNotebook():
-    def __init__(self):
+    def __init__(
+            self,
+            preload_code: str = "",
+        ):
         self.km = KernelManager()
         self.km.start_kernel()
         self.kc = self.km.client()
-        # This throw Exception during subprocesses termination 'function' object has no attribute 'PROCFS_PATH'
-        # I need to find a way to properly protect the filesystem
+        if preload_code:
+            _,_ = self.add_and_run(preload_code)
         _,_ = self.add_and_run(TOOLS_CODE)
         _,_ = self.add_and_run(GUARD_CODE)
 
@@ -209,10 +213,14 @@ class CodeInterpreterUtility:
 
     def __init__(
             self,
+            preload_code: str = "",
             nb : Optional[JupyterNotebook] = None,
         ):
+        self.preload_code = preload_code
         if nb is None:
-            self.nb = JupyterNotebook()
+            self.nb = JupyterNotebook(
+                preload_code = self.preload_code
+            )
         else:
             self.nb = nb
 
@@ -260,4 +268,4 @@ class CodeInterpreterUtility:
         
     def reset(self):
         self.nb.close()
-        self.nb = JupyterNotebook()
+        self.nb = JupyterNotebook(self.preload_code)

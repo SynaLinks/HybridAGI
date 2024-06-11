@@ -1,6 +1,5 @@
 """The document retriever. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
-import numpy as np
 import dspy
 from typing import Union, Optional, List
 from dsp.utils import dotdict

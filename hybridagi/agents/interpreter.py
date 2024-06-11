@@ -54,6 +54,7 @@ class GraphProgramInterpreter(dspy.Module):
             entrypoint: str = "main",
             num_history: int = 5,
             max_iters: int = 20,
+            add_final_step: bool = True,
             commit_decision_steps: bool = True,
             commit_program_flow_steps: bool = True,
             return_final_answer: bool = True,
@@ -68,6 +69,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.entrypoint = entrypoint
         self.num_history = num_history
         self.max_iters = max_iters
+        self.add_final_step = add_final_step
         self.commit_decision_steps = commit_decision_steps
         self.commit_program_flow_steps = commit_program_flow_steps
         self.decision_parser = DecisionOutputParser()
@@ -260,14 +262,22 @@ class GraphProgramInterpreter(dspy.Module):
             else:
                 break
         if self.return_final_answer:
-            prediction = self.finish(
-                trace = "\n".join(self.agent_state.program_trace),
-                objective = self.agent_state.objective,
-            )
-            final_answer = self.prediction_parser.parse(prediction.answer, prefix="Answer:", stop=["---"])
-            self.agent_state.chat_history.append(
-                {"role": "AI", "message": final_answer}
-            )
+            if self.add_final_step:
+                prediction = self.finish(
+                    trace = "\n".join(self.agent_state.program_trace),
+                    objective = self.agent_state.objective,
+                )
+                final_answer = self.prediction_parser.parse(prediction.answer, prefix="Answer:", stop=["---"])
+                self.agent_state.chat_history.append(
+                    {"role": "AI", "message": final_answer}
+                )
+            else:
+                final_answer = ""
+                l = len(self.agent_state.chat_history)
+                for i in range(l):
+                    if self.agent_state.chat_history[l-i]["role"] == "AI":
+                        final_answer = self.agent_state.chat_history[l-i]["message"]
+                        break
         else:
             final_answer = ""
 
