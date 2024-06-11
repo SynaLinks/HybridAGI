@@ -10,13 +10,6 @@
 [![Discord Channel](https://dcbadge.vercel.app/api/server/82nt97uXcM)](https://discord.gg/82nt97uXcM)
 
 <p align="center">
-  <img alt="HybridAGI architecture" src="img/architecture.svg"/>
-  <figcaption align="center"><b>HybridAGI's AgentOS architecture. The Graph Program Interpreter orchestrate every other component using tools as Action. It can also interact with the user during the execution of a program.</b></figcaption>
-</p>
-
----
-
-<p align="center">
   <a href="https://www.youtube.com/watch?v=ZNjXU4L1OsU">
     <img src="img/github_demo_graph.png" width="400" alt="Demo Video"/>
   </a>
@@ -27,6 +20,11 @@
 HybridAGI is an AgentOS framework designed for creating explainable and deterministic agent systems suitable for real-world applications.
 
 It is the first programmable LLM-based agent that enables you to define its behavior using a **graph-based prompt programming** approach. Unlike other frameworks that view agents as advanced chatbots, we have adopted a methodology that is rooted in computer science, cognitive sciences, and symbolic AI.
+
+<p align="center">
+  <img alt="HybridAGI architecture" src="img/architecture.svg"/>
+  <figcaption align="center"><b>HybridAGI's AgentOS architecture. The Graph Program Interpreter orchestrate every other component using tools as Action. It can also interact with the user during the execution of a program.</b></figcaption>
+</p>
 
 ## Why HybridAGI?
 
@@ -200,7 +198,7 @@ The memory is another aspect where HybridAGI is unique. First we centralize know
 <figure>
   <p align="center">
     <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
-    <figcaption align="center"><b>Fig.1 - HybridAGI's memories. Each memory system can be used in combinaiton with each other providing the best of vectors and graph retrieval.</b></figcaption>
+    <figcaption align="center"><b>Fig.2 - HybridAGI long-term memory. Each memory system can be used with each other providing the best of vectors and graph retrieval.</b></figcaption>
   </p>
 </figure>
 
