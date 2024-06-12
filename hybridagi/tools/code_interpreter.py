@@ -16,21 +16,15 @@ class CodeInterpreterSignature(dspy.Signature):
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     code = dspy.OutputField(desc = "The code to write")
 
-# class CorrectCodeSignature(dspy.Signature):
-#     """You will be given a code and error,
-#     using the error to help you you will infer the corrected code"""
-#     input_code = dspy.InputField(desc = "The code to correct")
-#     error = dspy.InputField(desc = "The error encountered")
-#     corrected_code = dspy.OutputField(desc = "The corrected code")
-
 class CodeInterpreterTool(BaseTool):
 
     def __init__(
             self,
             code_interpreter: Optional[CodeInterpreterUtility] = None,
-            preloaded_python_code: str = ""
+            preloaded_python_code: str = "",
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "CodeInterpreter")
+        super().__init__(name = "CodeInterpreter", lm = lm)
         self.predict = dspy.Predict(CodeInterpreterSignature)
         # self.correct = dspy.Predict(CorrectCodeSignature)
         self.preloaded_python_code = preloaded_python_code
@@ -53,12 +47,13 @@ class CodeInterpreterTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.code = pred.code.replace("\\n", "\n")
             pred.code = self.prediction_parser.parse(pred.code,
                 prefix="\n\n```python\n",

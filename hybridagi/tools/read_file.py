@@ -3,6 +3,7 @@
 import copy
 import dspy
 from .base import BaseTool
+from typing import Optional
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.reader import ReaderUtility
 from ..output_parsers.path import PathOutputParser
@@ -24,8 +25,9 @@ class ReadFileTool(BaseTool):
             self,
             filesystem: FileSystem,
             agent_state: AgentState,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "ReadFile")
+        super().__init__(name = "ReadFile", lm = lm)
         self.predict = dspy.Predict(ReadFileSignature)
         self.agent_state = agent_state
         self.filesystem = filesystem

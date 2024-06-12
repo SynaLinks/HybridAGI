@@ -4,6 +4,7 @@ import os
 import copy
 import dspy
 from .base import BaseTool
+from typing import Optional
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.archiver import ArchiverUtility
 from ..output_parsers.path import PathOutputParser
@@ -26,8 +27,9 @@ class UploadTool(BaseTool):
             filesystem: FileSystem,
             agent_state: AgentState,
             downloads_directory: str = "",
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "Upload")
+        super().__init__(name = "Upload", lm = lm)
         self.predict = dspy.Predict(UploadSignature)
         self.agent_state = agent_state
         self.filesystem = filesystem
@@ -56,12 +58,13 @@ class UploadTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.filename = self.prediction_parser.parse(
                 pred.filename,
                 prefix="Filename:",

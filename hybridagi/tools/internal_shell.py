@@ -4,6 +4,7 @@ import shlex
 import copy
 import dspy
 from .base import BaseTool
+from typing import Optional
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..utility.shell import ShellUtility
 from ..output_parsers.prediction import PredictionOutputParser
@@ -33,6 +34,7 @@ class InternalShellTool(BaseTool):
             self,
             filesystem: FileSystem,
             agent_state: AgentState,
+            lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = "InternalShell")
         self.predict = dspy.Predict(InternalShellSignature)
@@ -80,12 +82,13 @@ class InternalShellTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.unix_shell_command = self.prediction_parser.parse(
                 pred.unix_shell_command,
                 prefix = "Unix Shell Command:",

@@ -1,6 +1,7 @@
 """The predict tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import dspy
+from typing import Optional
 from .base import BaseTool
 from ..output_parsers.prediction import PredictionOutputParser
 
@@ -15,8 +16,11 @@ class PredictSignature(dspy.Signature):
 
 class PredictTool(BaseTool):
 
-    def __init__(self):
-        super().__init__(name = "Predict")
+    def __init__(
+            self,
+            lm: Optional[dspy.LM] = None,
+        ):
+        super().__init__(name = "Predict", lm = lm)
         self.predict = dspy.Predict(PredictSignature)
         self.prediction_parser = PredictionOutputParser()
     
@@ -30,12 +34,13 @@ class PredictTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.answer = self.prediction_parser.parse(pred.answer, prefix = "Answer:")
             return dspy.Prediction(
                 answer = pred.answer

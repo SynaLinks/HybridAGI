@@ -18,8 +18,12 @@ class BrowseWebsiteSignature(dspy.Signature):
 
 class BrowseWebsiteTool(BaseTool):
 
-    def __init__(self, k: int = 2):
-        super().__init__(name = "BrowseWebsite")
+    def __init__(
+            self,
+            k: int = 2,
+            lm: Optional[dspy.LM] = None,
+        ):
+        super().__init__(name = "BrowseWebsite", lm = lm)
         self.predict = dspy.Predict(BrowseWebsiteSignature)
         self.prediction_parser = PredictionOutputParser()
     
@@ -34,12 +38,13 @@ class BrowseWebsiteTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.url = self.prediction_parser.parse(pred.url, prefix="Url:", stop=["\n"])
             result = self.browser.browse_website(pred.url)
             return dspy.Prediction(

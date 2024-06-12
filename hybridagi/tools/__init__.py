@@ -1,6 +1,6 @@
+from .base import BaseTool, Tool
+
 from .predict import PredictTool
-from .chain_of_thought import ChainOfThoughtTool
-from .program_of_thought import ProgramOfThoughtTool
 
 from .duckduckgo_search import DuckDuckGoSearchTool
 from .document_search import DocumentSearchTool
@@ -32,9 +32,10 @@ from .code_interpreter import CodeInterpreterTool
 from .browse_website import BrowseWebsiteTool
 
 __all__ = [
+    Tool,
+    BaseTool,
+
     PredictTool,
-    ChainOfThoughtTool,
-    ProgramOfThoughtTool,
 
     DuckDuckGoSearchTool,
     DocumentSearchTool,

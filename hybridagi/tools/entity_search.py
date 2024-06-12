@@ -27,8 +27,9 @@ class EntitySearchTool(BaseTool):
             embeddings: BaseEmbeddings,
             distance_threshold: float = 1.25,
             k: int = 3,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "EntitySearch")
+        super().__init__(name = "EntitySearch", lm = lm)
         self.predict = dspy.Predict(EntitySearchSignature)
         self.fact_memory = fact_memory
         self.embeddings = embeddings
@@ -54,12 +55,13 @@ class EntitySearchTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.name = self.prediction_parser.parse(pred.name, prefix="Name:", stop=["\n"])
             query = self.query_parser.parse(pred.name)
             result = self.retriever(query)

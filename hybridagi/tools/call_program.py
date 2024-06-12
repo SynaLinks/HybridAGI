@@ -24,8 +24,9 @@ class CallProgramTool(BaseTool):
             self,
             program_memory: ProgramMemory,
             agent_state: AgentState,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "CallProgram")
+        super().__init__(name = "CallProgram", lm = lm)
         self.agent_state = agent_state
         self.program_memory = program_memory
         self.program_name_parser = ProgramNameOutputParser()
@@ -57,12 +58,13 @@ class CallProgramTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                context = context,
-                objective = objective,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    context = context,
+                    objective = objective,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.selected_routine = self.prediction_parser.parse(
                 pred.selected_routine, prefix="Selected Routine:", stop=["\n"]
             )

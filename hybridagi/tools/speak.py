@@ -26,8 +26,9 @@ class SpeakTool(BaseTool):
             agent_state: AgentState,
             speak_func: Optional[Callable[[str], None]] = None,
             simulated: bool = True,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "Speak")
+        super().__init__(name = "Speak", lm = lm)
         self.predict = dspy.Predict(SpeakSignature)
         self.simulated = simulated
         self.agent_state = agent_state
@@ -52,12 +53,13 @@ class SpeakTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.message = self.prediction_parser.parse(
                 pred.message,
                 prefix = "Message:",

@@ -3,6 +3,7 @@
 import copy
 import dspy
 from .base import BaseTool
+from typing import Optional
 from ..hybridstores.filesystem.filesystem import FileSystem
 from ..output_parsers.path import PathOutputParser
 from ..output_parsers.prediction import PredictionOutputParser
@@ -24,8 +25,9 @@ class WriteFileTool(BaseTool):
             self,
             filesystem: FileSystem,
             agent_state: AgentState,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "WriteFile")
+        super().__init__(name = "WriteFile", lm = lm)
         self.predict = dspy.Predict(WriteFileSignature)
         self.agent_state = agent_state
         self.filesystem = filesystem
@@ -58,12 +60,13 @@ class WriteFileTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.filename = self.prediction_parser.parse(pred.filename, prefix="Filename:", stop=["\n"])
             pred.filename = self.path_parser.parse(pred.filename)
             pred.content = self.prediction_parser.parse(pred.content, prefix="Content:")

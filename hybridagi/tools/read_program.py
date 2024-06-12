@@ -3,6 +3,7 @@
 import copy
 import dspy
 from .base import BaseTool
+from typing import Optional
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..output_parsers.program_name import ProgramNameOutputParser
 
@@ -20,8 +21,9 @@ class ReadProgramTool(BaseTool):
     def __init__(
             self,
             program_memory: ProgramMemory,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "ReadProgram")
+        super().__init__(name = "ReadProgram", lm = lm)
         self.predict = dspy.Predict(ReadProgramSignature)
         self.program_memory = program_memory
         self.parser = ProgramNameOutputParser()
@@ -43,12 +45,13 @@ class ReadProgramTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.filename = self.parser.parse(pred.filename)
             observation = self.read_program(pred.filename)
             return dspy.Prediction(

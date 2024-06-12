@@ -27,8 +27,9 @@ class PastActionSearchTool(BaseTool):
             embeddings: BaseEmbeddings,
             distance_threshold: float = 1.3,
             k: int = 3,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "PastActionSearch")
+        super().__init__(name = "PastActionSearch", lm = lm)
         self.predict = dspy.Predict(ActionSearchSignature)
         self.trace_memory = trace_memory
         self.embeddings = embeddings
@@ -54,12 +55,13 @@ class PastActionSearchTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.query = self.prediction_parser.parse(pred.query, prefix="Query:", stop=["\n"])
             query = self.query_parser.parse(pred.query)
             result = self.retriever(query)

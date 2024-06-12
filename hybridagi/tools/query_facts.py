@@ -3,6 +3,7 @@
 import copy
 import dspy
 from .base import BaseTool
+from typing import Optional
 from ..hybridstores.fact_memory.fact_memory import FactMemory
 from ..output_parsers.cypher import CypherOutputParser
 from ..output_parsers.prediction import PredictionOutputParser
@@ -28,8 +29,9 @@ class QueryFactsTool(BaseTool):
     def __init__(
             self,
             fact_memory: FactMemory,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "QueryFacts")
+        super().__init__(name = "QueryFacts", lm = lm)
         self.predict = dspy.Predict(QueryFactsSignature)
         self.fact_memory = fact_memory
         self.cypher_parser = CypherOutputParser()
@@ -54,13 +56,14 @@ class QueryFactsTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-                cypher_schema = self.fact_memory.get_schema(refresh=True),
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                    cypher_schema = self.fact_memory.get_schema(refresh=True),
+                )
             pred.cypher_query = self.prediction_parser.parse(pred.cypher_query, prefix="\n```cypher", stop=["\n```\n\n"])
             pred.cypher_query = self.cypher_parser.parse(pred.cypher_query)
             output = self.query_facts(pred.query)

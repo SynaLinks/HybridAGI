@@ -1,7 +1,7 @@
 """The ask user tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import copy
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Optional
 import json
 import dspy
 from .base import BaseTool
@@ -32,8 +32,9 @@ class AskUserTool(BaseTool):
             ask_user_func: Optional[Callable[[str], str]] = None,
             num_history: int = 50,
             simulated: bool = True,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "AskUser")
+        super().__init__(name = "AskUser", lm = lm)
         self.predict = dspy.Predict(AskUserSignature)
         self.simulated = simulated
         self.simulate = dspy.Predict(SimulateAnswerSignature)
@@ -56,10 +57,11 @@ class AskUserTool(BaseTool):
             chat_history = chat_history,
             question = question,
         )
-        pred.answer = self.prediction_parser.parse(
-            pred.user_answer,
-            prefix = "User Answer:",
-        )
+        with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+            pred.answer = self.prediction_parser.parse(
+                pred.user_answer,
+                prefix = "User Answer:",
+            )
         return pred.answer
 
     def forward(
@@ -72,12 +74,13 @@ class AskUserTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.question = self.prediction_parser.parse(
                 pred.question,
                 prefix = "Question:",

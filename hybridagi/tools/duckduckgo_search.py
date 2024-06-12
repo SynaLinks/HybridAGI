@@ -18,8 +18,12 @@ class DuckDuckGoSearchSignature(dspy.Signature):
 
 class DuckDuckGoSearchTool(BaseTool):
 
-    def __init__(self, k: int = 2):
-        super().__init__(name = "DuckDuckGoSearch")
+    def __init__(
+            self,
+            k: int = 2,
+            lm: Optional[dspy.LM] = None,
+        ):
+        super().__init__(name = "DuckDuckGoSearch", lm = lm)
         self.predict = dspy.Predict(DuckDuckGoSearchSignature)
         self.k = k
         self.query_parser = QueryOutputParser()
@@ -36,12 +40,13 @@ class DuckDuckGoSearchTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.query = self.prediction_parser.parse(pred.query, prefix="Query:", stop=["\n"])
             pred.query = self.query_parser.parse(pred.query)
             result = DDGS().text(pred.query, max_results=k if k else self.k)

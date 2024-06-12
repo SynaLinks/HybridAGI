@@ -3,6 +3,7 @@
 import copy
 import dspy
 from .base import BaseTool
+from typing import Optional
 from ..hybridstores.program_memory.program_memory import ProgramMemory
 from ..output_parsers.program_name import ProgramNameOutputParser
 from ..output_parsers.cypher import CypherOutputParser
@@ -24,8 +25,9 @@ class WriteProgramTool(BaseTool):
     def __init__(
             self,
             program_memory: ProgramMemory,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "WriteProgram")
+        super().__init__(name = "WriteProgram", lm = lm)
         self.predict = dspy.Predict(WriteProgramSignature)
         self.program_memory = program_memory
         self.program_name_parser = ProgramNameOutputParser()
@@ -54,12 +56,13 @@ class WriteProgramTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                objective = objective,
-                context = context,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    objective = objective,
+                    context = context,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.filename = self.prediction_parser.parse(pred.filename, prefix="File Name:", stop=["\n"])
             pred.filename = self.program_name_parser.parse(pred.filename)
             pred.cypher_query = self.prediction_parser.parse(pred.cypher_query, prefix="\n```cypher", stop=["\n```\n\n"])

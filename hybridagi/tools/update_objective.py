@@ -21,8 +21,9 @@ class UpdateObjectiveTool(BaseTool):
     def __init__(
             self,
             agent_state: AgentState,
+            lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "UpdateObjective")
+        super().__init__(name = "UpdateObjective", lm = lm)
         self.agent_state = agent_state
         self.predict = dspy.Predict(UpdateObjectiveSignature)
         self.prediction_parser = PredictionOutputParser()
@@ -37,12 +38,13 @@ class UpdateObjectiveTool(BaseTool):
         ) -> dspy.Prediction:
         """Method to perform DSPy forward prediction"""
         if not disable_inference:
-            pred = self.predict(
-                context = context,
-                objective = objective,
-                purpose = purpose,
-                prompt = prompt,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.predict(
+                    context = context,
+                    objective = objective,
+                    purpose = purpose,
+                    prompt = prompt,
+                )
             pred.new_objective = self.prediction_parser.parse(
                 pred.new_objective,
                 prefix="New Objective:"
