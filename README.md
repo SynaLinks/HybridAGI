@@ -42,17 +42,18 @@ Our approach reduces the need for fine-tuning, as we can control the behavior of
 
 ### Automatic optimization & hybrid vector/graph long-term memory
 
-HybridAGI is also a machine learning framework that emphasizes the importance of evaluating and optimizing LLM-based systems thanks to the integration of DSPy. You can automatically optimize/fine-tune the prompts sent to the LLM based on the dataset/examples provided to the system*.
+HybridAGI is also a machine learning framework that emphasizes the importance of evaluating and optimizing LLM-based systems thanks to the integration of DSPy. You can automatically optimize/fine-tune the prompts sent to the LM based on the dataset/examples provided to the system*.
 
-We also emphasize the importance of centralizing knowledge into a hybrid vector/graph database powered by FalkorDB. This low-latency graph database allows the system to efficiently memorize and scale knowledge.
+We also emphasize the importance of centralizing knowledge into a hybrid vector/graph database. This low-latency graph database allows the system to efficiently memorize and scale knowledge.
 
 *Note: Our approach only optimizes/fine-tunes the atomic steps of the system, the sequence of actions and decisions is *always* controlled by the graph programs.
 
 ## Graph-based prompt programming
 
-Graph-based Prompt Programming is one of the key features of HybridAGI, in its essence it is a programming language for LLM Agents that allow probabilistic conditional loops and multi-output decisions. This language is based on **[Cypher](https://en.wikipedia.org/wiki/Cypher_(query_language))** a well known language for graph databases. Like any programming language, it always start with a main program:
+Graph-based Prompt Programming is one of the key features of HybridAGI, in its essence it is a programming language for LM Agents that allow probabilistic conditional loops and multi-output decisions. This language is based on **[Cypher](https://en.wikipedia.org/wiki/Cypher_(query_language))** a well known language for graph databases. Like any programming language, it always start with a main program:
 
-```javascript title='main.cypher'
+main.cypher:
+```javascript
 // Nodes declaration
 CREATE
 (start:Control {name:"Start"}),
@@ -69,7 +70,8 @@ CREATE
 
 You can also describe conditional loops or multi-output choices using decision nodes like in this program:
 
-```javascript title='clarify_objective.cypher.cypher'
+clarify_objective.cypher:
+```javascript
 // @desc: Clarify the objective if needed
 CREATE
 // Nodes declaration
@@ -103,7 +105,8 @@ CREATE
 
 And you can obviously also call other programs, here is an updated version of our main program:
 
-```javascript title='main.cypher'
+main.cypher
+```javascript
 // Nodes declaration
 CREATE
 (start:Control {name:"Start"}),
@@ -166,7 +169,7 @@ End Program: main
 
 HybridAGI output the chat history, along with the final answer and trace allowing DSPy to optimize every aspect of a conversational agent: the result, the intermediary steps but also the interaction with the user.
 
-```json
+```
 [
   {
     "role": "User",
@@ -193,7 +196,7 @@ You can also explore this Python notebook and **[make your first steps](notebook
 
 ## Memory-centric system
 
-The memory is another aspect where HybridAGI is unique. First we centralize knowledge, documents, programs and traces into an hybrid vector/graph database. But we also provide for the system tools to interact with it, thanks to the behavior graph we can use an unlimited number of tools making possible to combine every memory into a unique Agent. Unlike other frameworks that view agents as chatbots we see them as software, as such the memory implemented are very different from others frameworks.
+The long-term memory is another aspect where HybridAGI is unique. First we centralize knowledge, documents, programs and traces into an hybrid vector/graph database. But we also provide for the system tools to interact with it, thanks to the behavior graph we can use an unlimited number of tools making possible to combine every memory into a unique Agent. Unlike other frameworks that view agents as chatbots we see them as software, as such the memories implemented are very different from others frameworks.
 
 <figure>
   <p align="center">
