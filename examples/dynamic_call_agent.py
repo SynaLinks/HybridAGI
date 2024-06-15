@@ -8,7 +8,6 @@ from hybridagi.tools import (
     ProgramSearchTool,
     DocumentSearchTool,
     CallProgramTool,
-    PredictTool,
     InternalShellTool,
     WriteFileTool,
     AppendFileTool,
@@ -165,7 +164,6 @@ agent_state = AgentState()
 
 tools = [
     DuckDuckGoSearchTool(),
-    PredictTool(),
     ProgramSearchTool(
         program_memory = program_memory,
         embeddings = embeddings,

@@ -85,6 +85,7 @@ class CallProgramTool(BaseTool):
         cpy = (type)(self)(
             program_memory = self.program_memory,
             agent_state = self.agent_state,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

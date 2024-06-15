@@ -5,7 +5,6 @@ from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, FileSystem, AgentState
 from hybridagi.tools import (
-    PredictTool,
     DocumentSearchTool,
     DuckDuckGoSearchTool,
     WriteFileTool,
@@ -139,7 +138,6 @@ testset = [
 agent_state = AgentState()
 
 tools = [
-    PredictTool(),
     DocumentSearchTool(
         filesystem = filesystem,
         embeddings = embeddings,

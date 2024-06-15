@@ -30,11 +30,8 @@ class CodeInterpreterTool(BaseTool):
         self.preloaded_python_code = preloaded_python_code
         if code_interpreter:
             self.code_interpreter = code_interpreter
-            self.code_interpreter.reset()
         else:
             self.code_interpreter = CodeInterpreterUtility()
-        if preloaded_python_code:
-            self.code_interpreter.add_and_run(preloaded_python_code)
         self.prediction_parser = PredictionOutputParser()
     
     def forward(
@@ -78,8 +75,8 @@ class CodeInterpreterTool(BaseTool):
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
             code_interpreter = self.code_interpreter,
-            preloaded_python_code = self.preloaded_python_code
+            preloaded_python_code = self.preloaded_python_code,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
-        # cpy.correct = copy.deepcopy(self.correct)
         return cpy

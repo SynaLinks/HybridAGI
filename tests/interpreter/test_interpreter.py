@@ -4,7 +4,6 @@ from hybridagi import GraphProgramInterpreter
 from hybridagi import ProgramMemory
 from hybridagi import FakeEmbeddings
 
-from hybridagi.tools import PredictTool
 from dspy.utils.dummies import DummyLM
 
 def test_no_program():
@@ -102,9 +101,7 @@ CREATE
         ids = [program_name]
     )
 
-    tools = [
-        PredictTool()
-    ]
+    tools = []
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,
@@ -160,9 +157,7 @@ CREATE
         ids = [program_name]
     )
 
-    tools = [
-        PredictTool()
-    ]
+    tools = []
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,
@@ -224,9 +219,7 @@ CREATE
         ids = [program_name, subprogram_name]
     )
 
-    tools = [
-        PredictTool()
-    ]
+    tools = []
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,
@@ -286,9 +279,7 @@ CREATE
         ids = [program_name],
     )
 
-    tools = [
-        PredictTool()
-    ]
+    tools = []
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,

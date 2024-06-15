@@ -5,7 +5,6 @@ from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, TraceMemory, AgentState
 from hybridagi.tools import (
-    PredictTool,
     SpeakTool,
     PastActionSearchTool,
     DuckDuckGoSearchTool,

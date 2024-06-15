@@ -2,7 +2,7 @@ import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory
-from hybridagi.tools import PredictTool, DuckDuckGoSearchTool
+from hybridagi.tools import DuckDuckGoSearchTool
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
@@ -105,7 +105,6 @@ testset = [
 ]
 
 tools = [
-    PredictTool(),
     DuckDuckGoSearchTool(),
 ]
 

@@ -12,7 +12,9 @@ class Integer(BaseModel):
 
 class RevertTraceSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct number of steps to revert"""
+    Using the prompt to help you, you will infer the correct number of steps to revert
+    
+    Note: Never give an apology or explain what you are doing."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -57,5 +59,6 @@ class RevertTraceTool(BaseTool):
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
             agent_state = self.agent_state,
+            lm = self.lm,
         )
         return cpy

@@ -12,7 +12,7 @@ class SpeakSignature(dspy.Signature):
     """You will be given an objective, purpose and context
     Using the prompt to help you, you will infer the correct message to send to the user
     
-    Note: Note: Do not include any explanations or apologies in your responses."""
+    Note: Never give an apology or explain what you are doing."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -87,6 +87,7 @@ class SpeakTool(BaseTool):
             agent_state = self.agent_state,
             speak_func = self.speak_func,
             simulated = self.simulated,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

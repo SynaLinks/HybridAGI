@@ -20,7 +20,6 @@ class BrowseWebsiteTool(BaseTool):
 
     def __init__(
             self,
-            k: int = 2,
             lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = "BrowseWebsite", lm = lm)
@@ -57,3 +56,10 @@ class BrowseWebsiteTool(BaseTool):
                 url = prompt,
                 result = result,
             )
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

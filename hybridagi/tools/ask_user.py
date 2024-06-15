@@ -10,7 +10,9 @@ from ..output_parsers.prediction import PredictionOutputParser
 
 class AskUserSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct question"""
+    Using the prompt to help you, you will infer the correct question
+    
+    Note: Never give an apology or explain what you are doing."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -121,6 +123,7 @@ class AskUserTool(BaseTool):
             num_history = self.num_history,
             ask_user_func = self.ask_user_func,
             simulated = self.simulated,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

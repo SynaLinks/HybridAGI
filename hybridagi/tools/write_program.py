@@ -12,7 +12,9 @@ from ..utility.tester import TesterUtility
 
 class WriteProgramSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct filename and cypher query"""
+    Using the prompt to help you, you will infer the correct filename and cypher query
+    
+    Note: Never give an apology or explain what you are doing."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -87,6 +89,7 @@ class WriteProgramTool(BaseTool):
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
             program_memory = self.program_memory,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

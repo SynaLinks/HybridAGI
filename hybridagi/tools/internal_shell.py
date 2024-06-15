@@ -94,6 +94,7 @@ class InternalShellTool(BaseTool):
                 prefix = "Unix Shell Command:",
                 stop = ["\n"],
             )
+            pred.unix_shell_command = pred.unix_shell_command.strip("`")
             observation = self.execute(pred.unix_shell_command)
             return dspy.Prediction(
                 unix_shell_command = pred.unix_shell_command,
@@ -110,6 +111,7 @@ class InternalShellTool(BaseTool):
         cpy = (type)(self)(
             filesystem = self.filesystem,
             agent_state = self.agent_state,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

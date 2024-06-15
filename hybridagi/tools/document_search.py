@@ -81,6 +81,7 @@ class DocumentSearchTool(BaseTool):
             filesystem = self.filesystem,
             embeddings = self.embeddings,
             distance_threshold = self.distance_threshold,
+            lm = self.lm,
             k = self.k,
         )
         cpy.predict = copy.deepcopy(self.predict)

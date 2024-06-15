@@ -189,10 +189,10 @@ class JupyterNotebook():
         thread = threading.Thread(target=run_code_in_thread)
         thread.start()
 
-        # Wait for 20 seconds for the thread to finish
-        thread.join(timeout=20)
+        # Wait for 10 seconds for the thread to finish
+        thread.join(timeout=10)
 
-        # If the thread is still alive after 20 seconds, it's a timeout
+        # If the thread is still alive after 10 seconds, it's a timeout
         if thread.is_alive():
             outputs = ["Execution timed out."]
             error_flag = True
@@ -209,7 +209,7 @@ class JupyterNotebook():
         memo[id(self)] = new_copy
         return new_copy   
 
-class CodeInterpreterUtility:
+class CodeInterpreterUtility():
 
     def __init__(
             self,
@@ -265,7 +265,3 @@ class CodeInterpreterUtility:
         if not error:
             output, plots = self.extract_plots(output)
         return output, plots, error
-        
-    def reset(self):
-        self.nb.close()
-        self.nb = JupyterNotebook(self.preload_code)

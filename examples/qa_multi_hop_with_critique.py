@@ -2,7 +2,6 @@ import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory
-from hybridagi.tools import PredictTool
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
@@ -107,9 +106,9 @@ testset = [
 
 print("Initializing the graph interpreter...")
 
-tools = [
-    PredictTool(),
-]
+interpreter = GraphProgramInterpreter(
+    program_memory = program_memory,
+)
 
 print("Optimizing underlying prompts...")
 
@@ -119,11 +118,6 @@ optimizer = BootstrapFewShot(
     teacher_settings=dict({'lm': teacher_llm}),
     metric = program_success,
     **config,
-)
-
-interpreter = GraphProgramInterpreter(
-    program_memory = program_memory,
-    tools = tools,
 )
 
 compiled_interpreter = optimizer.compile(

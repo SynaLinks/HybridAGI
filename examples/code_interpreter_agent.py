@@ -3,12 +3,11 @@ from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, AgentState
 from hybridagi.tools import (
-    PredictTool,
     CodeInterpreterTool,
     SpeakTool,
 )
 from pydantic import BaseModel
-from dspy.teleprompt import BootstrapFewShot
+from dspy.teleprompt import BootstrapFewShotWithRandomSearch
 
 print("Loading LLM & embeddings models...")
 student_llm = dspy.OllamaLocal(model='mistral', max_tokens=1024, stop=["\n\n\n", "\n\n---"])
@@ -83,7 +82,7 @@ Make sure that your program answer the correct question from the objective"
 (critique:Action {
     name: "Critique the code to help you debugging it",
     tool: "Predict",
-    prompt: "Critique the code to help you debugging it, always add print statement for intermediate variables to help for debugging"
+    prompt: "Critique the code to help you debugging it, if you don't known where is the bug add print statements to help for debugging"
 }),
 (answer:Action {
     name: "Answer the objective's question",
@@ -115,7 +114,7 @@ dataset = [
     dspy.Example(objective="An object is thrown upward with an initial velocity of 20 m/s. How long does it take for the object to reach a height of 10 m?").with_inputs("objective"),
     dspy.Example(objective="A car accelerates from 0 to 60 mph in 8 seconds. What is the acceleration of the car in m/s²?").with_inputs("objective"),
     dspy.Example(objective="An object is moving in a straight line with a constant acceleration of 2 m/s². If the object's initial velocity is 5 m/s, what is its velocity after 10 seconds?").with_inputs("objective"),
-    dspy.Example(objective="A beam of light with a wavelength of 600 nm is incident on a slit with a width of 0.1 mm. What is the angle of the first-order diffraction minimum?").with_inputs("objective"),
+    dspy.Example(objective="A tank contains 100 L of water at a temperature of 20°C. How much heat energy is required to raise the temperature of the water to 80°C?").with_inputs("objective"),
     dspy.Example(objective="A plane is flying at a constant speed of 600 mph and has enough fuel to fly for 5 hours. What is the maximum distance the plane can fly?").with_inputs("objective"),
     dspy.Example(objective="A pendulum has a length of 1 m and is released from an angle of 30 degrees. What is the pendulum's angular velocity when it reaches the bottom of its swing?").with_inputs("objective"),
     dspy.Example(objective="A block of mass 5 kg is placed on a frictionless inclined plane that makes an angle of 30 degrees with the horizontal. What is the acceleration of the block down the plane?").with_inputs("objective"),
@@ -128,7 +127,7 @@ testset = [
     dspy.Example(objective="An object is dropped from a height of 10 m. How long does it take for the object to reach the ground?").with_inputs("objective"),
     dspy.Example(objective="A gas is contained in a cylinder with a movable piston. The gas is heated, causing the piston to move outward and the gas to expand. If the initial pressure of the gas is 100 kPa and the final pressure is 50 kPa, what is the ratio of the final volume to the initial volume?").with_inputs("objective"),
     dspy.Example(objective="A 10 V battery is connected to a 2 Ω resistor. What is the current in the circuit and the power dissipated by the resistor?").with_inputs("objective"),
-    dspy.Example(objective="A parallel-plate capacitor has a plate area of 0.01 m² and a plate separation of 0.001 m. If the capacitor is charged to a potential difference of 100 V, what is the electric field strength between the plates?").with_inputs("objective"),
+    dspy.Example(objective="A ball is thrown horizontally with an initial velocity of 15 m/s from a height of 20 m. How long does it take for the ball to hit the ground?").with_inputs("objective"),
     dspy.Example(objective="A block of mass 3 kg is sliding on a horizontal surface with a speed of 4 m/s. If the coefficient of kinetic friction between the block and the surface is 0.2, how far will the block slide before coming to a stop?").with_inputs("objective"),
 ]
 
@@ -137,7 +136,6 @@ print("Initializing the graph interpreter...")
 agent_state = AgentState()
 
 tools = [
-    PredictTool(),
     SpeakTool(
         agent_state = agent_state,
     ),
@@ -148,7 +146,8 @@ print("Optimizing underlying prompts...")
 
 config = dict(max_bootstrapped_demos=4, max_labeled_demos=0)
 
-optimizer = BootstrapFewShot(
+optimizer = BootstrapFewShotWithRandomSearch(
+    num_threads = 1,
     teacher_settings=dict({'lm': teacher_llm}),
     metric = program_success,
     **config,
@@ -161,6 +160,7 @@ interpreter = GraphProgramInterpreter(
     num_history=5,
     max_iters=10, # after 10 steps we consider the agent stuck in a loop
     commit_decision_steps=False, # don't add decision steps in the context (avoid context pollution by decision steps)
+    add_final_step=False, # Don't add the final step as we use Speak already
 )
 
 compiled_interpreter = optimizer.compile(

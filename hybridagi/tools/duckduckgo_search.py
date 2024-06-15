@@ -1,6 +1,7 @@
 """The duckduckgo tool. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
 import dspy
+import copy
 from .base import BaseTool
 from typing import Optional
 from duckduckgo_search import DDGS
@@ -20,7 +21,7 @@ class DuckDuckGoSearchTool(BaseTool):
 
     def __init__(
             self,
-            k: int = 2,
+            k: int = 5,
             lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = "DuckDuckGoSearch", lm = lm)
@@ -60,3 +61,11 @@ class DuckDuckGoSearchTool(BaseTool):
                 search_query = prompt,
                 results = result,
             )
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            k = self.k,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

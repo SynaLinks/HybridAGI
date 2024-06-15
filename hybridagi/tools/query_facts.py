@@ -16,7 +16,7 @@ class QueryFactsSignature(dspy.Signature):
     Do not use any other relationship types or properties that are not provided.
     If you cannot generate a Cypher statement based on the provided schema, explain the reason to the user.
 
-    Note: Do not include any explanations or apologies in your responses."""
+    Note: Never give an apology or explain what you are doing."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -81,6 +81,7 @@ class QueryFactsTool(BaseTool):
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
             fact_memory = self.fact_memory,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

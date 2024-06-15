@@ -1,5 +1,6 @@
 import abc
 import dspy
+import copy
 from typing import Optional, Union, Callable, Dict, Any
 from dspy.signatures.signature import ensure_signature
 
@@ -36,6 +37,7 @@ class Tool(BaseTool):
         ):
         super().__init__(name=name, lm=lm)
         self.signature = signature = ensure_signature(signature)
+        self.instructions = instructions
 
         self.input_fields = self.signature.input_fields
         self.output_fields = self.signature.output_fields
@@ -105,4 +107,15 @@ class Tool(BaseTool):
             )
         else:
             raise NotImplementedError("Tool does not support disabling inferences")
+
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            name = self.name,
+            signature = self.signature,
+            func = self.func,
+            instructions = self.instructions,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy
 

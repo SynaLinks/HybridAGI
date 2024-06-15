@@ -82,6 +82,7 @@ class EntitySearchTool(BaseTool):
             embeddings = self.embeddings,
             distance_threshold = self.distance_threshold,
             k = self.k,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

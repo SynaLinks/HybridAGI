@@ -2,7 +2,7 @@ import dspy
 from hybridagi import GraphProgramInterpreter
 from hybridagi import SentenceTransformerEmbeddings
 from hybridagi import ProgramMemory, FileSystem
-from hybridagi.tools import PredictTool, DocumentSearchTool
+from hybridagi.tools import DocumentSearchTool
 from pydantic import BaseModel
 from dspy.teleprompt import BootstrapFewShot
 
@@ -134,7 +134,6 @@ testset = [
 ]
 
 tools = [
-    PredictTool(),
     DocumentSearchTool(
         filesystem = filesystem,
         embeddings = embeddings,

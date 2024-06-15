@@ -11,7 +11,9 @@ from ..types.state import AgentState
 
 class WriteFileSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct filename and content"""
+    Using the prompt to help you, you will infer the correct filename and content
+    
+    Note: Never give an apology or explain what you are doing."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -96,6 +98,7 @@ class WriteFileTool(BaseTool):
         cpy = (type)(self)(
             filesystem = self.filesystem,
             agent_state = self.agent_state,
+            lm = self.lm,
         )
         cpy.predict = copy.deepcopy(self.predict)
         return cpy

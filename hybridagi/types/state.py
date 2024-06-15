@@ -1,6 +1,6 @@
 """The agent state. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
 
-from collections import deque
+from collections import deque, defaultdict
 from falkordb import Node, Graph
 from typing import List, Iterable, Optional, Tuple
 from hybridagi import FileSystemContext
@@ -37,11 +37,15 @@ class AgentState():
         _, program = self.program_stack.pop()
         return program
 
+    def update_variable(self, key:str, value:str):
+        """Update a variable"""
+        self.variables[key] = value
+
     def init(self):
         self.objective = "N/A"
         self.current_hop = 0
-        self.decision_hop = 0
         self.program_trace = []
         self.program_stack = deque()
         self.context = FileSystemContext()
         self.chat_history = []
+        self.variables = {}
