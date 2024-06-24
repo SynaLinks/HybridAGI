@@ -25,6 +25,7 @@ from .clear_trace import ClearTraceTool
 from .revert_trace import RevertTraceTool
 
 from .query_facts import QueryFactsTool
+from .entity_add import EntityAddTool
 
 from .code_interpreter import CodeInterpreterTool
 from .browse_website import BrowseWebsiteTool
@@ -58,6 +59,7 @@ __all__ = [
     RevertTraceTool,
 
     QueryFactsTool,
+    EntityAddTool,
 
     CodeInterpreterTool,
     BrowseWebsiteTool,
