@@ -29,7 +29,7 @@ jobs:
       - name: Start FalkorDB
         uses: docker://falkordb/falkordb:edge
         with:
-          args: -p 3000:3000
+          args: --port 6379:6379
       - name: Verify that FalkorDB is up
         run: redis-cli ping
       - name: Install build dependencies
