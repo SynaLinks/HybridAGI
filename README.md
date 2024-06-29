@@ -69,12 +69,9 @@ We also emphasize the importance of centralizing knowledge into a hybrid vector/
 
 The long-term memory is another aspect where HybridAGI is unique. First we centralize knowledge, documents, programs and traces into an hybrid vector/graph database. But we also provide for the system tools to interact with it, thanks to the behavior graph we can use an unlimited number of tools making possible to combine every memory into a unique Agent. Unlike other frameworks that view agents as chatbots we see them as software, as such the memories implemented are very different from others frameworks.
 
-<figure>
-  <p align="center">
-    <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
-    <figcaption align="center"><b>Fig.2 - HybridAGI long-term memory. Each memory system can be used with each other providing the best of vectors and graph retrieval.</b></figcaption>
-  </p>
-</figure>
+<p align="center">
+  <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
+</p>
 
 ### Graph-based prompt programming
 
