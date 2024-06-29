@@ -27,9 +27,9 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       - name: Start FalkorDB
-        uses: docker://falkordb/falkordb:edge
-        with:
-          args: --port 6379
+        run: docker run -d -p 6379:6379 falkordb/falkordb:edge &
+      - name: Install redis tools
+        run: sudo apt-get install -y redis-tools
       - name: Verify that FalkorDB is up
         run: redis-cli ping
       - name: Install build dependencies
