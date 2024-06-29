@@ -1,17 +1,25 @@
 # HybridAGI: The Programmable Neuro-Symbolic AGI
 ### For people who want AI to behave as expected
+<div align="center">
 
+![CI badge](https://github.com/SynaLinks/HybridAGI/actions/workflows/python-package.yml/badge.svg)
 ![Beta](https://img.shields.io/badge/Release-Beta-blue)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 [![Documentation](https://img.shields.io/badge/Docs-Documentation-blue)](https://synalinks.github.io/documentation)
----
-[![Discord Channel](https://dcbadge.vercel.app/api/server/82nt97uXcM)](https://discord.gg/82nt97uXcM)
 
-<p align="center">
+</div>
+
+---
+<div align="center">
+
+[![Discord Channel](https://dcbadge.vercel.app/api/server/82nt97uXcM)](https://discord.gg/82nt97uXcM)
+</div>
+
+<div align="center">
   <a href="https://www.youtube.com/watch?v=ZNjXU4L1OsU">
     <img src="img/github_demo_graph.png" width="400" alt="Demo Video"/>
   </a>
-</p>
+</div>
 
 **Notebooks:** 
 - [First Steps](notebooks/first_steps.ipynb)
@@ -31,17 +39,19 @@ It is the first programmable LM-based Agent that enables you to define its behav
 
 If DSPy is the PyTorch of LMs Applications, HybridAGI is the equivalent of Keras for LMs Agents systems. HybridAGI is designed for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. It is a "Build Yourself" product that focuses on human creativity rather than AI autonomy.
 
-<p align="center">
-  <img alt="HybridAGI architecture" src="img/architecture.svg"/>
-  <figcaption align="center"><b>HybridAGI's AgentOS architecture. The Graph Program Interpreter orchestrate every other component using tools as Action. It can also interact with the user during the execution of a program.</b></figcaption>
-</p>
+<div align="center">
+  <figure>
+    <img alt="HybridAGI architecture" src="img/architecture.svg"/>
+    <figcaption align="center"><b>HybridAGI's AgentOS architecture. The Graph Program Interpreter orchestrate every other component using tools as Action. It can also interact with the user during the execution of a program.</b></figcaption>
+  </figure>
+</div>
 
-<figure>
-  <p align="center">
+<div align="center">
+  <figure>
     <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
     <figcaption align="center"><b>Fig.2 - HybridAGI's long-term memory. Each memory system can be used with each other providing the best of vectors and graph retrieval.</b></figcaption>
-  </p>
-</figure>
+  </figure>
+</div>
 
 ## Why HybridAGI?
 
