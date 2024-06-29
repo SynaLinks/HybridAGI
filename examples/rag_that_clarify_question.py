@@ -166,6 +166,7 @@ interpreter = GraphProgramInterpreter(
     agent_state = agent_state,
     tools = tools,
     return_final_answer = False,
+    add_final_step = False,
 )
 
 compiled_interpreter = optimizer.compile(

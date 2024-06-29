@@ -67,23 +67,23 @@ CREATE
     assert memory.exists(subprogram_name, label='Program')
     assert memory.depends_on("program", "subprogram")
 
-def test_load_folders():
-    emb = FakeEmbeddings(dim=250)
-    memory = ProgramMemory(
-        index_name="test",
-        embeddings=emb,
-        wipe_on_start=True,
-    )
+# def test_load_folders():
+#     emb = FakeEmbeddings(dim=250)
+#     memory = ProgramMemory(
+#         index_name="test",
+#         embeddings=emb,
+#         wipe_on_start=True,
+#     )
 
-    test_program = \
-"""CREATE
-(start:Control {name:'Start'}),
-(end:Control {name:'End'}),
-(start)-[:NEXT]->(end)"""
+#     test_program = \
+# """CREATE
+# (start:Control {name:'Start'}),
+# (end:Control {name:'End'}),
+# (start)-[:NEXT]->(end)"""
 
-    memory.add_folders(
-        ["tests/hybridstores/program_memory/test_folder"],
-    )
+#     memory.add_folders(
+#         ["tests/hybridstores/program_memory/test_folder"],
+#     )
 
-    assert memory.exists("test_program", label='Program')
-    assert memory.get_content("test_program") == test_program
+#     assert memory.exists("test_program", label='Program')
+#     assert memory.get_content("test_program") == test_program

@@ -34,8 +34,8 @@ from .utility.shell import ShellUtility
 from .utility.reader import ReaderUtility
 from .utility.archiver import ArchiverUtility
 from .utility.tester import TesterUtility
-from .utility.code_interpreter import CodeInterpreterUtility
 from .utility.browser import BrowserUtility
+from .utility.code_interpreter import CodeInterpreterUtility
 
 from .utility.commands import (
     BaseShellCommand,
@@ -50,12 +50,26 @@ from .utility.commands import (
 
 from .agents.interpreter import GraphProgramInterpreter
 
+from .knowledge_parsers.base import BaseKnowledgeParser
 from .knowledge_parsers.python import PythonKnowledgeParser
+from .knowledge_parsers.text import TextKnowledgeParser
+
+from .loaders.knowledge import KnowledgeLoader
+from .loaders.graph_programs import GraphProgramsLoader
+
+from .hybridagi import HybridAGI
 
 __all__ = [
     CypherOutputParser,
     PathOutputParser,
     FileOutputParser,
+
+    BaseKnowledgeParser,
+    PythonKnowledgeParser,
+    TextKnowledgeParser,
+
+    KnowledgeLoader,
+    GraphProgramsLoader,
 
     HybridStore,
     FileSystemContext,
@@ -85,6 +99,8 @@ __all__ = [
     ArchiverUtility,
     ReaderUtility,
     ShellUtility,
+    BrowserUtility,
+    CodeInterpreterUtility,
 
     BaseShellCommand,
     ChangeDirectory,
@@ -95,6 +111,5 @@ __all__ = [
     Remove,
     Tree,
 
-    CodeInterpreterUtility,
-    BrowserUtility,
+    HybridAGI,
 ]

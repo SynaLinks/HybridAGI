@@ -139,7 +139,9 @@ tools = [
     SpeakTool(
         agent_state = agent_state,
     ),
-    CodeInterpreterTool()
+    CodeInterpreterTool(
+        agent_state = agent_state,
+    ),
 ]
 
 print("Optimizing underlying prompts...")

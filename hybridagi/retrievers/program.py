@@ -51,10 +51,11 @@ class ProgramRetriever(dspy.Retrieve):
                         indexes[record[0]] = True
                     else:
                         continue
-                    content = f"{record[0]}: {record[1]}"
+                    name = record[0]
+                    description = record[1]
                     distance = float(record[2])
                     if distance < self.distance_threshold:
-                        contents.extend([{"routines": dotdict({"routine": content}), "distance": distance}])
+                        contents.extend([{"routines": dotdict({"routine": name, "description": description}), "distance": distance}])
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],

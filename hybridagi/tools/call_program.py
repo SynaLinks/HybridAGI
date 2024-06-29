@@ -16,7 +16,7 @@ class CallProgramSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    selected_routine = dspy.OutputField(desc = "The name of the selected routine")
+    selected_routine = dspy.OutputField(desc = "The name of the selected routine", prefix="Routine:")
 
 class CallProgramTool(BaseTool):
 
@@ -66,7 +66,7 @@ class CallProgramTool(BaseTool):
                     prompt = prompt,
                 )
             pred.selected_routine = self.prediction_parser.parse(
-                pred.selected_routine, prefix="Selected Routine:", stop=["\n"]
+                pred.selected_routine, prefix="Routine:", stop=["\n", " "]
             )
             pred.selected_routine = self.program_name_parser.parse(pred.selected_routine)
             observation = self.call_program(pred.selected_routine)

@@ -25,14 +25,19 @@ CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the question and options, you will infer the correct label to select
-    If you don't know choose the most probable label based on the question, context and labels"""
+    Using the question and options, you will infer the correct label"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The context (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the question (what you have to do now)")
     question = dspy.InputField(desc = "The question to assess")
     labels = dspy.InputField(desc = "The possible labels to the assessed question")
-    selected_label = dspy.OutputField(desc = "ONE word ONLY between the one of the possible labels")
+    correct_label = dspy.OutputField(desc = "The correct label", prefix="Label:")
+
+class AnswerToLabel(dspy.Signature):
+    """Classify the answer between the possible labels"""
+    answer = dspy.InputField(desc = "The answer to assess")
+    labels = dspy.InputField(desc = "The possible labels")
+    correct_label = dspy.OutputField(desc = "The correct label", prefix="Label:")
 
 class PredictSignature(dspy.Signature):
     """You will be given an objective, purpose and context
@@ -82,7 +87,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.commit_decision_steps = commit_decision_steps
         self.commit_program_flow_steps = commit_program_flow_steps
         self.decision_parser = DecisionOutputParser()
-        self.predictionsion_parser = PredictionOutputParser()
+        self.prediction_parser = PredictionOutputParser()
         self.return_final_answer = return_final_answer
         self.return_program_trace = return_program_trace
         self.return_chat_history = return_chat_history
@@ -90,18 +95,11 @@ class GraphProgramInterpreter(dspy.Module):
         # DSPy reasoners
         # The interpreter model used to navigate, only contains decision signatures
         # With that, DSPy should better optimize the graph navigation task
-        self.decision_map = {}
         self.decision_hop = 0
         self.decisions = [
             dspy.ChainOfThought(DecisionSignature) for i in range(0, self.max_iters)
         ]
-        # With that we can have a signature per Predict in the graph to enhance the optimization
-        # Because Predict can be used to do a variety of stuff, have it optimized for each purpose is better
-        self.prediction_map = {}
-        self.prediction_hop = 0
-        self.predictions = [
-            dspy.Predict(PredictSignature) for i in range(0, self.max_iters)
-        ]
+        self.correct_decision = dspy.Predict(AnswerToLabel)
         # Agent tools optimized by DSPy
         self.tools = {tool.name: tool for tool in tools}
         # Finish signature optimized by DSPy
@@ -137,10 +135,14 @@ class GraphProgramInterpreter(dspy.Module):
                         disable_inference = current_node.properties["disable_inference"].lower() == "true"
                     else:
                         disable_inference = False
-                    if "variable" in current_node.properties:
-                        variable = current_node.properties["variable"]
+                    if "output" in current_node.properties:
+                        output = current_node.properties["output"]
                     else:
-                        variable = ""
+                        output = ""
+                    if "inputs" in current_node.properties:
+                        inputs = current_node.properties["inputs"]
+                    else:
+                        inputs = []
                 except ValueError:
                     raise RuntimeError("Action node invalid: missing a required parameter")
                 step = self.act(
@@ -148,7 +150,8 @@ class GraphProgramInterpreter(dspy.Module):
                     tool = action_tool,
                     prompt = action_prompt,
                     disable_inference = disable_inference,
-                    variable = variable,
+                    inputs = inputs,
+                    output = output,
                 )
                 self.agent_state.program_trace.append(str(step))
                 if self.trace_memory:
@@ -159,6 +162,10 @@ class GraphProgramInterpreter(dspy.Module):
                 try:
                     decision_purpose = current_node.properties["name"]
                     decision_question = current_node.properties["question"]
+                    if "inputs" in current_node.properties:
+                        inputs = current_node.properties["inputs"]
+                    else:
+                        inputs = []
                 except ValueError:
                     raise RuntimeError("Decision node invalid: Missing a required parameter")
                 options = []
@@ -175,6 +182,7 @@ class GraphProgramInterpreter(dspy.Module):
                     purpose = decision_purpose,
                     question = decision_question,
                     options = options,
+                    inputs = inputs,
                 )
                 if self.trace_memory:
                     self.trace_memory.commit(step)
@@ -207,7 +215,15 @@ class GraphProgramInterpreter(dspy.Module):
             return step
         return None
 
-    def act(self, purpose: str, tool: str, prompt: str, disable_inference: bool = False, variable: str = "") -> AgentAction:
+    def act(
+            self,
+            purpose: str,
+            tool: str,
+            prompt: str,
+            disable_inference: bool = False,
+            inputs: List[str] = [],
+            output: str = "",
+        ) -> AgentAction:
         """The method to act"""
         if tool not in self.tools and tool != "Predict":
             raise ValueError(f"Invalid tool: '{tool}' does not exist, should be one of {list(self.tools.keys())}")
@@ -215,32 +231,24 @@ class GraphProgramInterpreter(dspy.Module):
             trace = "\n".join(self.agent_state.program_trace[-self.num_history:])
         else:
             trace = "Nothing done yet"
-        if tool == "Predict":
-            if purpose in self.prediction_map:
-                predictor_index = self.prediction_map[purpose]
+        for i in inputs:
+            if i in self.agent_state.variables:
+                prompt = prompt.replace("{"+i+"}", str(self.agent_state.variables[i]))
             else:
-                predictor_index = self.prediction_hop
-                self.prediction_map[purpose] = self.prediction_hop
-                self.prediction_hop += 1
-            prediction = self.predictions[predictor_index](
-                objective = self.agent_state.objective,
-                context = trace,
-                purpose = purpose,
-                prompt = prompt.format(**self.agent_state.variables),
-                disable_inference = disable_inference,
-            )
-            prediction.answer = self.predictionsion_parser.parse(prediction.answer, prefix = "Answer:")
-            prediction.answer = prediction.answer.strip("\"")
-            if variable:
-                self.agent_state.variables[variable] = prediction.answer
-        else:
-            prediction = self.tools[tool](
-                objective = self.agent_state.objective,
-                context = trace,
-                purpose = purpose,
-                prompt = prompt.format(**self.agent_state.variables),
-                disable_inference = disable_inference,
-            )
+                pass # TODO add a warning/exception when the variable is not populated?
+        prediction = self.tools[tool](
+            objective = self.agent_state.objective,
+            context = trace,
+            purpose = purpose,
+            prompt = prompt,
+            disable_inference = disable_inference,
+        )
+        if output:
+            if prediction is not None:
+                if len(dict(prediction).keys()) > 1:
+                    self.agent_state.variables[output] = json.dumps(dict(prediction))
+                else:
+                    self.agent_state.variables[output] = dict(prediction).keys()[0]
         action = AgentAction(
             hop = self.agent_state.current_hop,
             objective = self.agent_state.objective,
@@ -255,7 +263,7 @@ class GraphProgramInterpreter(dspy.Module):
         self.agent_state.set_current_node(next_node)
         return action
 
-    def decide(self, purpose: str, question:str, options: List[str]) -> AgentDecision:
+    def decide(self, purpose: str, question:str, options: List[str], inputs: List[str] = []) -> AgentDecision:
         """The method to make a decision"""
         random.shuffle(options)
         if len(self.agent_state.program_trace) > 0:
@@ -263,28 +271,36 @@ class GraphProgramInterpreter(dspy.Module):
         else:
             trace = "Nothing done yet"
         possible_answers = " or ".join(options)
-        if purpose in self.decision_map:
-            decision_index = self.decision_map[purpose]
-        else:
-            decision_index = self.decision_hop
-            self.decision_map[purpose] = self.decision_hop
-            self.decision_hop += 1
-        pred = self.decisions[decision_index](
+        for i in inputs:
+            if i in self.agent_state.variables:
+                prompt = prompt.replace("{"+i+"}", self.agent_state.variables[i])
+            else:
+                pass # TODO add a warning/exception ?
+        pred = self.decisions[self.decision_hop](
             objective = self.agent_state.objective,
             context = trace,
             purpose = purpose,
-            question = question.format(**self.agent_state.variables),
+            question = question,
             labels = possible_answers,
         )
-        pred.selected_label = self.predictionsion_parser.parse(pred.selected_label, prefix = "Answer:", stop=["\n"])
-        pred.selected_label = self.decision_parser.parse(pred.selected_label, options=options)
+        pred.correct_label = self.prediction_parser.parse(pred.correct_label, prefix="Label:", stop=["."])
+        pred.correct_label = self.decision_parser.parse(pred.correct_label, options=options)
+        if pred.correct_label not in options:
+            label = self.correct_decision(
+                answer = pred.correct_label,
+                labels = possible_answers,
+            )
+            label.correct_label = self.prediction_parser.parse(label.correct_label, prefix="Label:", stop=["."])
+            label.correct_label = self.decision_parser.parse(label.correct_label, options=options)
+            pred.correct_label = label.correct_label
         dspy.Assert(
-            pred.selected_label in options,
-            f"Got {pred.selected_label}.\n\nSelected Label should be only ONE of the following label: {possible_answers}"
+            pred.correct_label in options,
+            f"Selected Label should be only ONE of the following label: {possible_answers} Got '{pred.correct_label}' instead.\n"
         )
+        self.decision_hop += 1
         params = {"purpose": purpose}
         result = self.agent_state.get_current_program().query(
-            'MATCH (:Decision {name:$purpose})-[:'+pred.selected_label+']->(n) RETURN n',
+            'MATCH (:Decision {name:$purpose})-[:'+pred.correct_label+']->(n) RETURN n',
             params = params,
         )
         next_node = result.result_set[0][0]
@@ -294,7 +310,7 @@ class GraphProgramInterpreter(dspy.Module):
             purpose = purpose,
             question = question,
             options = options,
-            answer = pred.selected_label,
+            answer = pred.correct_label,
             log = pred.rationale,
         )
         self.agent_state.set_current_node(next_node)
@@ -314,7 +330,7 @@ class GraphProgramInterpreter(dspy.Module):
                     trace = "\n".join(self.agent_state.program_trace),
                     objective = self.agent_state.objective,
                 )
-                final_answer = self.predictionsion_parser.parse(prediction.answer, prefix="Answer:", stop=["---"])
+                final_answer = self.prediction_parser.parse(prediction.answer, prefix="Answer:", stop=["---"])
                 self.agent_state.chat_history.append(
                     {"role": "AI", "message": final_answer}
                 )
@@ -386,6 +402,7 @@ class GraphProgramInterpreter(dspy.Module):
     def start(self, objective: str):
         """Start the interpreter"""
         self.agent_state.init()
+        self.decision_hop = 0
         self.agent_state.chat_history.append(
             {"role": "User", "message": objective}
         )
@@ -417,12 +434,10 @@ class GraphProgramInterpreter(dspy.Module):
             return_chat_history = self.return_chat_history,
             return_final_answer = self.return_final_answer,
             return_program_trace = self.return_program_trace,
+            verbose = self.verbose,
         )
         cpy.agent_state.init()
         cpy.tools = copy.deepcopy(self.tools)
-        cpy.interpreter = copy.deepcopy(self.decisions)
-        cpy.decision_map = copy.deepcopy(self.decision_map)
-        cpy.predict = copy.deepcopy(self.predictions)
-        cpy.predict_map = copy.deepcopy(self.prediction_map)
+        cpy.decisions = copy.deepcopy(self.decisions)
         cpy.finish = copy.deepcopy(self.finish)
         return cpy

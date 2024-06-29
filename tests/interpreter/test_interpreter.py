@@ -4,6 +4,8 @@ from hybridagi import GraphProgramInterpreter
 from hybridagi import ProgramMemory
 from hybridagi import FakeEmbeddings
 
+from hybridagi.tools import PredictTool
+
 from dspy.utils.dummies import DummyLM
 
 def test_no_program():
@@ -23,7 +25,7 @@ def test_no_program():
     with pytest.raises(RuntimeError) as exc_info:
         _ = GraphProgramInterpreter(
             program_memory = program_memory,
-            tools = [],
+            tools = [PredictTool()],
         )(objective="test")
     assert str(exc_info.value) == "No entry point detected, please make sure you loaded the programs."
 
@@ -56,7 +58,7 @@ CREATE
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,
-        tools = [],
+        tools = [PredictTool()],
     )(objective="test")
 
     assert result.finish_reason == "finished"
@@ -101,7 +103,7 @@ CREATE
         ids = [program_name]
     )
 
-    tools = []
+    tools = [PredictTool()]
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,
@@ -125,8 +127,7 @@ def test_one_decision_program():
     emb = FakeEmbeddings(dim=250)
 
     answers = [
-""" answer, the objective contains the character `?` denoting a question.\n\nSelected Label: <YES>
-"""
+""" answer, the objective contains the character `?` denoting a question.\n\nLabel: YES"""
 ]
 
     dspy.settings.configure(lm=DummyLM(answers=answers))
@@ -157,7 +158,7 @@ CREATE
         ids = [program_name]
     )
 
-    tools = []
+    tools = [PredictTool()]
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,
@@ -243,7 +244,7 @@ End Program: main"""
 def test_multi_step_program():
     emb = FakeEmbeddings(dim=250)
 
-    answers = [" answer, the objective contains the character `?` denoting a question.\n\nSelected Label: YES", "Toulouse"]
+    answers = [" answer, the objective contains the character `?` denoting a question.\n\nLabel: YES", "Toulouse"]
 
     dspy.settings.configure(lm=DummyLM(answers=answers))
 
@@ -279,7 +280,7 @@ CREATE
         ids = [program_name],
     )
 
-    tools = []
+    tools = [PredictTool()]
 
     result = GraphProgramInterpreter(
         program_memory = program_memory,

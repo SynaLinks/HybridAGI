@@ -10,9 +10,7 @@ from ..output_parsers.prediction import PredictionOutputParser
 
 class AskUserSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct question
-    
-    Note: Never give an apology or explain what you are doing."""
+    Using the prompt to help you, you will infer the correct question"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
@@ -20,8 +18,9 @@ class AskUserSignature(dspy.Signature):
     question = dspy.OutputField(desc = "The question to ask to the user")
 
 class SimulateAnswerSignature(dspy.Signature):
-    """Answer from the perspective of a real person, if you don't known imagine what an average user would answer"""
+    """Answer from the perspective of a real person, if you don't known imagine what a user with the given profile would answer"""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
+    user_profile = dspy.InputField(desc = "The user profile")
     chat_history = dspy.InputField(desc = "The chat history")
     question = dspy.InputField(desc = "The question to assess")
     user_answer = dspy.OutputField(desc = "The answer from the perspective of a real person (only few words)")
@@ -31,6 +30,7 @@ class AskUserTool(BaseTool):
     def __init__(
             self,
             agent_state: AgentState,
+            user_profile: str = "An average user",
             ask_user_func: Optional[Callable[[str], str]] = None,
             num_history: int = 50,
             simulated: bool = True,

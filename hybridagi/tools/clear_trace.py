@@ -30,6 +30,5 @@ class ClearTraceTool(BaseTool):
     def __deepcopy__(self, memo):
         cpy = (type)(self)(
             agent_state = self.agent_state,
-            lm = self.lm,
         )
         return cpy

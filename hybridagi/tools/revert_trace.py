@@ -26,6 +26,7 @@ class RevertTraceTool(BaseTool):
     def __init__(
             self,
             agent_state: AgentState,
+            lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = "RevertTrace")
         self.agent_state = agent_state

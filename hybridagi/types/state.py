@@ -49,3 +49,4 @@ class AgentState():
         self.context = FileSystemContext()
         self.chat_history = []
         self.variables = {}
+        self.plots = []

@@ -1,26 +1,34 @@
-
+from typing import Optional
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser, Tree, Node
-
-from .base import KnowledgeParserBase
+from .base import BaseKnowledgeParser
 from ..hybridstores.fact_memory.fact_memory import FactMemory
+from ..hybridstores.filesystem.filesystem import FileSystem
 
 PY_LANGUAGE = Language(tspython.language())
 
-class PythonKnowledgeParser(KnowledgeParserBase):
+class PythonKnowledgeParser(BaseKnowledgeParser):
 
     def __init__(
             self,
+            filesystem: FileSystem,
             fact_memory: FactMemory,
         ):
         super().__init__(
+            filesystem = filesystem,
             fact_memory = fact_memory,
             valid_extensions = [".py"],
         )
         self.parser = Parser(PY_LANGUAGE)
+        if filesystem is None:
+            raise ValueError("")
 
-    def parse(self, filename:str, code: str):
-        src = code.encode('utf-8')
+    def parse(self, dest_path:str, content: str):
+        self.filesystem.add_texts(
+            texts=[content],
+            ids=[dest_path],
+        )
+        src = content.encode('utf-8')
         tree = self.parser.parse(src)
         # Get class names and body
         query = PY_LANGUAGE.query("""
@@ -28,7 +36,7 @@ class PythonKnowledgeParser(KnowledgeParserBase):
     name: (identifier) @class-name
     body: (block) @class-body)
 """
-            )
+        )
         matches = query.matches(tree.root_node)
         for record in matches:
             class_name = src[record[1]["class-name"].start_byte:record[1]["class-name"].end_byte]
@@ -36,7 +44,7 @@ class PythonKnowledgeParser(KnowledgeParserBase):
             class_name = class_name.decode('utf8')
             class_body = class_body.decode('utf8')
             metadata = {}
-            metadata["filename"] = filename
+            metadata["filepath"] = dest_path
             self.fact_memory.add_texts(
                 texts = [class_body],
                 ids = [class_name],
@@ -77,7 +85,7 @@ body: (block
             method_name = method_name.decode('utf8')
             method_body = method_body.decode('utf8')
             metadata = {}
-            metadata["filename"] = filename
+            metadata["filepath"] = filepath
             self.fact_memory.add_texts(
                 texts = [method_body],
                 ids = [class_name+":"+method_name],
@@ -85,3 +93,8 @@ body: (block
                 metadatas = [metadata],
             )
             self.fact_memory.add_triplet(class_name, "has method", class_name+":"+method_name)
+
+    def read(self, source_path: str) -> str:
+        f = open(source_path, "r")
+        file_content = f.read()
+        return file_content

@@ -43,54 +43,6 @@ class FileSystem(HybridStore):
         self.chunk_overlap = chunk_overlap
         self.init()
 
-    def add_folders(
-            self,
-            folders: List[str],
-            destination_folders: Optional[List[str]] = None,
-        ):
-        """Method to load a folder of documents into the filesystem"""
-        names = []
-        docs = []
-        for i, folder in enumerate(folders):
-            if destination_folders is None:
-                folder_name = os.path.basename(folder)
-            else:
-                folder_name = destination_folders[i]
-            ctxt = FileSystemContext()
-            folder_name = ctxt.eval_path(folder_name)
-            self.create_folder(folder_name)
-            for dirpath, dirnames, filenames in os.walk(folder):
-                if "venv" in dirpath or dirpath.startswith("__") > 0 or dirpath.startswith(".") > 0:
-                    continue
-                for dir_name in dirnames:
-                    if not(dir_name.startswith("__") or dir_name.startswith(".") or dir_name == "venv"):
-                        path = join([dirpath.replace(folder, folder_name), dir_name])
-                        self.create_folder(path)
-                for filename in filenames:
-                    if not filename.startswith("__") \
-                        and not filename.startswith(".") \
-                            and not filename.endswith(".zip"):
-                        source = os.path.join(dirpath, filename)
-                        try:
-                            f = open(source, "r")
-                            file_content = f.read()
-                            if file_content:
-                                doc = file_content
-                                path = join(
-                                    [
-                                        dirpath.replace(folder, folder_name),
-                                        filename,
-                                    ]
-                                )
-                                docs.append(doc)
-                                names.append(path)
-                        except Exception:
-                            pass
-        return self.add_texts(
-            texts = docs,
-            ids = names,
-        )
-
     def add_texts(
             self,
             texts: List[str],

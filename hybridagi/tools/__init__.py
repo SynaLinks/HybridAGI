@@ -1,9 +1,12 @@
 from .base import BaseTool, Tool
 
+from .predict import PredictTool
+
 from .duckduckgo_search import DuckDuckGoSearchTool
 from .document_search import DocumentSearchTool
 from .program_search import ProgramSearchTool
 from .past_action_search import PastActionSearchTool
+from .entity_search import EntitySearchTool
 
 from .update_objective import UpdateObjectiveTool
 
@@ -32,6 +35,8 @@ from .browse_website import BrowseWebsiteTool
 __all__ = [
     Tool,
     BaseTool,
+
+    PredictTool,
 
     DuckDuckGoSearchTool,
     DocumentSearchTool,

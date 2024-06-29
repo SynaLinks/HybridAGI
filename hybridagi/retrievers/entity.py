@@ -50,11 +50,13 @@ class EntityRetriever(dspy.Retrieve):
                         indexes[record[0]] = True
                     else:
                         continue
-                    content = f"{record[0]}: {self.fact_memory.get_content(record[0])}"
+                    name = record[0]
+                    text = self.fact_memory.get_content(record[0])
+                    description = record[1]
                     metadata = self.filesystem.get_content_metadata(record[0])
-                    distance = float(record[1])
+                    distance = float(record[2])
                     if distance < self.distance_threshold:
-                        contents.extend([{"entities": dotdict({"entity": content, "metadata": metadata}), "distance": distance}])
+                        contents.extend([{"entities": dotdict({"entity": name, "description": description, "text": text, "metadata": metadata}), "distance": distance}])
         sorted_passages = sorted(
             contents,
             key=lambda x: x["distance"],

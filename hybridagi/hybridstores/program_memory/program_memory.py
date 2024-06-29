@@ -35,26 +35,6 @@ class ProgramMemory(HybridStore):
         )
         self.playground = self.get_graph("playground")
 
-    def add_folders(
-            self,
-            folders: List[str],
-        ):
-        """Method to load a library of programs, no check performed"""
-        names = []
-        programs = []
-        for programs_folder in folders:
-            for dirpath, dirnames, filenames in os.walk(programs_folder):
-                for filename in filenames:
-                    if filename.endswith(".cypher"):
-                        program_name = filename.replace(".cypher", "")
-                        try:
-                            names.append(program_name)
-                            source = os.path.join(dirpath, filename)
-                            programs.append(open(source, "r").read())
-                        except Exception:
-                            pass
-        return self.add_texts(texts = programs, ids = names)
-
     def add_texts(
             self,
             texts: List[str],

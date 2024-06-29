@@ -61,25 +61,25 @@ CREATE
     name: "Write the introduction for a news article on the objective's topic",
     tool: "Predict",
     prompt: "Imagine that you are a news writter, please give me an appealing introduction",
-    variable: "introduction"
+    output: "introduction"
 }),
 (first_paragraph:Action {
     name: "Write the first paragraph for a news article on the objective's topic",
     tool: "Predict",
     prompt: "Imagine that you are a news writter, please give me an appealing first paragraph, don't state that it is the first paragraph",
-    variable: "first_paragraph"
+    output: "first_paragraph"
 }),
 (second_paragraph:Action {
     name: "Write the second paragraph for a news article on the objective's topic",
     tool: "Predict",
     prompt: "Imagine that you are a news writter, please give me an appealing second paragraph, don't state that it is the second paragraph",
-    variable: "second_paragraph"
+    output: "second_paragraph"
 }),
 (third_paragraph:Action {
     name: "Write the third paragraph for a news article on the objective's topic",
     tool: "Predict",
     prompt: "Imagine that you are a news writter, please give me an appealing third paragraph, don't state that it is the third paragraph",
-    variable: "third_paragraph"
+    output: "third_paragraph"
 }),
 (add_title_and_conclusion:Action {
     name: "Write the final version of the article, including a conclusion",
@@ -93,7 +93,8 @@ CREATE
 
     {second_paragraph}
 
-    {third_paragraph}"
+    {third_paragraph}",
+    inputs = ["introduction", "first_paragraph", "second_paragraph", "third_paragraph"]
 }),
 (start)-[:NEXT]->(intro),
 (intro)-[:NEXT]->(first_paragraph),

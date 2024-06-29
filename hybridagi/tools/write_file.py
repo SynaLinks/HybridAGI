@@ -11,14 +11,14 @@ from ..types.state import AgentState
 
 class WriteFileSignature(dspy.Signature):
     """You will be given an objective, purpose and context
-    Using the prompt to help you, you will infer the correct filename and content
+    Using the prompt to help you, you will infer the correct filepath and content
     
     Note: Never give an apology or explain what you are doing."""
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    filename = dspy.OutputField(desc = "The name of the file (short and concise)")
+    filepath = dspy.OutputField(desc = "The path of the file (short and concise)")
     content = dspy.OutputField(desc = "The content to write")
 
 class WriteFileTool(BaseTool):
@@ -69,8 +69,8 @@ class WriteFileTool(BaseTool):
                     purpose = purpose,
                     prompt = prompt,
                 )
-            pred.filename = self.prediction_parser.parse(pred.filename, prefix="Filename:", stop=["\n"])
-            pred.filename = self.path_parser.parse(pred.filename)
+            pred.filepath = self.prediction_parser.parse(pred.filepath, prefix="Filename:", stop=["\n"])
+            pred.filepath = self.path_parser.parse(pred.filepath)
             pred.content = self.prediction_parser.parse(pred.content, prefix="Content:")
             pred.content = self.prediction_parser.parse(pred.content, prefix="\n\n```\n", stop=["\n```\n\n"])
             dspy.Suggest(
@@ -78,16 +78,16 @@ class WriteFileTool(BaseTool):
                 "Content must not be empty"
             )
             dspy.Suggest(
-                len(pred.filename) != 0,
+                len(pred.filepath) != 0,
                 "Filename must not be empty"
             )
             dspy.Suggest(
-                len(pred.filename) < 250,
+                len(pred.filepath) < 250,
                 "Filename must be short and consice"
             )
-            observation = self.write_file(pred.filename, pred.content)
+            observation = self.write_file(pred.filepath, pred.content)
             return dspy.Prediction(
-                filename = pred.filename,
+                filename = pred.filepath,
                 content = pred.content,
                 observation = observation,
             )
