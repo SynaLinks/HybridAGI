@@ -267,6 +267,7 @@ agent.add_knowledge_from_folders(["my_data"])
 ### Optimizing the pipeline
 
 ```python
+import dspy
 # First we import an already made metric
 from hybridagi.metrics import factual_answer
 
