@@ -40,17 +40,7 @@ It is the first programmable LM-based Agent that enables you to define its behav
 If DSPy is the PyTorch of LMs Applications, HybridAGI is the equivalent of Keras for LMs Agents systems. HybridAGI is designed for data scientists, prompt engineers, researchers, and AI enthusiasts who love to experiment with AI. It is a "Build Yourself" product that focuses on human creativity rather than AI autonomy.
 
 <div align="center">
-  <figure>
-    <img alt="HybridAGI architecture" src="img/architecture.svg"/>
-    <figcaption align="center"><b>HybridAGI's AgentOS architecture. The Graph Program Interpreter orchestrate every other component using tools as Action. It can also interact with the user during the execution of a program.</b></figcaption>
-  </figure>
-</div>
-
-<div align="center">
-  <figure>
-    <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
-    <figcaption align="center"><b>Fig.2 - HybridAGI's long-term memory. Each memory system can be used with each other providing the best of vectors and graph retrieval.</b></figcaption>
-  </figure>
+  <img alt="HybridAGI architecture" src="img/architecture.svg"/>
 </div>
 
 ## Why HybridAGI?
