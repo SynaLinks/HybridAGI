@@ -53,7 +53,7 @@ class EntityRetriever(dspy.Retrieve):
                     name = record[0]
                     text = self.fact_memory.get_content(record[0])
                     description = record[1]
-                    metadata = self.filesystem.get_content_metadata(record[0])
+                    metadata = self.fact_memory.get_content_metadata(record[0])
                     distance = float(record[2])
                     if distance < self.distance_threshold:
                         contents.extend([{"entities": dotdict({"entity": name, "description": description, "text": text, "metadata": metadata}), "distance": distance}])
