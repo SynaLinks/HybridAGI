@@ -220,7 +220,7 @@ Learn more about Graph-based Prompt Programming by reading our [documentation](h
 ### Install using pip
 
 ```bash
-pip install git+https://github.com/SynaLinks/HybridAGI.git
+pip install hybridagi
 ```
 
 Note: Before installing `hybridagi` we recommand you to create a virtual environment using virtualenv, conda or your preferred environment manager.

@@ -248,7 +248,7 @@ class GraphProgramInterpreter(dspy.Module):
                 if len(dict(prediction).keys()) > 1:
                     self.agent_state.variables[output] = json.dumps(dict(prediction))
                 else:
-                    self.agent_state.variables[output] = list(dict(prediction).keys())[0]
+                    self.agent_state.variables[output] = dict(prediction)[list(dict(prediction).keys())[0]]
         action = AgentAction(
             hop = self.agent_state.current_hop,
             objective = self.agent_state.objective,
