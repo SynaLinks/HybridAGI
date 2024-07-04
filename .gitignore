@@ -5,6 +5,7 @@ local_cache/
 htmlcov/
 .env
 .chainlit/.*.db
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
