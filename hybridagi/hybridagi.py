@@ -32,6 +32,8 @@ from .tools import (
     DuckDuckGoSearchTool,
 
     EntitySearchTool,
+    EntityAddTool,
+    TripletParserTool,
 
     InternalShellTool,
 
@@ -203,6 +205,10 @@ class HybridAGI():
                     fact_memory = self.fact_memory,
                     embeddings = self.embeddings,
                 ),
+                EntityAddTool(
+                    fact_memory = self.fact_memory,
+                    embeddings = self.embeddings,
+                ),
                 InternalShellTool(
                     filesystem = self.filesystem,
                     agent_state = self.agent_state,
@@ -235,6 +241,7 @@ class HybridAGI():
                 SpeakTool(
                     agent_state = self.agent_state,
                 ),
+                TripletParserTool(),
                 UpdateObjectiveTool(
                     agent_state = self.agent_state,
                 ),

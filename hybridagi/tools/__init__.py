@@ -7,6 +7,8 @@ from .document_search import DocumentSearchTool
 from .program_search import ProgramSearchTool
 from .past_action_search import PastActionSearchTool
 from .entity_search import EntitySearchTool
+from .entity_add import EntityAddTool
+from .triplet_parser import TripletParserTool
 
 from .update_objective import UpdateObjectiveTool
 
@@ -69,6 +71,9 @@ __all__ = [
     ReadUserProfileTool,
 
     QueryFactsTool,
+    EntitySearchTool,
+    EntityAddTool,
+    TripletParserTool,
 
     CodeInterpreterTool,
     BrowseWebsiteTool,
