@@ -27,6 +27,9 @@ from .ask_user import AskUserTool
 from .clear_trace import ClearTraceTool
 from .revert_trace import RevertTraceTool
 
+from .update_user_profile import UpdateUserProfileTool
+from .read_user_profile import ReadUserProfileTool
+
 from .query_facts import QueryFactsTool
 
 from .code_interpreter import CodeInterpreterTool
@@ -61,6 +64,9 @@ __all__ = [
 
     ClearTraceTool,
     RevertTraceTool,
+
+    UpdateUserProfileTool,
+    ReadUserProfileTool,
 
     QueryFactsTool,
 

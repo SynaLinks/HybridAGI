@@ -30,7 +30,6 @@ class AskUserTool(BaseTool):
     def __init__(
             self,
             agent_state: AgentState,
-            user_profile: str = "An average user",
             ask_user_func: Optional[Callable[[str], str]] = None,
             num_history: int = 50,
             simulated: bool = True,
@@ -56,6 +55,7 @@ class AskUserTool(BaseTool):
         chat_history = json.dumps(self.agent_state.chat_history[:-self.num_history], indent=2)
         pred = self.simulate(
             objective = self.agent_state.objective,
+            user_profile = self.agent_state.user_profile,
             chat_history = chat_history,
             question = question,
         )

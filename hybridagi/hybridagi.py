@@ -43,11 +43,13 @@ from .tools import (
 
     ReadFileTool,
     ReadProgramTool,
+    ReadUserProfileTool,
     RevertTraceTool,
 
     SpeakTool,
 
     UpdateObjectiveTool,
+    UpdateUserProfileTool,
     UploadTool,
 
     WriteFileTool,
@@ -182,7 +184,6 @@ class HybridAGI():
                 ),
                 AskUserTool(
                     agent_state = self.agent_state,
-                    user_profile = self.user_profile,
                 ),
                 BrowseWebsiteTool(),
                 CallProgramTool(
@@ -224,6 +225,9 @@ class HybridAGI():
                 ),
                 ReadProgramTool(
                     program_memory = self.program_memory,
+                ),
+                ReadUserProfileTool(
+                    agent_state = self.agent_state,
                 ),
                 RevertTraceTool(
                     agent_state = self.agent_state,
@@ -276,9 +280,9 @@ class HybridAGI():
     def add_knowledge_from_folders(self, folders: List[str]):
         self.knowleddge_loader.from_folders(folders)
 
-    def execute(self, objective: str, verbose: bool = False):
+    def execute(self, objective: str, user_profile: str = "An average user", verbose: bool = False):
         self.interpreter.verbose = verbose
-        prediction = self.interpreter(objective)
+        prediction = self.interpreter(objective, user_profile = user_profile)
         self.interpreter.verbose = self.verbose
         return prediction
 
@@ -296,8 +300,8 @@ class HybridAGI():
             verbose: bool = False,
         ):
         config = dict(
-            max_bootstrapped_demos=max_bootstrapped_demos,
-            max_labeled_demos=0,
+            max_bootstrapped_demos = max_bootstrapped_demos,
+            max_labeled_demos = 0,
         )
         if len(trainset) <= max_bootstrapped_demos:
             optimizer = BootstrapFewShot(
