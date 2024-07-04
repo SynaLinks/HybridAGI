@@ -317,8 +317,6 @@ my_custom_tool = Tool(
 agent.add_tools([my_custom_tool])
 ```
 
-### Native Tools
-
 
 ## Credits 👏
 

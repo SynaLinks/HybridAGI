@@ -95,6 +95,7 @@ class GraphProgramInterpreter(dspy.Module):
         # DSPy reasoners
         # The interpreter model used to navigate, only contains decision signatures
         # With that, DSPy should better optimize the graph navigation task
+        self.current_hop = 0
         self.decision_hop = 0
         self.decisions = [
             dspy.ChainOfThought(DecisionSignature) for i in range(0, self.max_iters)
@@ -109,7 +110,7 @@ class GraphProgramInterpreter(dspy.Module):
         """Method to run a step of the program"""
         current_node = self.agent_state.get_current_node()
         if current_node:
-            self.agent_state.current_hop += 1
+            self.current_hop += 1
             if current_node.labels[0] == "Program":
                 try:
                     program_purpose = current_node.properties["name"]
@@ -250,7 +251,7 @@ class GraphProgramInterpreter(dspy.Module):
                 else:
                     self.agent_state.variables[output] = dict(prediction)[list(dict(prediction).keys())[0]]
         action = AgentAction(
-            hop = self.agent_state.current_hop,
+            hop = self.current_hop,
             objective = self.agent_state.objective,
             purpose = purpose,
             tool = tool,
@@ -305,7 +306,7 @@ class GraphProgramInterpreter(dspy.Module):
         )
         next_node = result.result_set[0][0]
         decision = AgentDecision(
-            hop = self.agent_state.current_hop,
+            hop = self.current_hop,
             objective = self.agent_state.objective,
             purpose = purpose,
             question = question,
@@ -316,9 +317,9 @@ class GraphProgramInterpreter(dspy.Module):
         self.agent_state.set_current_node(next_node)
         return decision
 
-    def forward(self, objective: str):
+    def forward(self, objective: str, user_profile: str = "An average user"):
         """DSPy forward prediction"""
-        self.start(objective)
+        self.start(objective, user_profile = user_profile)
         for i in range(self.max_iters):
             if not self.finished():
                 self.run_step()
@@ -377,7 +378,7 @@ class GraphProgramInterpreter(dspy.Module):
         first_node = self.program_memory.get_next_node(starting_node, program_called)
         self.agent_state.call_program(first_node, program_called)
         program_call = ProgramCall(
-            hop = self.agent_state.current_hop,
+            hop = self.current_hop,
             purpose = purpose,
             program = program_name,
         )
@@ -394,19 +395,21 @@ class GraphProgramInterpreter(dspy.Module):
             if next_node:
                 self.agent_state.set_current_node(next_node)
         program_end = ProgramEnd(
-            hop = self.agent_state.current_hop,
+            hop = self.current_hop,
             program = program_name,
         )
         return program_end
 
-    def start(self, objective: str):
+    def start(self, objective: str, user_profile: str = "An average User"):
         """Start the interpreter"""
         self.agent_state.init()
+        self.current_hop = 0
         self.decision_hop = 0
         self.agent_state.chat_history.append(
             {"role": "User", "message": objective}
         )
         self.agent_state.objective = objective
+        self.agent_state.user_profile = user_profile
         first_step = self.call_program(objective, self.entrypoint)
         self.agent_state.program_trace.append(str(first_step))
         if self.trace_memory:

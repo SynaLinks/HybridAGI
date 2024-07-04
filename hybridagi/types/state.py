@@ -9,6 +9,7 @@ class AgentState():
 
     def __init__(self):
         self.init()
+        self.user_profile = "An average user"
 
     def get_current_program(self) -> Optional[Graph]:
         """Method to retreive the current program from the stack"""
@@ -43,10 +44,9 @@ class AgentState():
 
     def init(self):
         self.objective = "N/A"
-        self.current_hop = 0
+        self.user_profile = "An average user"
         self.program_trace = []
         self.program_stack = deque()
         self.context = FileSystemContext()
         self.chat_history = []
         self.variables = {}
-        self.plots = []
