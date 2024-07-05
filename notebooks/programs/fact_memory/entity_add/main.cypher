@@ -5,7 +5,7 @@ CREATE
 (parse_triplets:Action {
     name: "Create a triplet based on the objective's statement",
     tool: "TripletParser",
-    prompt: "Use the objective's statement to infer triplets",
+    prompt: "Use the objective's statement to infer triplets, DO NOT repeat previously parsed triplets",
     output: "triplets"
 }),
 (triplets_extracted:Decision {
@@ -26,13 +26,13 @@ CREATE
     question:"Were entitites in the form of triplets successfully added to the fact memory ?"
 }),
 (start)-[:NEXT]->(parse_triplets),
-(parse_triplets)-[:NEXT]->(triplets_extracted),
+(parse_triplets)-[:NEXT]->(entity_add),
+(entity_add)-[:NEXT]->(entities_added),
+(entities_added)-[:NO]->(parse_triplets),
+(entities_added)-[:MAYBE]->(parse_triplets),
+(entities_added)-[:UNKNOWN]->(parse_triplets),
+(entities_added)-[:YES]->(triplets_extracted),
 (triplets_extracted)-[:NO]->(parse_triplets),
 (triplets_extracted)-[:MAYBE]->(parse_triplets),
 (triplets_extracted)-[:UNKNOWN]->(parse_triplets),
-(triplets_extracted)-[:YES]->(entity_add),
-(entity_add)-[:NEXT]->(entities_added),
-(entities_added)-[:NO]->(triplets_extracted),
-(entities_added)-[:MAYBE]->(triplets_extracted),
-(entities_added)-[:UNKNOWN]->(triplets_extracted),
-(entities_added)-[:YES]->(end)
+(triplets_extracted)-[:YES]->(end)
