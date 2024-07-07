@@ -278,7 +278,7 @@ class HybridAGI():
         self.graph_programs_loader.from_folders(folders)
 
     def add_knowledge_from_folders(self, folders: List[str]):
-        self.knowleddge_loader.from_folders(folders)
+        self.knowledge_loader.from_folders(folders)
 
     def execute(self, objective: str, user_profile: str = "An average user", verbose: bool = False):
         self.interpreter.verbose = verbose
