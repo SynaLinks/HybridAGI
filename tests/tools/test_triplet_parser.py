@@ -129,6 +129,15 @@ def test_parse_triplets():
         ("SynaLinks", "has a mission to promote a responsible and pragmatic approach to general artificial intelligence", "")
     ]
     assert result == expected_output, f"Failed on nested list input:\nExpected: {expected_output}\nGot: {result}"
+    
+    # Test nested list structure
+    nested_list_input = '''[["SynaLinks", "is", "a young French start-up founded in Toulouse in 2023"], ["SynaLinks", "has", "a mission to promote a responsible and pragmatic approach to general artificial intelligence"]'''
+    result = TripletParserTool.parse_triplets(nested_list_input)
+    expected_output = [
+        ("SynaLinks", "is", "a young French start-up founded in Toulouse in 2023"),
+        ("SynaLinks", "has", "a mission to promote a responsible and pragmatic approach to general artificial intelligence")
+    ]
+    assert result == expected_output, f"Failed on poorly formatted input:\nExpected: {expected_output}\nGot: {result}"    
 
     # Test poorly formatted input
     poorly_formatted_input = '''[["SynaLinks", "is a young French start-up founded in Toulouse in 2023"], ["SynaLinks", "has a mission to promote a responsible and pragmatic approach to general artificial intelligence"]'''

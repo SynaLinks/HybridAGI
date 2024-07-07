@@ -5,34 +5,29 @@ CREATE
 (parse_triplets:Action {
     name: "Create a triplet based on the objective's statement",
     tool: "TripletParser",
-    prompt: "Use the objective's statement to infer triplets, DO NOT repeat previously parsed triplets",
-    output: "triplets"
+    prompt: "Use the objective's statement to infer triplets, DO NOT repeat previously parsed triplets"
 }),
 (triplets_extracted:Decision {
     name:"Check if all possible triplets have been extracted from the objectve's statement",
     question: "Can we extract more triplets from the objective's statement ?"
 }),
-(entity_add:Action {
-    name: "Create a fact memory entity based on the triplets parsed",
-    tool: "EntityAdd",
-    prompt: "Add the following triplets to the fact memory
-    {triplets}
-    ",
+(action_search:Action {
+    name: "Search past actions to answer the objective's question",
+    tool: "PastActionSearch",
     disable_inference:"false",
-    inputs: ["triplets"]
+    prompt: "Get all past action messages VERBATIM",
+    output: "past_actions"
 }),
-(entities_added:Decision {
-    name:"Check if entities were successfully added",
-    question:"Were entitites in the form of triplets successfully added to the fact memory ?"
+(entity_add:Action {
+    name: "Add entities to the fact memory based on past actions",
+    tool: "EntityAdd",
+    prompt: "Get all past action messages",
+    disable_inference:"false"
 }),
 (start)-[:NEXT]->(parse_triplets),
-(parse_triplets)-[:NEXT]->(entity_add),
-(entity_add)-[:NEXT]->(entities_added),
-(entities_added)-[:NO]->(parse_triplets),
-(entities_added)-[:MAYBE]->(parse_triplets),
-(entities_added)-[:UNKNOWN]->(parse_triplets),
-(entities_added)-[:YES]->(triplets_extracted),
+(parse_triplets)-[:NEXT]->(triplets_extracted),
 (triplets_extracted)-[:NO]->(parse_triplets),
 (triplets_extracted)-[:MAYBE]->(parse_triplets),
 (triplets_extracted)-[:UNKNOWN]->(parse_triplets),
-(triplets_extracted)-[:YES]->(end)
+(triplets_extracted)-[:YES]->(entity_add),
+(entity_add)-[:NEXT]->(end)
