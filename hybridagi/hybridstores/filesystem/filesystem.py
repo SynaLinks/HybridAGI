@@ -332,7 +332,7 @@ class FileSystem(HybridStore):
         """Method to return the next content index"""
         params = {"index": content_index}
         result = self.hybridstore.query(
-            'MATCH (:Content {name:index})-[:NEXT]->(n:Content) RETURN n',
+            'MATCH (:Content {name:$index})-[:NEXT]->(n:Content) RETURN n',
             params = params,
         )
         if len(result.result_set) > 0:
