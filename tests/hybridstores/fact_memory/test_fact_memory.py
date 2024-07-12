@@ -12,7 +12,6 @@ def test_add_triplet():
 
     memory.add_triplet("myself", "is a", "robot")
 
-
 def test_delete_triplet():
     emb = FakeEmbeddings(dim=250)
     memory = FactMemory(
