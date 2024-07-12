@@ -22,9 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import time
 from ..hybridstore import HybridStore
 from typing import List, Dict, Optional, Any
-from ..hybridstore import HybridStore
 from ...embeddings.base import BaseEmbeddings
 
 class FactMemory(HybridStore):
@@ -82,7 +82,9 @@ class FactMemory(HybridStore):
             WHERE n1.name IN $subjs
             WITH n1
             MATCH p=(n1)-[e*1..{depth}]->(z)
-            RETURN p LIMIT {limit}
+            RETURN p
+            ORDER BY max([r IN relationships(p) | r.timestamp]) DESC
+            LIMIT {limit}
         """
 
         data = self.hybridstore.query(query, params={"subjs": subjs})
@@ -141,7 +143,8 @@ Relationships: {relationships.result_set}
         query = """
             MERGE (n1:`%s` {name:$subj})
             MERGE (n2:`%s` {name:$obj})
-            MERGE (n1)-[:`%s`]->(n2)
+            MERGE (n1)-[r:`%s`]->(n2)
+            ON CREATE SET r.timestamp = $timestamp
         """
 
         prepared_statement = query % (
@@ -151,7 +154,7 @@ Relationships: {relationships.result_set}
         )
 
         # Call with prepared statement
-        self.hybridstore.query(prepared_statement, params={"subj": subj, "obj": obj})
+        self.hybridstore.query(prepared_statement, params={"subj": subj, "obj": obj, "timestamp": int(time.time())})
 
     def delete_triplet(self, subj: str, rel: str, obj: str) -> None:
         """Delete triplet."""

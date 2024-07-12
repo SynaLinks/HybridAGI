@@ -1,3 +1,4 @@
+import time
 from hybridagi import FactMemory
 from hybridagi import FakeEmbeddings
 
@@ -41,3 +42,23 @@ def test_get_rel_map():
     assert len(rel_map) == 2
     assert len(rel_map["myself"]) == 3
     assert len(rel_map["robot"]) == 2
+
+def test_get_rel_map_with_time_range():
+    emb = FakeEmbeddings(dim=250)
+    memory = FactMemory(
+        index_name="test",
+        embeddings=emb,
+        wipe_on_start=True,
+    )
+    
+    # Add triplets with different timestamps
+    memory.add_triplet("agent", "performed", "action1")
+    time.sleep(1)
+    memory.add_triplet("agent", "performed", "action2")
+    time.sleep(1)
+    memory.add_triplet("agent", "performed", "action3")
+
+    rel_map = memory.get_rel_map(subjs=["agent"], depth=1, limit=2)
+
+    assert len(rel_map["agent"]) == 2  # Should only include action2 and action3
+    assert rel_map["agent"][0][1] == "action3"  # First record should be action3, last one added
