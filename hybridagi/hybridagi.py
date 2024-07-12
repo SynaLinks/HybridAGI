@@ -73,6 +73,8 @@ class HybridAGI():
             agent_state: Optional[AgentState] = None,
             program_memory: Optional[ProgramMemory] = None,
             filesystem: Optional[FileSystem] = None,
+            chunk_size: int = 1024,
+            chunk_overlap: int = 0,
             trace_memory: Optional[TraceMemory] = None,
             fact_memory: Optional[FactMemory] = None,
             load_native_tools: bool = True,
@@ -93,6 +95,8 @@ class HybridAGI():
         self.verbose = verbose
         self.user_profile = user_profile
         self.downloads_directory = downloads_directory
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
 
         if embeddings is None:
             self.embeddings = SentenceTransformerEmbeddings(
@@ -140,6 +144,8 @@ class HybridAGI():
                 index_name = self.agent_name,
                 embeddings = self.embeddings,
                 wipe_on_start = wipe_on_start,
+                chunk_size = chunk_size,
+                chunk_overlap = chunk_overlap,
             )
         else:
             self.filesystem = filesystem
