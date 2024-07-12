@@ -180,9 +180,7 @@ class EntityAddTool(BaseTool):
                 triplets_str = self.prediction_parser.parse(pred.triplets, prefix="", stop=["\n\n\n"])
                 triplets = self.parse_triplets(triplets_str)
             else:
-                print(objective)
                 triplets = self.parse_triplets(objective)
-                print(triplets)
             results = self.add_triplets_to_fact_memory(triplets)
         except Exception as e:
             results = f"Error: {str(e)}"
