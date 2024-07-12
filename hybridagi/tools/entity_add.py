@@ -36,25 +36,32 @@ class EntityAddTool(BaseTool):
         :param input_str: A string containing triplet information in various formats
         :return: A list of (subject, predicate, object) tuples
         """
-        def clean_triplet(triplet: Tuple[str, str, str]) -> Tuple[str, str, str]:
-            return tuple(item.strip() for item in triplet)
-
-        triplets_section = re.search(r'Triplets:\s*([\s\S]*)', input_str, re.IGNORECASE)
-        triplets_section = triplets_section.group(1) if triplets_section else input_str
+        # Check if the input contains the structured format with Objective, Context, Purpose, Prompt
+        structured_match = re.search(r'Triplets:\s*([\s\S]*)', input_str, re.IGNORECASE)
+        if structured_match:
+            triplets_section = structured_match.group(1)
+        else:
+            triplets_section = input_str
 
         # Try to parse as a markdown table
         table_pattern = r'\s*\|?\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|?\s*\n'
         table_matches = re.findall(table_pattern, triplets_section)
         if table_matches:
-            data_rows = [row for row in table_matches[2:] if not any('---' in cell for cell in row)]
-            if data_rows:
-                return [clean_triplet(row) for row in data_rows]
+            # Exclude header and separator rows
+            data_rows = table_matches[2:] if len(table_matches) > 2 else table_matches
+            # Further filter out any remaining separator rows
+            data_rows = [row for row in data_rows if not any('---' in cell for cell in row)]
+            if len(data_rows) > 0:
+                return [(s.strip(), p.strip(), o.strip()) for s, p, o in data_rows]
 
-        # Try to parse as a list of lists or tuples
+        # Try to parse as a list of lists
         try:
-            parsed_data = ast.literal_eval(triplets_section.strip())
-            if isinstance(parsed_data, list) and all(isinstance(item, (list, tuple)) and len(item) == 3 for item in parsed_data):
-                return [clean_triplet(item) for item in parsed_data]
+            cleaned_input = triplets_section.strip()
+            list_of_lists = ast.literal_eval(cleaned_input)
+            if isinstance(list_of_lists, list):
+                triplets = [tuple(item) for item in list_of_lists if isinstance(item, list) and len(item) == 3]
+                if triplets:
+                    return [(s.strip(), p.strip(), o.strip()) for s, p, o in triplets]
         except (ValueError, SyntaxError):
             pass
 
@@ -62,42 +69,80 @@ class EntityAddTool(BaseTool):
         try:
             json_data = json.loads(triplets_section)
             if isinstance(json_data, list):
-                return [clean_triplet((item['subject'], item['predicate'], item['object'])) 
-                        for item in json_data 
-                        if isinstance(item, dict) and all(key in item for key in ['subject', 'predicate', 'object'])]
+                triplets = [(item['subject'], item['predicate'], item['object']) 
+                            for item in json_data 
+                            if isinstance(item, dict) and all(key in item for key in ['subject', 'predicate', 'object'])]
+                if triplets:
+                    return [(s.strip(), p.strip(), o.strip()) for s, p, o in triplets]
         except json.JSONDecodeError:
             pass
 
-        # Parse various string formats
-        patterns = [
-            r'\(Subject:\s*(.+?),\s*Predicate:\s*(.+?),\s*Object:\s*(.+?)\)',
-            r'\d+\.\s*\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\)',
-            r'\(([^,]+),\s*([^,]+),\s*(.+?)\)',
-            r'\("(.+?)",\s*"(.+?)",\s*"(.+?)"\)',
-        ]
+        # Pattern for the format: (Subject: s, Predicate: p, Object: o.)
+        pattern1 = r'\(Subject:\s*(.+?),\s*Predicate:\s*(.+?),\s*Object:\s*(.+?)\)'
+        matches1 = re.findall(pattern1, triplets_section, re.DOTALL)
+        if matches1:
+            return [(s.strip(), p.strip(), o.strip()) for s, p, o in matches1]
 
-        for pattern in patterns:
-            matches = re.findall(pattern, triplets_section, re.DOTALL)
-            if matches:
-                return [clean_triplet(match) for match in matches]
+        # Pattern for the numbered list format: 1. ("subject", "predicate", "object")
+        numbered_list_pattern = r'\d+\.\s*\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\)'
+        numbered_list_matches = re.findall(numbered_list_pattern, triplets_section)
+        if numbered_list_matches:
+            return [(s.strip(), p.strip(), o.strip()) for s, p, o in numbered_list_matches]
 
-        # Parse Entity-Role-Facts format
+        # Pattern for the format: [(subject, predicate, object), ...]
+        tuple_pattern = r'\(([^,]+),\s*([^,]+),\s*(.+?)\)'
+        tuple_matches = re.findall(tuple_pattern, triplets_section)
+        if tuple_matches:
+            return [(s.strip(), p.strip(), o.strip()) for s, p, o in tuple_matches]
+
+        # Pattern for the format: ("subject", "predicate", "object")
+        pattern2 = r'\("(.+?)",\s*"(.+?)",\s*"(.+?)"\)'
+        matches2 = re.findall(pattern2, triplets_section)
+        if matches2:
+            return [(s.strip(), p.strip(), o.strip()) for s, p, o in matches2]
+
+        # Pattern for the format provided: Entity: e - Role: r - Facts: f.
         entity_pattern = r'Entity:\s*(.+?)\s*-\s*Role:\s*(.+?)\s*-\s*Facts:'
         fact_pattern = r'Facts:\s*(.+?)(?:\s*-\s*Facts:|$)'
         
+        entity_matches = re.finditer(entity_pattern, triplets_section, re.DOTALL)
         triplets = []
-        for entity_match in re.finditer(entity_pattern, triplets_section, re.DOTALL):
+        for entity_match in entity_matches:
             entity = entity_match.group(1).strip()
             role = entity_match.group(2).strip()
             
-            facts_section = triplets_section[entity_match.end():triplets_section.find('Entity:', entity_match.end())]
-            facts_section = facts_section if facts_section != -1 else triplets_section[entity_match.end():]
+            start = entity_match.end()
+            end = triplets_section.find('Entity:', start)
+            if end == -1:
+                end = len(triplets_section)
             
-            for fact_match in re.finditer(fact_pattern, facts_section, re.DOTALL):
+            facts_section = triplets_section[start:end]
+            fact_matches = re.finditer(fact_pattern, facts_section, re.DOTALL)
+            
+            for fact_match in fact_matches:
                 fact = fact_match.group(1).strip()
-                triplets.append((entity, 'has fact', fact) if role.lower() == 'subject' else (fact, 'is about', entity))
+                if role.lower() == 'subject':
+                    triplets.append((entity, 'has fact', fact))
+                else:
+                    triplets.append((fact, 'is about', entity))
         
-        return triplets if triplets else []
+        if triplets:
+            return triplets
+
+        # New pattern for numbered simple format: n. subject, predicate, object
+        numbered_simple_pattern = r'\d+\.\s*([^,]+),\s*([^,]+),\s*(.+)'
+        numbered_simple_matches = re.findall(numbered_simple_pattern, triplets_section)
+        if numbered_simple_matches:
+            return [(s.strip(), p.strip(), o.strip()) for s, p, o in numbered_simple_matches]
+
+        # New pattern for simple format: subject, predicate, object
+        simple_pattern = r'([^,]+),\s*([^,]+),\s*(.+)'
+        simple_matches = re.findall(simple_pattern, triplets_section)
+        if simple_matches:
+            return [(s.strip(), p.strip(), o.strip()) for s, p, o in simple_matches]
+
+        # If no format matched, return an empty list
+        return []
 
     def add_triplets_to_fact_memory(self, triplets: List[Tuple[str, str, str]]) -> str:
         """Add valid triplets to FactMemory."""
@@ -135,7 +180,9 @@ class EntityAddTool(BaseTool):
                 triplets_str = self.prediction_parser.parse(pred.triplets, prefix="", stop=["\n\n\n"])
                 triplets = self.parse_triplets(triplets_str)
             else:
+                print(objective)
                 triplets = self.parse_triplets(objective)
+                print(triplets)
             results = self.add_triplets_to_fact_memory(triplets)
         except Exception as e:
             results = f"Error: {str(e)}"

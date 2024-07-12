@@ -41,9 +41,14 @@ def test_entity_add_tool_without_llm():
     emb, memory = setup_memory_and_embeddings()
     
     answer = """
-    1. (Subject: Capital_of_England, Predicate: is equal to, Object: London)
-    2. (Subject: Location_of_Westminster, Predicate: is, Object: London)
-    3. (Subject: Part_of_London, Predicate: is, Object: Westminster)
+    Add entity into the fact memory 
+    The triplets derived from the text are as follows:
+
+    1. SynaLinks, is based in, Toulouse
+    2. SynaLinks, works on, cutting-edge technologies
+    3. SynaLinks, aims to combine, deep learning models, symbolic models
+    4. SynaLinks, offers, neuro-symbolic approach
+    5. SynaLinks, customizes solutions for, clients
     """
     
     tool = EntityAddTool(
@@ -59,7 +64,7 @@ def test_entity_add_tool_without_llm():
         disable_inference = True,
     )
     
-    assert prediction.message == "Processed document: 3 valid triplets added to FactMemory."
+    assert prediction.message == "Processed document: 5 valid triplets added to FactMemory."
 
 # Add this new test function
 def test_entity_add_tool_with_json_input():
