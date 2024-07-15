@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hybridagi"
-version = "0.2.33"
+version = "0.2.4"
 description = "The Programmable Neuro-Symbolic AGI"
 readme = "README.md"
 authors = ["Yoan Sallami"]
@@ -18,20 +18,15 @@ homepage = "https://github.com/SynaLinks/HybridAGI"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-python-dotenv = ">=1.0.1"
 sentence-transformers = ">=2.6.0"
-duckduckgo-search = ">=5.2.1"
-falkordb = ">=1.0.3"
 dspy-ai = ">=2.4.10"
 colorama = ">=0.4.6"
-mistralai = ">=0.1.8"
 faiss-cpu = ">=1.8.0.post1"
-tree-sitter = ">=0.22.3"
-tree-sitter-python = {git="https://github.com/tree-sitter/tree-sitter-python", tag="v0.21.0"}
 
-[tool.poetry.group.dev.dependencies]
-pytest = ">=8.1.1"
+pytest = ">=8.2.2"
 
+pyjson5 = "^1.6.6"
+pyvis = "^0.3.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
