@@ -1,4 +1,5 @@
 import dspy
+from typing import Dict, Optional
 from collections import OrderedDict
 
 class Pipeline(dspy.Module):
@@ -97,5 +98,5 @@ class Pipeline(dspy.Module):
         for module_name, module in self._modules.items():
             prediction = module(current_inputs)
             self._outputs[module_name] = prediction
-            current_prediction = prediction
-        return current_prediction
+            current_inputs = prediction
+        return current_inputs

@@ -95,14 +95,14 @@ def test_user_profile_with_vector():
     assert user.vector == vec
 
 def test_message():
-    msg = dt.Message(role=dt.Role.AI, message="Hello world")
+    msg = dt.Message(role=dt.Role.AI, content="Hello world")
     assert msg.role == "AI"
-    assert msg.message == "Hello world"
+    assert msg.content == "Hello world"
 
 def test_chat_history():
     chat = dt.ChatHistory()
-    chat.msgs.append(dt.Message(role=dt.Role.AI, message="Hello world"))
-    assert chat.msgs[0].message == "Hello world"
+    chat.msgs.append(dt.Message(role=dt.Role.AI, content="Hello world"))
+    assert chat.msgs[0].content == "Hello world"
 
 def test_interaction_session_empty():
     session = dt.InteractionSession()
@@ -117,7 +117,7 @@ def test_interaction_session_with_user():
 
 def test_interaction_session_with_chat():
     session = dt.InteractionSession()
-    session.chat.msgs.append(dt.Message(role=dt.Role.AI, message="Hello, I'm an AI assistant what can I do to help you?"))
-    session.chat.msgs.append(dt.Message(role=dt.Role.User, message="Can you tell me what is the capital of France?"))
-    assert session.chat.msgs[0].message == "Hello, I'm an AI assistant what can I do to help you?"
-    assert session.chat.msgs[1].message == "Can you tell me what is the capital of France?"
+    session.chat.msgs.append(dt.Message(role=dt.Role.AI, content="Hello, I'm an AI assistant what can I do to help you?"))
+    session.chat.msgs.append(dt.Message(role=dt.Role.User, content="Can you tell me what is the capital of France?"))
+    assert session.chat.msgs[0].content == "Hello, I'm an AI assistant what can I do to help you?"
+    assert session.chat.msgs[1].content == "Can you tell me what is the capital of France?"

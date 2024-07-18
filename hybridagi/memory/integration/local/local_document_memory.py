@@ -3,19 +3,31 @@ from uuid import UUID
 from collections import OrderedDict
 from hybridagi.memory.document_memory import DocumentMemory
 from hybridagi.core.datatypes import Document, DocumentList
+import networkx as nx
 
 class LocalDocumentMemory(DocumentMemory):
     """
-    A class used to store documents locally.
-    It inherits from the DocumentMemory class and provides methods to update, remove, and retrieve documents.
+    A class used to manage and store documents locally.
+
+    Attributes:
+        index_name (str): The name of the index used for document storage.
+        wipe_on_start (bool):  Whether to clear the memory when the object is initialized.
+        _documents (Optional[Dict[str, Document]]): A dictionary to store documents.
+            The keys are document IDs and the values are Document objects.
+        _embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store document embeddings.
+            The keys are document IDs and the values are lists of floats representing the embeddings.
     """
     index_name: str
-    _nodes: Optional[Dict[str, Document]] = {}
-    _edges: Optional[Dict[str, Dict[str, str]]] = {}
-    
+    wipe_on_start: bool
+    _documents: Optional[Dict[str, Document]] = {}
     _embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
+    _graph = nx.DiGraph()
     
-    def __init__(self, index_name: str, wipe_on_start: bool=True):
+    def __init__(
+            self,
+            index_name: str,
+            wipe_on_start: bool=True,
+        ):
         """
         Initialize the local document memory.
 
@@ -23,6 +35,7 @@ class LocalDocumentMemory(DocumentMemory):
             wipe_on_start (bool): Whether to clear the memory when the object is initialized.
         """
         self.index_name = index_name
+        self.wipe_on_start = wipe_on_start
         if wipe_on_start:
             self.clear()
     
@@ -44,14 +57,19 @@ class LocalDocumentMemory(DocumentMemory):
         else:
             documents = doc_or_docs
         for doc in documents.docs:
-            self._nodes[str(doc.id)] = doc
-            self._embeddings[str(doc.id)] = doc.vector
-            if doc.parent_id:
-                if str(doc.parent_id) not in self._edges:
-                    self._edges[str(doc.parent_id)] = {}
-                self._edges[str(doc.parent_id)][str(doc.id)] = "CONTAINS"
+            doc_id = str(doc.id)
+            if doc_id not in self._documents:
+                parent_id = str(doc.parent_id)
+                if doc.parent_id is not None:
+                    parent_id = str(doc.parent_id)
+                    self._graph.add_node(doc_id, color="orange", title=doc.text)
+                    if parent_id in self._documents:
+                        self._graph.add_edge(doc_id, parent_id, label="PART_OF")
+                else:
+                    self._graph.add_node(doc_id, color="red", title=doc.text)
+            self._documents[doc_id] = doc
             if doc.vector:
-                self._embeddings[str(doc.id)] = doc.vector
+                self._embeddings[doc_id] = doc.vector
             
     def remove(self, id_or_ids: Union[Union[UUID, str], List[Union[UUID, str]]]) -> None:
         """
@@ -61,17 +79,17 @@ class LocalDocumentMemory(DocumentMemory):
             id_or_ids (Union[Union[UUID, str], List[Union[UUID, str]]]): A single document id or a list of document ids to be removed from the memory.
         """
         if not isinstance(id_or_ids, list):
-            document_ids = [id_or_ids]
+            documents_ids = [id_or_ids]
         else:
-            document_ids = id_or_ids
-        for doc_id in document_ids:
-            if str(doc_id) in self._nodes:
-                del self._nodes[str(doc_id)]
-            if str(doc_id) in self._embeddings:
-                del self._embeddings[str(doc_id)]
-            # TODO remove edges cleanly
+            documents_ids = id_or_ids
+        for doc_id in documents_ids:
+            doc_id = str(doc_id)
+            if doc_id in self._documents:
+                del self._documents[doc_id]
+            if doc_id in self._embeddings:
+                del self._embeddings[doc_id]
                 
-    def get(self, id_or_ids: Union[Union[UUID, str], List[Union[UUID, str]]]) -> DocumentList:
+    def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> DocumentList:
         """
         Retrieve documents from the local document memory.
 
@@ -80,22 +98,19 @@ class LocalDocumentMemory(DocumentMemory):
 
         Returns:
             DocumentList: A list of documents that match the input ids.
-
-        Raises:
-            ValueError: If the input ids are not valid.
         """
         if not isinstance(id_or_ids, list):
-            document_ids = [id_or_ids]
+            documents_ids = [id_or_ids]
         else:
-            document_ids = id_or_ids
+            documents_ids = id_or_ids
         result = DocumentList()
-        for doc_id in document_ids:
-            if str(doc_id) in self._nodes:
-                doc = self._nodes[str(doc_id)]
+        for doc_id in documents_ids:
+            if str(doc_id) in self._documents:
+                doc = self._documents[str(doc_id)]
                 result.docs.append(doc)
         return result
     
-    def get_parent(self, id_or_ids: Union[Union[UUID, str], List[Union[UUID, str]]]) -> DocumentList:
+    def get_parents(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> DocumentList:
         """
         Retrieve the parent documents of the input documents from the local document memory.
 
@@ -109,46 +124,36 @@ class LocalDocumentMemory(DocumentMemory):
             ValueError: If the input ids are not valid.
         """
         if not isinstance(id_or_ids, list):
-            document_ids = [id_or_ids]
+            documents_ids = [id_or_ids]
         result = DocumentList()
-        for doc_id in document_ids:
-            if str(doc_id) in self._nodes:
-                parent_id = self._nodes[str(doc_id)]
-                if str(parent_id) in self._nodes:
-                    doc = self._nodes[str(parent_id)]
+        for doc_id in documents_ids:
+            if str(doc_id) in self._documents:
+                parent_id = self._documents[str(doc_id)]
+                if str(parent_id) in self._documents:
+                    doc = self._documents[str(parent_id)]
                     result.docs.append(doc)
         return result
     
     def clear(self):
         """
         Clear the local document memory.
-        This method removes all documents, edges, and embeddings from the memory.
+        This method removes all documents, graph, and embeddings from the memory.
         """
-        self._nodes = {}
-        self._edges = {}
+        self._documents = {}
         self._embeddings = {}
+        self._graph = nx.DiGraph()
     
-    def visualize(self, notebook=False):
+    def show(self, notebook=False):
         """
         Visualize the local document memory as a network graph.
 
         Parameters:
             notebook (bool): Whether to display the graph in a Jupyter notebook or not.
         """
-        #TODO
-        # from pyvis.network import Network
-        # net = Network(notebook=notebook, directed=True)
-        # for node_name, node in self._nodes.items():
-        #     root_color = "red"
-        #     child_color = "orange"
-        #     color = child_color if node.parent_id else root_color
-        #     net.add_node(node_name, title=node.text, color=color)
-        # # for source_id in self._edges:
-        # #     for target_id in self._edges:
-                
-        # #         net.add_edge(source_id, target_id)
-        # #TODO
-        # net.toggle_physics(True)
-        # net.show('{index_name}_document_memory.html', notebook=False)
+        from pyvis.network import Network
+        net = Network(notebook=notebook, directed=True)
+        net.from_nx(self._graph)
+        net.toggle_physics(True)
+        net.show(f'{self.index_name}_program_memory.html', notebook=notebook)
     
         

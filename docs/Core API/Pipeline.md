@@ -7,8 +7,8 @@ It have been implemented to provide a simple way of creating sequence of modules
 ```python
 import hybridagi as hagi
 from hybridagi.memory.integration.local import LocalDocumentMemory
-from hybridagi.core import datatypes import dt
-from hybridagi.core import pipeline as dp
+import hybridagi.core.datatypes import dt
+import hybridagi.core.pipeline as dp
 
 input_data = [
     {
@@ -21,7 +21,7 @@ input_data = [
     }
 ]
 
-input_docs = [dt.Document(text=d.content, metadata={"title": d.title}) for d in input_data]
+input_docs = [dt.Document(text=d["content"], metadata={"title": d["title"]}) for d in input_data]
 
 pipeline = dp.Pipeline()
 

@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Union, List
 from uuid import UUID
-from hybridagi.core.datatypes import Document, DocumentList
+from hybridagi.core.datatypes import Entity, EntityList
+from hybridagi.core.datatypes import Fact, FactList
 
-class DocumentMemory(ABC):
+class FactMemory(ABC):
 
     @abstractmethod
-    def update(self, doc_or_docs: Union[Document, DocumentList]) -> None:
+    def update(self, entities_or_facts: Union[Entity, EntityList, Fact, FactList]) -> None:
         raise NotImplementedError(
             f"DocumentMemory {type(self).__name__} is missing the required 'update' method."
         )
@@ -18,19 +19,19 @@ class DocumentMemory(ABC):
         )
 
     @abstractmethod
-    def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> DocumentList:
+    def get_entities(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> EntityList:
         raise NotImplementedError(
-            f"DocumentMemory {type(self).__name__} is missing the required 'get' method."
+            f"FactMemory {type(self).__name__} is missing the required 'get_entities' method."
         )
     
     @abstractmethod
-    def get_parents(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> DocumentList:
+    def get_facts(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> FactList:
         raise NotImplementedError(
-            f"DocumentMemory {type(self).__name__} is missing the required 'get_parent' method."
+            f"FactMemory {type(self).__name__} is missing the required 'get_facts' method."
         )
-    
+        
     @abstractmethod
     def clear(self):
         raise NotImplementedError(
-            f"DocumentMemory {type(self).__name__} is missing the required 'clear' method."
+            f"FactMemory {type(self).__name__} is missing the required 'clear' method."
         )

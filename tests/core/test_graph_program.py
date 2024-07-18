@@ -1,10 +1,16 @@
 import hybridagi.core.graph_program as gp
 
 def test_graph_program_empty():
-    main=gp.GraphProgram(name="main", description="The main program")
+    main=gp.GraphProgram(
+        name="main",
+        description="The main program",
+    )
 
 def test_one_action_program():
-    main=gp.GraphProgram(name="main", description="The main program")
+    main=gp.GraphProgram(
+        name="main",
+        description="The main program",
+    )
         
     main.add("answer", gp.Action(
         tool="Speak",
@@ -18,7 +24,7 @@ def test_one_action_program():
     
     main.build()
     
-    cypher=main.to_cypher()
+    cypher = main.to_cypher()
     assert cypher == \
 r"""// @desc: The main program
 CREATE
@@ -56,7 +62,7 @@ CREATE
 (start)-[:NEXT]->(answer),
 (answer)-[:NEXT]->(end)"""
 
-    main = gp.GraphProgram().from_cypher(cypher)
+    main = gp.GraphProgram("main").from_cypher(cypher)
     assert main.to_cypher() == cypher
     
     
@@ -106,6 +112,8 @@ Objective: {{objective}}""",
     
     main.build()
     
+    assert main.get_decision_choices("is_objective_unclear") == ["CLARIFY", "ANSWER"]
+    
     cypher = main.to_cypher()
     
     assert cypher == \
@@ -115,7 +123,7 @@ CREATE
 (start:Control {purpose: "Start"}),
 (end:Control {purpose: "End"}),
 (is_objective_unclear:Decision {
-  purpose: "is_objective_unclear",
+  purpose: "Check if the question needs clarification or not",
   prompt: "Is the following question unclear?\n{{question}}",
   inputs: [
     "objective"
@@ -153,5 +161,5 @@ CREATE
 (is_objective_unclear)-[:CLARIFY]->(clarify),
 (is_objective_unclear)-[:ANSWER]->(answer),
 (clarify)-[:NEXT]->(refine_objective),
-(refine_objective)-[:NEXT]->(answer),
-(answer)-[:NEXT]->(end)"""
+(answer)-[:NEXT]->(end),
+(refine_objective)-[:NEXT]->(answer)"""
