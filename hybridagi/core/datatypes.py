@@ -44,7 +44,7 @@ class QueryWithEntities(BaseModel):
 class Relationship(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the relation", default_factory=uuid4)
     name: str = Field(description="Relationship name")
-    inverse: str = Field(description="Opposite relation if any", default=None)
+    inverse: str = Field(description="Inverse relation if any", default=None)
     symetric: Optional[bool] = Field(description="Either True if the relation is symetric, False otherwise or None if unknow", default=None)
     assymetric: Optional[bool] = Field(description="Either True if the relation is assymetric, False otherwise or None if unknow", default=None)
     antisymetric: Optional[bool] = Field(description="Either True if the relation is antisymetric, False otherwise or None if unknow", default=None)

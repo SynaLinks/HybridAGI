@@ -22,6 +22,8 @@ class Pipeline(dspy.Module):
         Raises:
             ValueError: If a module with the same name already exists in the pipeline.
         """
+        if not isinstance(module, dspy.Module):
+            raise ValueError(f"Invalid {module_name} Module provided, only dspy.Module accepted")
         if module_name in self._modules:
             raise ValueError(f"Module {module_name} already exist.")
         self._modules[module_name] = module

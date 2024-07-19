@@ -15,7 +15,7 @@ class LocalProgramMemory(ProgramMemory):
         _programs (Optional[Dict[str, GraphProgram]]): A dictionary to store programs. The keys are program names and the values are GraphProgram objects.
         _embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store program embeddings. The keys are program names and the values are lists of floats representing the embeddings.
         _graph (nx.DiGraph): A directed graph to store the dependencies between programs.
-    """    
+    """
     index_name: str
     wipe_on_start: bool
     _programs: Optional[Dict[str, GraphProgram]] = {}
@@ -170,4 +170,3 @@ class LocalProgramMemory(ProgramMemory):
         net.from_nx(self._graph)
         net.toggle_physics(True)
         net.show(f'{self.index_name}_program_memory.html', notebook=notebook)
-        

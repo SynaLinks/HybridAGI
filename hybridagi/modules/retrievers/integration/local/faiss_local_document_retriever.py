@@ -1,7 +1,9 @@
 import dspy
 import numpy as np
 import faiss
-import hybridagi.core.datatypes as dt
+from hybridagi.memory.document_memory import DocumentMemory
+from hybridagi.embeddings.embeddings import Embeddings
+from hybridagi.core.datatypes import Query, DocumentList
 
 class EmbeddingsDistance(str, Enum):
     Cosine = "cosine"
@@ -28,10 +30,10 @@ class FAISSLocalDocumentRetriever(dspy.Module):
         self.max_distance = max_distance
         self.k = k
     
-    def forward(self, query: dt.Query) -> dt.DocumentList:
-        if not isinstance(query, dt.Query):
+    def forward(self, query: Query) -> DocumentList:
+        if not isinstance(query, Query):
             raise ValueError(f"{type(self).__name__} input must be a Query")
-        result = dt.DocumentList
+        result = DocumentList
         vector_dim = embeddings.dim
         embeddings_map = self.document_memory._embeddings
         embeddings = embeddings_map.values()

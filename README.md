@@ -1,3 +1,10 @@
-# HybridAGI: for people that want AI to behave as expected
-## The Keras of neuro-symbolic LLM Agents
+# HybridAGI: for people who want AI to behave as expected
+## The Keras of LLM Applications
 
+### Why HybridAGI?
+
+#### Explainability
+
+#### Robustness and Correctability
+
+#### Ease of use

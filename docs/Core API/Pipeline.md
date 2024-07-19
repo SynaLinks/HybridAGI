@@ -7,8 +7,8 @@ It have been implemented to provide a simple way of creating sequence of modules
 ```python
 import hybridagi as hagi
 from hybridagi.memory.integration.local import LocalDocumentMemory
-import hybridagi.core.datatypes import dt
-import hybridagi.core.pipeline as dp
+import hybridagi.core.datatypes as dt
+from hybridagi.core.pipeline import Pipeline
 
 input_data = [
     {
@@ -23,9 +23,9 @@ input_data = [
 
 input_docs = [dt.Document(text=d["content"], metadata={"title": d["title"]}) for d in input_data]
 
-pipeline = dp.Pipeline()
+pipeline = Pipeline()
 
-pipeline.add("split_chunk", hagi.DocumentSplitter(chunk_size=20))
+pipeline.add("split_chunk", hagi.DocumentSplitter(method="sentence", chunk_size=1))
 pipeline.add("embed_docs", hagi.DocumentEmbedder(embeddings=embeddings))
 
 final_docs = pipeline(input_docs)
