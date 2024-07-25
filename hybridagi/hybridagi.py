@@ -12,7 +12,6 @@ from .hybridstores.filesystem.filesystem import FileSystem
 from .hybridstores.fact_memory.fact_memory import FactMemory
 from .types.state import AgentState
 
-from .knowledge_parsers.python import PythonKnowledgeParser
 from .knowledge_parsers.text import TextKnowledgeParser
 
 from .loaders.graph_programs import GraphProgramsLoader
@@ -160,10 +159,6 @@ class HybridAGI():
         )
 
         parsers = [
-            PythonKnowledgeParser(
-                filesystem = self.filesystem,
-                fact_memory = self.fact_memory,
-            ),
             TextKnowledgeParser(
                 filesystem = self.filesystem,
                 fact_memory = self.fact_memory,

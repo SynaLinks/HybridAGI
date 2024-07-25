@@ -51,7 +51,6 @@ from .utility.commands import (
 from .agents.interpreter import GraphProgramInterpreter
 
 from .knowledge_parsers.base import BaseKnowledgeParser
-from .knowledge_parsers.python import PythonKnowledgeParser
 from .knowledge_parsers.text import TextKnowledgeParser
 
 from .loaders.knowledge import KnowledgeLoader
@@ -65,7 +64,6 @@ __all__ = [
     FileOutputParser,
 
     BaseKnowledgeParser,
-    PythonKnowledgeParser,
     TextKnowledgeParser,
 
     KnowledgeLoader,
