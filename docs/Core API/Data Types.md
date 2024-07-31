@@ -1,10 +1,7 @@
 
-
-### Document memory related types
-
 `Document`: Represent an unstructured textual data to be processed or saved into the `DocumentMemory`, it can represent a text, text chunk, table row or a claim (unstructured fact)
 
-`DocumentList`: The DSPy type used by data processing modules
+`DocumentList`: A list of documents to be processed or saved into memory
   
 ```python
 import dspy
@@ -23,13 +20,11 @@ class DocumentList(BaseModel, dspy.Prediction):
 
 ``` 
 
-### Fact memory related types
-
 `Entity`: Represent an entity like a person, object, place or document to be processed or saved into the `FactMemory`
 
 `Fact`: Represent a first order predicate to be processed or saved into the `FactMemory`
 
-`FactList`: The DSPy type used by data processing modules
+`FactList`: A list of facts to be processed or saved into memory
   
 ```python
 
@@ -52,9 +47,8 @@ class FactList(BaseModel, dspy.Prediction):
 	facts: List[Fact] = Field(description="List of facts", default=[])
 
 ```
-### User memory related types
 
-`UserProfile`: Represent the user profile used by the simulator
+`UserProfile`: Represent the user profile used to personalize the interaction and 
   
 ```python
 
@@ -80,8 +74,6 @@ class InteractionSession(BaseModel):
 	chat_history: ChatHistory = Field(description="The chat history")
 
 ```
-
-### Trace memory related types
 
 `AgentStep`: Represent a step performed by the Agent 
 

@@ -1,6 +1,6 @@
-A pipeline is a structure that allows you to cascade DSPy modules into a sequence that you can use in other pipelines.
+A pipeline is a structure that allows you to cascade DSPy modules into a sequence that you can use in other pipelines. Like Keras sequential model, each block in a pipeline have only **one input** and **one output**.
 
-It have been implemented to provide a simple way of creating sequence of modules while giving you access to the modules output after processing.
+It have been implemented to provide a simple way of creating sequence of modules while giving you access to the modules output after processing. The pipelines are mostly used for data processing as the 
 
 ### Usage:
 
@@ -25,8 +25,13 @@ input_docs = [dt.Document(text=d["content"], metadata={"title": d["title"]}) for
 
 pipeline = Pipeline()
 
-pipeline.add("split_chunk", hagi.DocumentSplitter(method="sentence", chunk_size=1))
-pipeline.add("embed_docs", hagi.DocumentEmbedder(embeddings=embeddings))
+pipeline.add("split_chunk", hagi.DocumentSplitter(
+	method="sentence",
+	chunk_size=1,
+))
+pipeline.add("embed_docs", hagi.DocumentEmbedder(
+	embeddings=embeddings
+))
 
 final_docs = pipeline(input_docs)
 ```

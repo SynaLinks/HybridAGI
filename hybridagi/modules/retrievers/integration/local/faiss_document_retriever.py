@@ -9,7 +9,7 @@ class EmbeddingsDistance(str, Enum):
     Cosine = "cosine"
     Euclidean = "euclidean"
 
-class FAISSLocalDocumentRetriever(dspy.Module):
+class FAISSDocumentRetriever(dspy.Module):
     
     def __init__(
             self,

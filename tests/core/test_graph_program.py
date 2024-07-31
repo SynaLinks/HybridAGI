@@ -7,16 +7,16 @@ def test_graph_program_empty():
     )
 
 def test_one_action_program():
-    main=gp.GraphProgram(
+    main = gp.GraphProgram(
         name="main",
         description="The main program",
     )
-        
-    main.add("answer", gp.Action(
-        tool="Speak",
-        purpose="Answer the given question",
-        prompt="Please answer to the following question: {{question}}",
-        inputs=["objective"],
+    
+    main.add(gp.Action(
+        id = "answer",
+        purpose = "Answer the Objective's question",
+        tool = "Speak",
+        prompt = "Please answer to the Objective's question",
     ))
 
     main.connect("start", "answer")
@@ -29,15 +29,13 @@ def test_one_action_program():
 r"""// @desc: The main program
 CREATE
 // Nodes declaration
-(start:Control {purpose: "Start"}),
-(end:Control {purpose: "End"}),
+(start:Control {id: "start"}),
+(end:Control {id: "end"}),
 (answer:Action {
-  purpose: "Answer the given question",
+  id: "answer",
+  purpose: "Answer the Objective's question",
   tool: "Speak",
-  prompt: "Please answer to the following question: {{question}}",
-  inputs: [
-    "objective"
-  ]
+  prompt: "Please answer to the Objective's question"
 }),
 // Structure declaration
 (start)-[:NEXT]->(answer),
@@ -48,15 +46,13 @@ def test_from_cypher():
 r"""// @desc: The main program
 CREATE
 // Nodes declaration
-(start:Control {purpose: "Start"}),
-(end:Control {purpose: "End"}),
+(start:Control {id: "start"}),
+(end:Control {id: "end"}),
 (answer:Action {
-  purpose: "Answer the given question",
+  id: "answer",
+  purpose: "Answer the Objective's question",
   tool: "Speak",
-  prompt: "Please answer to the following question: {{question}}",
-  inputs: [
-    "objective"
-  ]
+  prompt: "Please answer to the Objective's question"
 }),
 // Structure declaration
 (start)-[:NEXT]->(answer),
@@ -69,38 +65,31 @@ CREATE
 def test_one_action_one_decision_program():
     main=gp.GraphProgram(name="main", description="The main program")
     
-    main.add("is_objective_unclear", gp.Decision(
-        purpose="Check if the question needs clarification or not",
-        prompt="Is the following question unclear?\n{{question}}",
-        inputs=["objective"],
+    main.add(gp.Decision(
+        id = "is_objective_unclear",
+        purpose = "Check if the Objective is unclear",
+        question="Is the Objective's question still unclear?",
     ))
     
-    main.add("clarify", gp.Action(
-        purpose="Ask one question to clarify the user's objective",
-        tool="AskUser",
-        prompt="Please pick one question to clarify the following: {{objective}}",
-        inputs=["objective"],
-        output="clarification"
+    main.add(gp.Action(
+        id = "clarify",
+        purpose = "Ask one question to clarify the Objective",
+        tool = "AskUser",
+        prompt = "Pick one question to clarify the Objective's question",
     ))
     
-    main.add("answer", gp.Action(
-        purpose="Answer the question",
-        tool="Speak",
-        prompt="Please answer to the following question: {{objective}}",
-        inputs=["objective"],
+    main.add(gp.Action(
+        id = "refine_objective",
+        purpose = "Refine the Objective's question",
+        tool = "UpdateObjective",
+        prompt = "Please refine the Objective's question",
     ))
     
-    main.add("refine_objective", gp.Action(
-        purpose="Refine the objective",
-        tool="Predict",
-        prompt= \
-"""You asked the following question:
-Question: {{clarification}}
-
-Please refine the following objective:
-Objective: {{objective}}""",
-        inputs=["objective", "clarification"],
-        output="objective"
+    main.add(gp.Action(
+        id = "answer",
+        purpose = "Answer the Objective's question",
+        tool = "Speak",
+        prompt = "Please answer to the Objective's question",
     ))
     
     main.connect("start", "is_objective_unclear")
@@ -117,49 +106,38 @@ Objective: {{objective}}""",
     cypher = main.to_cypher()
     
     assert cypher == \
-r"""// @desc: The main program
+"""// @desc: The main program
 CREATE
 // Nodes declaration
-(start:Control {purpose: "Start"}),
-(end:Control {purpose: "End"}),
+(start:Control {id: "start"}),
+(end:Control {id: "end"}),
 (is_objective_unclear:Decision {
-  purpose: "Check if the question needs clarification or not",
-  prompt: "Is the following question unclear?\n{{question}}",
-  inputs: [
-    "objective"
-  ]
+  id: "is_objective_unclear",
+  purpose: "Check if the Objective is unclear",
+  question: "Is the Objective's question still unclear?"
 }),
 (clarify:Action {
-  purpose: "Ask one question to clarify the user's objective",
+  id: "clarify",
+  purpose: "Ask one question to clarify the Objective",
   tool: "AskUser",
-  prompt: "Please pick one question to clarify the following: {{objective}}",
-  inputs: [
-    "objective"
-  ],
-  output: "clarification"
-}),
-(answer:Action {
-  purpose: "Answer the question",
-  tool: "Speak",
-  prompt: "Please answer to the following question: {{objective}}",
-  inputs: [
-    "objective"
-  ]
+  prompt: "Pick one question to clarify the Objective's question"
 }),
 (refine_objective:Action {
-  purpose: "Refine the objective",
-  tool: "Predict",
-  prompt: "You asked the following question:\nQuestion: {{clarification}}\n\nPlease refine the following objective:\nObjective: {{objective}}",
-  inputs: [
-    "objective",
-    "clarification"
-  ],
-  output: "objective"
+  id: "refine_objective",
+  purpose: "Refine the Objective's question",
+  tool: "UpdateObjective",
+  prompt: "Please refine the Objective's question"
+}),
+(answer:Action {
+  id: "answer",
+  purpose: "Answer the Objective's question",
+  tool: "Speak",
+  prompt: "Please answer to the Objective's question"
 }),
 // Structure declaration
 (start)-[:NEXT]->(is_objective_unclear),
 (is_objective_unclear)-[:CLARIFY]->(clarify),
 (is_objective_unclear)-[:ANSWER]->(answer),
 (clarify)-[:NEXT]->(refine_objective),
-(answer)-[:NEXT]->(end),
-(refine_objective)-[:NEXT]->(answer)"""
+(refine_objective)-[:NEXT]->(answer),
+(answer)-[:NEXT]->(end)"""

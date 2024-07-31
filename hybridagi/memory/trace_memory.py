@@ -28,12 +28,6 @@ class TraceMemory(ABC):
         raise NotImplementedError(
             f"TraceMemory {type(self).__name__} is missing the required 'get_trace' method."
         )
-    
-    @abstractmethod
-    def is_finished(self, program_id: Union[UUID, str]) -> bool:
-        raise NotImplementedError(
-            f"TraceMemory {type(self).__name__} is missing the required 'is_finished' method."
-        )
        
     @abstractmethod
     def clear(self):

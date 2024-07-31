@@ -64,7 +64,7 @@ class LocalProgramMemory(ProgramMemory):
             else:
                 self._graph.node(prog_id)["title"] = prog.to_cypher()
             self._programs[prog_id] = prog
-            if prog.vector:
+            if prog.vector is not None:
                 self._embeddings[prog_id] = prog.vector
             previous_edges = self._graph.out_edges(prog_id)
             self._graph.remove_edges_from(previous_edges)

@@ -59,22 +59,25 @@ def test_entity_list():
 def test_fact():
     bob = dt.Entity(label="Person", name="Bob")
     alice = dt.Entity(label="Person", name="Alice")
-    fact = dt.Fact(subj=bob, rel="Knows", obj=alice)
+    relation = dt.Relationship(name="Knows")
+    fact = dt.Fact(subj=bob, rel=relation, obj=alice)
     assert fact.subj.id == bob.id
     assert fact.obj.id == alice.id
-    assert fact.rel == "Knows"
+    assert fact.rel.name == "Knows"
 
 def test_fact_with_metadata():
     bob = dt.Entity(label="Person", name="Bob")
     alice = dt.Entity(label="Person", name="Alice")
-    fact = dt.Fact(subj=bob, rel="Knows", obj=alice, metadata={"from": "college"})
+    relation = dt.Relationship(name="Knows")
+    fact = dt.Fact(subj=bob, rel=relation, obj=alice, metadata={"from": "college"})
     assert fact.metadata["from"] == "college"
 
 def test_fact_with_vector():
     vec = [0.0, 0.1, 0.2, 0.3]
     bob = dt.Entity(label="Person", name="Bob")
     alice = dt.Entity(label="Person", name="Alice")
-    fact = dt.Fact(subj=bob, rel="Knows", obj=alice, vector=vec)
+    relation = dt.Relationship(name="Knows")
+    fact = dt.Fact(subj=bob, rel=relation, obj=alice, vector=vec)
     assert fact.vector == vec
 
 def test_user_profile():

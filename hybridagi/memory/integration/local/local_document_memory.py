@@ -68,7 +68,7 @@ class LocalDocumentMemory(DocumentMemory):
                 else:
                     self._graph.add_node(doc_id, color="red", title=doc.text)
             self._documents[doc_id] = doc
-            if doc.vector:
+            if doc.vector is not None:
                 self._embeddings[doc_id] = doc.vector
             
     def remove(self, id_or_ids: Union[Union[UUID, str], List[Union[UUID, str]]]) -> None:
@@ -154,6 +154,6 @@ class LocalDocumentMemory(DocumentMemory):
         net = Network(notebook=notebook, directed=True)
         net.from_nx(self._graph)
         net.toggle_physics(True)
-        net.show(f'{self.index_name}_program_memory.html', notebook=notebook)
+        net.show(f'{self.index_name}_document_memory.html', notebook=notebook)
     
         

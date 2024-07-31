@@ -47,7 +47,6 @@ class LocalFactMemory(FactMemory):
             index_name: str,
             wipe_on_start: bool=True,
         ):
-        
         """
         Initialize the local fact memory.
 
@@ -116,9 +115,10 @@ class LocalFactMemory(FactMemory):
                     if object_id not in self._entities:
                         self.update(fact.obj)
                     previous_fact = self._facts[fact_id]
-                    previous_edge = (previous_fact.subj.id, previous_fact.obj.id)
-                    previous_edge_label = previous_fact.rel.name
-                    self._graph.remove_edge(previous_edge, key=previous_edge_label)
+                    # previous_edge = (previous_fact.subj.id, previous_fact.obj.id)
+                    # previous_edge_label = previous_fact.rel.name
+                    if self._graph.has_edge(previous_fact.subj.id, previous_fact.obj.id, key=previous_fact.rel.name):
+                        self._graph.remove_edge(previous_fact.subj.id, previous_fact.obj.id, key=previous_fact.rel.name)
                     self._facts[fact_id] = fact
                     self._graph.add_edge(subject_id, object_id, key=fact.rel.name, label=fact.rel.name)
     
@@ -212,4 +212,4 @@ class LocalFactMemory(FactMemory):
         net = Network(notebook=notebook, directed=True)
         net.from_nx(self._graph)
         net.toggle_physics(True)
-        net.show(f'{self.index_name}_program_memory.html', notebook=notebook)
+        net.show(f'{self.index_name}_fact_memory.html', notebook=notebook)

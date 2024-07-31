@@ -39,11 +39,11 @@ main.build()
 
 ```
 
-This operation will check that there no orphan nodes in your graph (nodes connected to any nodes), as well as checking that each node is reacheable from the `start` and `end` nodes.
+This operation will check that there no orphan nodes in your graph (nodes connected to any nodes), as well as checking that each node is reachable from the `start` and `end` nodes.
 
 ## Using decision-making steps
 
-decision making steps allow the model to branch over different paths in a program, like conditions in traditional programming, it allow conditional loops and multi-output decisions.
+Decision making steps allow the Agent to branch over different paths in a program, like conditions in traditional programming, it allow conditional loops and multi-output decisions.
 
 ```python
 import hybridagi.core.graph_program as gp

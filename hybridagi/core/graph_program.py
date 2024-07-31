@@ -10,30 +10,31 @@ import pyjson5
 import networkx as nx
 
 class ControlType(str, Enum):
-    Start = "Start"
-    end = "End"
+    Start = "start"
+    end = "end"
 
 class Control(BaseModel):
-    purpose: ControlType
+    id: ControlType = Field(description="The step id")
 
 class Action(BaseModel):
-    purpose: str
-    tool: str
-    prompt: Optional[str] = None
-    inputs: Optional[List[str]] = []
-    output: Optional[str] = None
+    id: str = Field(description="Unique identifier for the step")
+    tool: str = Field(description="The tool name")
+    purpose: str = Field(description="The action purpose")
+    prompt: Optional[str] = Field(description="The prompt used to infer to tool inputs", default=None)
+    inputs: Optional[List[str]] = Field(description="The input for the prompt", default=[])
+    output: Optional[str] = Field(description="The variable to store the action output", default=None)
+    disable_inference: bool = Field(description="Weither or not to disable the inference", default=False)
 
 class Decision(BaseModel):
-    purpose: str = Field(description="The purpose of the decision-making step")
-    prompt: str = Field(description="The prompt to make the decision")
-    inputs: Optional[List[str]] = Field(description="The prompt var inputs", default=[])
+    id: str = Field(description="Unique identifier for the step")
+    purpose: str = Field(description="The decision purpose")
+    question: str = Field(description="The question to assess")
+    inputs: Optional[List[str]] = Field(description="The input prompt variables", default=[])
 
 class Program(BaseModel):
-    purpose: str = Field(description="The purpose of the program call")
+    id: str = Field(description="Unique identifier for the step")
+    purpose: str = Field(description="The program call purpose")
     program: str = Field(description="The program to call")
-    prompt: str = Field(description="The prompt to give as input to the called program")
-    inputs: Optional[List[str]] = Field(description="The prompt var inputs", default=[])
-    output: Optional[str] = Field(description="", default=None)
 
 class GraphProgram(BaseModel, dspy.Prediction):
     """
@@ -56,39 +57,38 @@ class GraphProgram(BaseModel, dspy.Prediction):
         self._graph.add_node("start", label="Start", color="red")
         self._graph.add_node("end", label="End", color="red")
         self.steps = OrderedDict()
-        self.steps["start"] = Control(purpose="Start")
-        self.steps["end"] = Control(purpose="End")
+        self.steps["start"] = Control(id="start")
+        self.steps["end"] = Control(id="end")
 
-    def add(self, step_name: str, step: Union[Control | Action | Decision | Program]):
+    def add(self, step: Union[Control | Action | Decision | Program]):
         """
         Add a step to the graph program.
 
         Args:
-            step_name (str): The name of the step to add.
             step (Union[Control, Action, Decision, Program]): The step to add.
 
         Raises:
-            ValueError: If the step type is invalid or if the step name already exists.
+            ValueError: If the step type is invalid or if the step id already exists.
         """
-        if step_name not in self.steps:
+        if step.id not in self.steps:
             if isinstance(step, Control):
                 color = "red"
-                self._graph.add_node(step_name, label=step.purpose, color=color)
+                self._graph.add_node(step.id, color=color)
             elif isinstance(step, Action):
                 color = "blue"
-                self._graph.add_node(step_name, label=step.purpose, title=step.prompt, color=color)
+                self._graph.add_node(step.id, title=step.prompt, color=color)
             elif isinstance(step, Decision):
                 color = "green"
-                self._graph.add_node(step_name, label=step.purpose, title=step.prompt, color=color)
+                self._graph.add_node(step.id, title=step.question, color=color)
             elif isinstance(step, Program):
                 color = "yellow"
-                self._graph.add_node(step_name, label=step.purpose, title=step.prompt, color=color)
-                self.dependencies.append(step_name)
+                self._graph.add_node(step.id, title=step.purpose, color=color)
+                self.dependencies.append(step.program)
             else:
-                raise ValueError(f"Invalid step type for {step_name} should be between: Control, Action, Decision, Program")
-            self.steps[step_name] = step
+                raise ValueError(f"Invalid step type for {step.id} should be between: Control, Action, Decision, Program")
+            self.steps[step.id] = step
         else:
-            raise ValueError(f"Step {step_name} already exist.")
+            raise ValueError(f"Step {step.id} already exist.")
 
     def connect(self, source: str, target: str, label: str = "NEXT"):
         """
@@ -116,28 +116,28 @@ class GraphProgram(BaseModel, dspy.Prediction):
         if isinstance(self.steps[source], Action) and isinstance(self.steps[target], Decision):
             if label != "NEXT":
                 raise ValueError("Only NEXT edge is authorized between Action and Decision Steps.")
-        if isinstance(self.steps[target], Control) and self.steps[target].purpose == "Start":
+        if isinstance(self.steps[target], Control) and self.steps[target].id == "start":
             raise ValueError("No input edge authorized for the start Step.")
         if isinstance(self.steps[source], Action):
             if self._graph.out_degree(source) == 1:
                 raise ValueError("Only one output edge is authorized for Action Steps.")
-        if isinstance(self.steps[source], Control) and self.steps[source].purpose == "Start":
+        if isinstance(self.steps[source], Control) and self.steps[source].id == "start":
             if self._graph.out_degree(source) == 1:
                 raise ValueError("Only one output edge is authorized for the start Step.")
             if label != "NEXT":
                 raise ValueError("Only NEXT output edge is authorized for the start Step.")
-        if isinstance(self.steps[target], Control) and self.steps[target].purpose == "Start":
+        if isinstance(self.steps[target], Control) and self.steps[target].id == "start":
             raise ValueError("No input edge is authorized for the start Step.")
-        if isinstance(self.steps[source], Control) and self.steps[source].purpose == "End":
+        if isinstance(self.steps[source], Control) and self.steps[source].id == "end":
             raise ValueError("No output edge authorized for the end Step.")
         self._graph.add_edge(source, target, label=label)
 
-    def get_decision_choices(self, step_name: str) -> List[str]:
+    def get_decision_choices(self, step_id: str) -> List[str]:
         """
         Get the choices for a decision step.
 
         Args:
-            step_name (str): The name of the decision step.
+            step_ids (str): The id of the decision step.
 
         Returns:
             List[str]: A list of the choices for the decision step.
@@ -145,11 +145,11 @@ class GraphProgram(BaseModel, dspy.Prediction):
         Raises:
             ValueError: If the decision step does not exist or if it does not have any output edges.
         """
-        if step_name not in self.steps:
-            raise ValueError(f"Decision Step {step_name} does not exist.")
-        if not isinstance(self.steps[step_name], Decision):
-            raise ValueError(f"Step {step_name} is not a Decision.")
-        return [self._graph.get_edge_data(*edge)["label"] for edge in self._graph.out_edges(step_name)]
+        if step_id not in self.steps:
+            raise ValueError(f"Decision Step {step_id} does not exist.")
+        if not isinstance(self.steps[step_id], Decision):
+            raise ValueError(f"Step {step_id} is not a Decision.")
+        return [self._graph.get_edge_data(*edge)["label"] for edge in self._graph.out_edges(step_id)]
 
     def build(self):
         """
@@ -158,16 +158,16 @@ class GraphProgram(BaseModel, dspy.Prediction):
         Raises:
             ValueError: If the graph program is not valid.
         """
-        for step_name, step in self.steps.items():
-            if self._graph.degree(step_name) == 0:
-                raise ValueError(f"Step {step_name} is not connected to any Step.")
-        for step_name, step in self.steps.items():
-            if step_name != "start":
-                if not self._is_reacheable("start", step_name):
-                    raise ValueError(f"There is no path from the Start Step to {step_name} Step.")
-            if step_name != "end":
-                if not self._is_reacheable(step_name, "end"):
-                    raise ValueError(f"There is no path from {step_name} Step to the End Step.")
+        for step_id, step in self.steps.items():
+            if self._graph.degree(step_id) == 0:
+                raise ValueError(f"Step {step_id} is not connected to any Step.")
+        for step_id, step in self.steps.items():
+            if step_id != "start":
+                if not self._is_reacheable("start", step_id):
+                    raise ValueError(f"There is no path from the Start Step to {step_id} Step.")
+            if step_id != "end":
+                if not self._is_reacheable(step_id, "end"):
+                    raise ValueError(f"There is no path from {step_id} Step to the End Step.")
     
     def _is_reacheable(self, source_step: str, target_step: str) -> bool:
         """
@@ -188,6 +188,34 @@ class GraphProgram(BaseModel, dspy.Prediction):
         if target_step not in self.steps:
             raise ValueError(f"Step {target_step} does not exist.")
         return nx.has_path(self._graph, source_step, target_step)
+    
+    def get_next_step(self, step_id: str) -> Optional[Union[Action, Decision, Program, Control]]:
+        if step_id not in self.steps:
+            raise ValueError(f"Step {step_id} does not exist.")
+        if isinstance(self.steps[step_id], Decision):
+            raise ValueError("Cannot get the next step of a Decision")
+        if len(list(self._graph.successors(step_id))) > 0:
+            return self.get(list(self._graph.successors(step_id))[0])
+        else:
+            return None
+    
+    def get_decision_next_step(self, step_id: str, choice: str) -> Union[Action, Decision, Program, Control]:
+        if step_id not in self.steps:
+            raise ValueError(f"Step {step_id} does not exist.")
+        if not isinstance(self.steps[step_id], Decision):
+            raise ValueError(f"Step {step_id} is not a Decision")
+        for next_step in self._graph.successors(step_id):
+            if self._graph.get_edge_data(step_id, next_step)["label"] == choice:
+                return self.get(next_step)
+        raise ValueError(f"Next Step for {step_id} with label {choice} not found")
+    
+    def get_starting_step(self):
+        return self.get_next_step("start")
+                
+    def get(self, step_id: str) -> Union[Action, Decision, Program, Control]:
+        if step_id not in self.steps:
+            raise ValueError(f"Step {step_id} does not exist.")
+        return self.steps[step_id]
     
     def clear(self):
         """
@@ -224,15 +252,16 @@ class GraphProgram(BaseModel, dspy.Prediction):
             # Parse steps
             steps = re.findall(r'\(([^:]+):([^ ]+)\s*\{(.*?)\}\)', cleaned_query, re.DOTALL)
             for step in steps:
-                step_name, step_type, step_props = step
-                step_name = step_name.strip()
+                step_id, step_type, step_props = step
+                step_id = step_id.strip()
                 step_type = step_type.strip()
                 step_props = '{' + step_props.strip() + '}'
                 step_props = pyjson5.loads(step_props)
                 if step_type == "Control":
-                    self.add(step_name, Control(purpose=step_props["purpose"]))
+                    self.add(Control(id=step_props["id"]))
                 elif step_type == "Action":
-                    self.add(step_name, Action(
+                    self.add(Action(
+                        id=step_props["id"],
                         purpose=step_props["purpose"],
                         tool=step_props["tool"],
                         prompt=step_props["prompt"],
@@ -240,20 +269,21 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         output=step_props["output"] if "output" in step_props else None,
                     ))
                 elif step_type == "Decision":
-                    self.add(step_name, Decision(
+                    self.add(Decision(
+                        id=step_props["id"],
                         purpose=step_props["purpose"],
-                        prompt=step_props["prompt"],
+                        question=step_props["question"],
                         inputs=step_props["inputs"] if "inputs" in step_props else None,
                     ))
                 elif step_type == "Program":
-                    self.add(step_name, Decision(
+                    self.add(Program(
+                        id=step_props["id"],
                         purpose=step_props["purpose"],
-                        prompt=step_props["prompt"],
                         inputs=step_props["inputs"] if "inputs" in step_props else None,
                         output=step_props["output"] if "output" in step_props else None,
                     ))
                 else:
-                    raise ValueError(f"Invalid step type for {step_name} should be between: Control, Action, Decision, Program")
+                    raise ValueError(f"Invalid step type for {step_id} should be between: Control, Action, Decision, Program")
             # Parse relations
             relations = re.findall(r'\((.*?)\)-(\[.*?\])\s*->\s*\((.*?)\)', cleaned_query)
             for relation in relations:
@@ -262,6 +292,9 @@ class GraphProgram(BaseModel, dspy.Prediction):
                 self.connect(source_name, target_name, label=label)
             return self
         raise ValueError("Invalid format, no CREATE command detected")
+    
+    def __str__(self):
+        return self.to_cypher()
         
     def to_cypher(self):
         """
@@ -273,50 +306,50 @@ class GraphProgram(BaseModel, dspy.Prediction):
         cypher = f"// @desc: {self.description}\nCREATE\n// Nodes declaration"
         key_quotes_regex = r"\"([^\"]+)\":"
         sub_regex = r"\1:"
-        for step_name, step in self.steps.items():
+        for step_id, step in self.steps.items():
             if isinstance(step, Control):
                 args = {
-                    "purpose": step.purpose,
+                    "id": step_id,
                 }
                 cleaned_args = re.sub(key_quotes_regex, sub_regex, json.dumps(args))
-                cypher += f"\n({step_name}:Control "+cleaned_args+"),"
+                cypher += f"\n({step_id}:Control "+cleaned_args+"),"
             elif isinstance(step, Action):
                 args = {
+                    "id": step_id,
                     "purpose": step.purpose,
                     "tool": step.tool,
                 }
                 if step.prompt:
                     args["prompt"] = step.prompt
-                if len(step.inputs) > 0:
+                if step.inputs and len(step.inputs) > 0:
                     args["inputs"] = step.inputs
                 if step.output:
                     args["output"] = step.output
+                if step.disable_inference is True:
+                    args["disable_inference"] = True
                 cleaned_args = re.sub(key_quotes_regex, sub_regex, json.dumps(args, indent=2))
-                cypher += f"\n({step_name}:Action "+cleaned_args+"),"
+                cypher += f"\n({step_id}:Action "+cleaned_args+"),"
             elif isinstance(step, Decision):
                 args = {
+                    "id": step_id,
                     "purpose": step.purpose,
-                    "prompt": step.prompt,
+                    "question": step.question,
                 }
                 if len(step.inputs) > 0:
                     args["inputs"] = step.inputs
                 cleaned_args = re.sub(key_quotes_regex, sub_regex, json.dumps(args, indent=2))
-                cypher += f"\n({step_name}:Decision "+cleaned_args+"),"
+                cypher += f"\n({step_id}:Decision "+cleaned_args+"),"
             elif isinstance(step, Program):
                 args = {
+                    "id": step_id,
                     "purpose": step.purpose,
                     "program": step.program,
-                    "prompt": step.prompt
                 }
-                if len(step.inputs) > 0:
-                    args["inputs"] = step.inputs
-                if step.output:
-                    args["output"] = step.output
                 cleaned_args = re.sub(key_quotes_regex, sub_regex, json.dumps(args, indent=2))
-                cypher += f"\n({step_name}:Program "+cleaned_args+"),"
+                cypher += f"\n({step_id}:Program "+cleaned_args+"),"
         cypher += "\n// Structure declaration"
-        for step_name, step in self.steps.items():
-            for edge in self._graph.edges(step_name):
+        for step_id, step in self.steps.items():
+            for edge in self._graph.edges(step_id):
                 source_name, target_name = edge
                 label = self._graph.get_edge_data(source_name, target_name)["label"]
                 cypher += f"\n({source_name})-[:"+label+f"]->({target_name}),"
@@ -335,6 +368,6 @@ class GraphProgram(BaseModel, dspy.Prediction):
         net.from_nx(self._graph)
         net.toggle_physics(True)
         net.show(f'{self.name}.html', notebook=notebook)
-    
+
 class GraphProgramList(BaseModel):
     progs: Optional[List[GraphProgram]] = Field(description="List of graph programs", default=[])

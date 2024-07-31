@@ -68,7 +68,7 @@ class LocalTraceMemory(TraceMemory):
                 else:
                     self._graph.add_node(step_id, color="red", title=step.text)
             self._steps[step_id] = step
-            if step.vector:
+            if step.vector is not None:
                 self._embeddings[step_id] = step.vector
 
     def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> AgentStepList:
