@@ -3,29 +3,36 @@ from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
     ToolInput,
+    Query,
+    AgentStepList,
 )
 from hybridagi.output_parsers import PredictionOutputParser
+from hybridagi.output_parsers import QueryOutputParser
 
-class ChainOfThoughtSignature(dspy.Signature):
+class PastActionSearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    answer = dspy.OutputField(desc = "The correct answer")
+    query = dspy.OutputField(desc = "The similarity search query")
 
-class PredictOutput(dspy.Prediction):
-    answer: str
-
-class ChainOfThoughtTool(Tool):
+class PastActionSearchTool(Tool):
     def __init__(
             self,
+            retriever: dspy.Module,
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "Predict", lm = lm)
-        self.predict = dspy.ChainOfThought(ChainOfThoughtSignature)
+        super().__init__(name = "PastActionSearch", lm = lm)
+        self.retriever = retriever
+        self.predict = dspy.Predict(PastActionSearchSignature)
         self.prediction_parser = PredictionOutputParser()
+        self.query_parser = QueryOutputParser()
         
-    def forward(self, tool_input: ToolInput) -> PredictOutput:
+    def action_search(self, query: str):
+        retriver_input = Query(query=query)
+        return self.retriever(retriver_input)
+    
+    def forward(self, tool_input: ToolInput) -> AgentStepList:
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(
@@ -34,14 +41,13 @@ class ChainOfThoughtTool(Tool):
                     purpose = tool_input.purpose,
                     prompt = tool_input.prompt,
                 )
-            pred.answer = self.prediction_parser.parse(
-                pred.message,
-                prefix = "Answer:",
+            pred.query = self.prediction_parser.parse(
+                pred.query,
+                prefix = "Query:",
             )
-            return PredictOutput(
-                answer = pred.answer
-            )
+            pred.query = self.query_parser.parse(pred.query)
+            action_list = self.action_search(pred.query)
+            return action_list
         else:
-            return PredictOutput(
-                answer = tool_input.prompt,
-            )
+            action_list = self.action_search(tool_input.prompt)
+            return action_list

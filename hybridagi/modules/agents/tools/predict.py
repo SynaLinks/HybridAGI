@@ -4,7 +4,7 @@ from typing import Optional, Callable
 from hybridagi.core.datatypes import (
     ToolInput,
 )
-from hybridagi.output_parsers.prediction import PredictionOutputParser
+from hybridagi.output_parsers import PredictionOutputParser
 
 class PredictSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
@@ -25,7 +25,7 @@ class PredictTool(Tool):
         self.predict = dspy.Predict(PredictSignature)
         self.prediction_parser = PredictionOutputParser()
         
-    def forward(self, tool_input: ToolInput) -> SpeakOutput:
+    def forward(self, tool_input: ToolInput) -> PredictOutput:
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(
@@ -38,6 +38,7 @@ class PredictTool(Tool):
                 pred.message,
                 prefix = "Answer:",
             )
+            pred.message = pred.message.strip("\"")
             return PredictOutput(
                 answer = pred.answer
             )

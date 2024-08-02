@@ -6,7 +6,7 @@ from hybridagi.core.datatypes import (
     Message,
     ToolInput,
 )
-from hybridagi.output_parsers.prediction import PredictionOutputParser
+from hybridagi.output_parsers import PredictionOutputParser
 
 class SpeakSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
@@ -17,6 +17,9 @@ class SpeakSignature(dspy.Signature):
 
 class SpeakOutput(dspy.Prediction):
     message: str
+    
+    def to_dict(self):
+        return {"message": self.message}
 
 class SpeakTool(Tool):
     def __init__(
@@ -54,6 +57,7 @@ class SpeakTool(Tool):
                 pred.message,
                 prefix = "Message:",
             )
+            pred.message = pred.message.strip("\"")
             self.agent_state.session.chat.msgs.append(Message(role="AI", content=pred.message))
             self.agent_state.final_answer = pred.message
             if self.simulated is False:

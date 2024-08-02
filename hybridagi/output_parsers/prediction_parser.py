@@ -1,8 +1,8 @@
 import re
-from .output_parser import BaseOutputParser
+from .output_parser import OutputParser
 from typing import List
 
-class PredictionOutputParser(BaseOutputParser):
+class PredictionOutputParser(OutputParser):
     """
     The output parser for predictions
     """

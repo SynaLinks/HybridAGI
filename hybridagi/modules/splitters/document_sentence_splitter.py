@@ -1,4 +1,4 @@
-"""The sentence splitter. Copyright (C) 2024 SynaLinks. License: GPL-3.0"""
+"""The sentence splitter. Copyright (C) 2024 Yoan Sallami (SynaLinks SAS). License: CC BY-NC-SA 4.0"""
 # modifed from llama-index
 # The MIT License
 
@@ -27,6 +27,7 @@ import re
 from enum import Enum
 from pydantic import BaseModel
 from typing import List, Tuple, Callable, Union
+from hybridagi.modules.splitters import DocumentSplitter
 from hybridagi.core.datatypes import Document, DocumentList
 
 CHUNKING_REGEX = "[^,.;。？！]+[,.;。？！]?"
@@ -74,7 +75,7 @@ def split_by_phrase_regex() -> Callable[[str], List[str]]:
     regex = "[^,.;。]+[,.;。]?"
     return split_by_regex(regex)
 
-class DocumentSentenceSplitter(dspy.Module):
+class DocumentSentenceSplitter(DocumentSplitter):
     
     def __init__(
             self,

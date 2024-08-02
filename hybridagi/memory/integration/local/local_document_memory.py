@@ -127,10 +127,10 @@ class LocalDocumentMemory(DocumentMemory):
             documents_ids = [id_or_ids]
         result = DocumentList()
         for doc_id in documents_ids:
-            if str(doc_id) in self._documents:
-                parent_id = self._documents[str(doc_id)]
-                if str(parent_id) in self._documents:
-                    doc = self._documents[str(parent_id)]
+            if doc_id in self._documents:
+                parent_id = str(self._documents[str(doc_id)].parent_id)
+                if parent_id in self._documents:
+                    doc = self._documents[parent_id]
                     result.docs.append(doc)
         return result
     

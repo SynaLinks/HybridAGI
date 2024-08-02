@@ -14,5 +14,5 @@ class QueryFactRetriever(dspy.Module):
     def __init__(self):
         pass#TODO
     
-    def forward(self, query: Query) -> Union[EntityList, FactList, bool]:
+    def forward(self, query: Query) -> QueryWithFacts:
         pass#TODO

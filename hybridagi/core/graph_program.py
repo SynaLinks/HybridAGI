@@ -20,7 +20,7 @@ class Action(BaseModel):
     id: str = Field(description="Unique identifier for the step")
     tool: str = Field(description="The tool name")
     purpose: str = Field(description="The action purpose")
-    prompt: Optional[str] = Field(description="The prompt used to infer to tool inputs", default=None)
+    prompt: Optional[str] = Field(description="The prompt used to infer to tool inputs")
     inputs: Optional[List[str]] = Field(description="The input for the prompt", default=[])
     output: Optional[str] = Field(description="The variable to store the action output", default=None)
     disable_inference: bool = Field(description="Weither or not to disable the inference", default=False)
@@ -355,6 +355,14 @@ class GraphProgram(BaseModel, dspy.Prediction):
                 cypher += f"\n({source_name})-[:"+label+f"]->({target_name}),"
         cypher = cypher.rstrip(",")
         return cypher
+    
+    def save(self, filepath: str = ""):
+        if filepath == "":
+            filepath = f"{self.name}.cypher"
+        if not filepath.endswith(".cypher"):
+            raise ValueError(f"GraphProgram {self.name} should be saved into a .cypher file")
+        with open(filepath, 'w') as f:
+            f.write(self.to_cypher())
     
     def show(self, notebook: bool=False):
         """

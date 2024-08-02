@@ -2,6 +2,7 @@ import dspy
 from typing import Optional, List, Union
 from colorama import Fore, Style
 from jinja2 import Template
+import json
 
 from hybridagi.core.datatypes import (
     AgentStep,
@@ -11,6 +12,8 @@ from hybridagi.core.datatypes import (
     AgentState,
     FinishReason,
     ToolInput,
+    Message,
+    InteractionSession,
 )
 
 from hybridagi.core.graph_program import (
@@ -30,8 +33,10 @@ from hybridagi.embeddings.embeddings import Embeddings
 
 from hybridagi.core.datatypes import Query, QueryWithSession
 
-from hybridagi.output_parsers.decision import DecisionOutputParser
-from hybridagi.output_parsers.prediction import PredictionOutputParser
+from hybridagi.output_parsers import (
+    DecisionOutputParser,
+    PredictionOutputParser,
+)
 
 DECISION_COLOR = f"{Fore.BLUE}"
 ACTION_COLOR = f"{Fore.CYAN}"
@@ -57,9 +62,9 @@ class GraphInterpreterAgent(dspy.Module):
     def __init__(
             self,
             program_memory: ProgramMemory,
+            agent_state: AgentState,
             embeddings: Optional[Embeddings] = None,
             trace_memory: Optional[TraceMemory] = None,
-            agent_state: Optional[AgentState] = None,
             tools: List[Tool] = [],
             entrypoint: str = "main",
             num_history: int = 5,
@@ -91,6 +96,10 @@ class GraphInterpreterAgent(dspy.Module):
         self.decision_parser = DecisionOutputParser()
         self.prediction_parser = PredictionOutputParser()
         self.verbose = verbose
+        self.previous_agent_step = None
+        if self.trace_memory is not None:
+            if self.embeddings is None:
+                raise ValueError("An embeddings should be provided when using the trace memory")
         # DSPy reasoners
         # The interpreter model used to navigate, only contains decision signatures
         # With that, DSPy should better optimize the graph navigation task
@@ -126,7 +135,7 @@ class GraphInterpreterAgent(dspy.Module):
         elif isinstance(current_step, Control):
             if current_step.id == "end":
                 agent_step = self.end_current_program()
-                self.agent_state.program_trace.steps.append(str(agent_step))
+                # self.agent_state.program_trace.steps.append(str(agent_step))
                 if self.verbose:
                     print(f"{CONTROL_COLOR}{agent_step}{Style.RESET_ALL}")
             else:
@@ -135,6 +144,9 @@ class GraphInterpreterAgent(dspy.Module):
             raise RuntimeError("Invalid step, should be Control, Action, Decision or Program, please verify your program")
         if self.trace_memory is not None:
             if agent_step is not None:
+                if self.previous_agent_step is not None:
+                    agent_step.parent_id = self.previous_agent_step.id
+                self.previous_agent_step = agent_step
                 self.trace_memory.update(agent_step)
     
     def start(self, query_or_query_with_session: Union[Query, QueryWithSession]) -> AgentStep:
@@ -149,13 +161,23 @@ class GraphInterpreterAgent(dspy.Module):
         """
         if isinstance(query_or_query_with_session, Query):
             self.agent_state.objective = query_or_query_with_session.query
+            self.agent_state.session = InteractionSession()
+            self.agent_state.session.chat.msgs.append(
+                Message(role="User", content=query_or_query_with_session.query)
+            )
         elif isinstance(query_or_query_with_session, QueryWithSession):
-            query = query_or_query_with_session.query
+            query = query_or_query_with_session.query.query
             session = query_or_query_with_session.session
             self.agent_state.objective = query
             self.agent_state.session = session
+            self.agent_state.session.chat.msgs.append(
+                Message(role="User", content=query)
+            )
         else:
             raise ValueError(f"Invalid input for {type(self).__name__} must be Query or QueryWithSession")
+        self.previous_agent_step = None
+        self.agent_state.current_hop = 0
+        self.agent_state.decision_hop = 0
         main_program = self.program_memory.get(self.entrypoint).progs[0]
         self.agent_state.call_program(main_program)
         agent_step = AgentStep(
@@ -167,12 +189,13 @@ class GraphInterpreterAgent(dspy.Module):
             print(f"{CONTROL_COLOR}{agent_step}{Style.RESET_ALL}")
         self.agent_state.program_trace.steps.append(str(agent_step))
         if self.trace_memory is not None:
+            self.previous_agent_step = agent_step
             self.trace_memory.update(agent_step)
         return agent_step
     
     def act(self, step: Action) -> AgentStep:
         """
-        Executes the given action and returns the executed agent.
+        Executes the given action and returns the executed step.
 
         Args:
             step (Action): The action to execute.
@@ -185,7 +208,7 @@ class GraphInterpreterAgent(dspy.Module):
         else:
             trace = "Nothing done yet"
         if step.tool not in self.tools:
-            raise ValueError(f"Invalid tool: '{tool}' does not exist, should be one of {list(self.tools.keys())}")
+            raise ValueError(f"Invalid tool: '{step.tool}' does not exist, should be one of {list(self.tools.keys())}")
         jinja_template = Template(step.prompt)
         prompt_kwargs = {}
         for key in step.inputs:
@@ -206,18 +229,21 @@ class GraphInterpreterAgent(dspy.Module):
         )
         if step.output is not None:
             if len(dict(tool_output).keys()) > 1:
-                self.agent_state.variables[output] = dict(tool_output)
+                self.agent_state.variables[output] = tool_output.to_dict()
             else:
-                self.agent_state.variables[output] = dict(tool_output)[list(dict(tool_output).keys())[0]]
+                self.agent_state.variables[output] = tool_output.to_dict()[list(dict(tool_output).keys())[0]]
         agent_step = AgentStep(
-            parent_id = self.agent_state.get_current_step().id,
             hop = self.agent_state.current_hop,
             step_type = AgentStepType.Action,
             inputs = dict(tool_input),
-            outputs = dict(tool_output),
+            outputs = tool_output.to_dict(),
         )
-        if self.embeddings is not None:
-            agent_step.vector = self.embeddings.embed_text(json.dumps(tool_output, indent=2))
+        if self.embeddings is not None and step.tool != "PastActionSearch":
+            if len(dict(agent_step.outputs).keys()) > 1:
+                embedded_string = json.dumps(agent_step.outputs)
+            else:
+                embedded_string = tool_output.to_dict()[list(tool_output.to_dict().keys())[0]]
+            agent_step.vector = self.embeddings.embed_text(embedded_string)
         current_program = self.agent_state.get_current_program()
         next_step = current_program.get_next_step(step.id)
         self.agent_state.set_current_step(next_step)
@@ -246,6 +272,7 @@ class GraphInterpreterAgent(dspy.Module):
             question = step.question,
             options = possible_answers,
         )
+        pred.choice = pred.choice.replace("\"", "")
         pred.choice = self.prediction_parser.parse(pred.choice, prefix="Choice:", stop=["."])
         pred.choice = self.decision_parser.parse(pred.choice, options=choices)
         if pred.choice not in choices:
@@ -253,12 +280,12 @@ class GraphInterpreterAgent(dspy.Module):
                 answer = pred.choice,
                 options = possible_answers,
             )
+            corrected_pred.choice = corrected_pred.choice.replace("\"", "")
             corrected_pred.choice = self.prediction_parser.parse(corrected_pred.choice, prefix="Choice:", stop=["."])
             corrected_pred.choice = self.decision_parser.parse(corrected_pred.choice, options=choices)
             pred.choice = corrected_pred.choice
         self.agent_state.decision_hop += 1
         agent_step = AgentStep(
-            parent_id = self.agent_state.get_current_step().id,
             hop = self.agent_state.current_hop,
             step_type = AgentStepType.Decision,
             inputs = {"purpose": step.purpose, "question": step.question, "options": choices},
@@ -285,7 +312,6 @@ class GraphInterpreterAgent(dspy.Module):
         graph_program = self.program_memory.get(step.program).progs[0]
         self.agent_state.call_program(graph_program)
         agent_step = AgentStep(
-            parent_id = self.agent_state.get_current_step().id,
             hop = self.agent_state.current_hop,
             step_type = AgentStepType.ProgramCall,
             inputs = {"purpose": step.purpose, "program": step.program},
@@ -302,7 +328,6 @@ class GraphInterpreterAgent(dspy.Module):
         current_step = self.agent_state.get_current_step()
         current_program = self.agent_state.get_current_program()
         agent_step = AgentStep(
-            parent_id = current_step.id,
             hop = self.agent_state.current_hop,
             step_type = AgentStepType.ProgramEnd,
             inputs = {"program": current_program.name},
@@ -331,15 +356,15 @@ class GraphInterpreterAgent(dspy.Module):
         """
         self.start(query_or_query_with_session)
         for i in range(self.max_iters):
-            try:
-                self.run_step()
-            except Exception as e:
-                return AgentOutput(
-                    finish_reason = FinishReason.Error,
-                    final_answer = "Error occured: "+str(e),
-                    program_trace = self.agent_state.program_trace,
-                    session = self.agent_state.session,
-                )
+            # try:
+            self.run_step()
+            # except Exception as e:
+            #     return AgentOutput(
+            #         finish_reason = FinishReason.Error,
+            #         final_answer = "Error occured: "+str(e),
+            #         program_trace = self.agent_state.program_trace,
+            #         session = self.agent_state.session,
+            #     )
             if self.finished():
                 return AgentOutput(
                     finish_reason = FinishReason.Finished,

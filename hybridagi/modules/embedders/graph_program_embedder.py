@@ -1,9 +1,9 @@
 import dspy
 from typing import Union
 from hybridagi.embeddings.embeddings import Embeddings
-from hybridagi.core.datatypes import Fact, FactList
+from hybridagi.core.graph_program import GraphProgram, GraphProgramList
 
-class FactEmbedder(dspy.Module):
+class GraphProgramEmbedder(dspy.Module):
     """
     A class used to embed facts using a pre-trained embedding model.
 
@@ -20,14 +20,14 @@ class FactEmbedder(dspy.Module):
         Parameters:
             embeddings (Embeddings): The pre-trained embedding model to be used for embedding facts.
         """
-        self.embeddings = embeddings 
+        self.embeddings = embeddings
     
-    def forward(self, fact_or_facts: Union[Fact, FactList]) -> FactList:
+    def forward(self, prog_or_progs: Union[GraphProgram, GraphProgramList]) -> GraphProgramList:
         """
         Embed facts using the pre-trained embedding model.
 
         Parameters:
-            fact_or_facts (Union[Fact, FactList]): A single fact or a list of facts to be embedded.
+            prog_or_progs (Union[Fact, FactList]): A single program or a list of programs to be embedded.
 
         Returns:
             FactList: A list of facts with their corresponding embeddings.
@@ -35,13 +35,13 @@ class FactEmbedder(dspy.Module):
         Raises:
             ValueError: If the input is not a Fact or FactList.
         """
-        if not isinstance(fact_or_facts, Fact) and not isinstance(fact_or_facts, FactList):
+        if not isinstance(prog_or_progs, GraphProgram) and not isinstance(prog_or_progs, GraphProgramList):
             raise ValueError(f"{type(self).__name__} input must be a Fact or FactList")
-        if isinstance(fact_or_facts, Fact):
-            facts = FactList()
-            facts.facts = [fact_or_facts]
+        if isinstance(prog_or_progs, GraphProgram):
+            programs = GraphProgramList()
+            programs.progs = [prog_or_progs]
         else:
-            facts = fact_or_facts
-        for fact in facts.docs:
-            fact.vector = self.embeddings.embed_text(fact.subj.name+" "+fact.rel.name+" "+fact.obj.name)
-        return facts
+            programs = prog_or_progs
+        for prog in programs.progs:
+            prog.vector = self.embeddings.embed_text(prog.description)
+        return programs

@@ -1,4 +1,5 @@
 import dspy
+from typing import Union
 from hybridagi.embeddings.embeddings import Embeddings
 from hybridagi.core.datatypes import Fact, FactList
 from hybridagi.core.datatypes import Entity, EntityList

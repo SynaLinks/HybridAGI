@@ -3,28 +3,28 @@ import numpy as np
 from enum import Enum
 from typing import Optional
 import faiss
-from hybridagi.memory.document_memory import DocumentMemory
+from hybridagi.memory.trace_memory import TraceMemory
 from hybridagi.embeddings.embeddings import Embeddings
-from hybridagi.core.datatypes import Query, QueryWithDocuments
-from hybridagi.modules.retrievers import DocumentRetriever
-from hybridagi.modules.rerankers import DocumentReranker
+from hybridagi.core.datatypes import Query, QueryWithSteps
+from hybridagi.modules.retrievers import ActionRetriever
+from hybridagi.modules.rerankers import ActionReranker
 
 class EmbeddingsDistance(str, Enum):
     Cosine = "cosine"
     Euclidean = "euclidean"
 
-class FAISSDocumentRetriever(DocumentRetriever):
+class FAISSActionRetriever(ActionRetriever):
     
     def __init__(
             self,
-            document_memory: DocumentMemory,
+            trace_memory: TraceMemory,
             embeddings: Embeddings,
             distance: str = "cosine",
-            max_distance: float = 0.7,
+            max_distance: float = 0.9,
             k: int = 5,
-            reranker: Optional[DocumentReranker] = None,
+            reranker: Optional[ActionReranker] = None,
         ):
-        self.document_memory = document_memory
+        self.trace_memory = trace_memory
         self.embeddings = embeddings
         if distance == EmbeddingsDistance.Cosine:
             self.distance = EmbeddingsDistance.Cosine
@@ -41,12 +41,12 @@ class FAISSDocumentRetriever(DocumentRetriever):
         else:
             self.index = faiss.IndexFlatIP(vector_dim)
     
-    def forward(self, query: Query) -> QueryWithDocuments:
+    def forward(self, query: Query) -> QueryWithSteps:
         if not isinstance(query, Query):
             raise ValueError(f"{type(self).__name__} input must be a Query")
-        result = QueryWithDocuments()
+        result = QueryWithSteps()
         result.query.query = query.query
-        embeddings_map = self.document_memory._embeddings
+        embeddings_map = self.trace_memory._embeddings
         vectors = np.array(list(embeddings_map.values()), dtype="float32")
         if vectors.shape[0] > 0:
             self.index.reset()
@@ -57,14 +57,10 @@ class FAISSDocumentRetriever(DocumentRetriever):
             distances, indexes = self.index.search(query_vector, min(vectors.shape[0], self.k))
             for i in range(min(vectors.shape[0], self.k)):
                 if distances[0][i] < self.max_distance:
-                    document_index = indexes[0][i]
-                    document_id = list(embeddings_map.keys())[document_index]
-                    document = self.document_memory.get(document_id).docs[0]
-                    if document.parent_id is not None:
-                        parent_document = self.document_memory.get_parents(document_id).docs[0]
-                        result.docs.append(parent_document)
-                    else:
-                        result.docs.append(document)
+                    action_index = indexes[0][i]
+                    action_id = list(embeddings_map.keys())[action_index]
+                    action = self.trace_memory.get(action_id).steps[0]
+                    result.steps.append(action)
                 else:
                     break
             if self.reranker is not None:

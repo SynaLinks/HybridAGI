@@ -2,7 +2,7 @@ from typing import Union, List, Dict, Optional
 from uuid import UUID
 from collections import OrderedDict
 from hybridagi.memory.trace_memory import TraceMemory
-from hybridagi.core.datatypes import AgentStep, AgentStepList
+from hybridagi.core.datatypes import AgentStep, AgentStepList, AgentStepType
 import networkx as nx
 
 class LocalTraceMemory(TraceMemory):
@@ -58,18 +58,29 @@ class LocalTraceMemory(TraceMemory):
             steps = step_or_steps
         for step in steps.steps:
             step_id = str(step.id)
+            if step.step_type == AgentStepType.Action:
+                color = "blue"
+            elif step.step_type == AgentStepType.Decision:
+                color = "green"
+            else:
+                color = "orange"
             if step_id not in self._steps:
                 parent_id = str(step.parent_id)
                 if step.parent_id is not None:
                     parent_id = str(step.parent_id)
-                    self._graph.add_node(step_id, color="orange", title=step.text)
+                    self._graph.add_node(step_id, color=color, title=str(step))
                     if parent_id in self._steps:
-                        self._graph.add_edge(step_id, parent_id, label="PART_OF")
+                        self._graph.add_edge(parent_id, step_id, label="NEXT")
                 else:
-                    self._graph.add_node(step_id, color="red", title=step.text)
+                    self._graph.add_node(step_id, color=color, title=str(step))
             self._steps[step_id] = step
             if step.vector is not None:
                 self._embeddings[step_id] = step.vector
+                
+    def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
+        raise NotImplementedError(
+            f"TraceMemory {type(self).__name__} is missing the required 'remove' method."
+        )
 
     def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> AgentStepList:
         """
