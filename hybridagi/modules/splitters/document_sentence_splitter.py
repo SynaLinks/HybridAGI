@@ -1,4 +1,3 @@
-"""The sentence splitter. Copyright (C) 2024 Yoan Sallami (SynaLinks SAS). License: CC BY-NC-SA 4.0"""
 # modifed from llama-index
 # The MIT License
 

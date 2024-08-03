@@ -90,6 +90,8 @@ class LocalFactMemory(FactMemory):
                 else:
                     self._entities[ent_id] = ent
                     self._graph.node(ent_id)["title"] = ent.description if ent.description else ent.name
+                if ent.vector is not None:
+                    self._entities_embeddings[ent_id] = ent.vector
         else:
             if isinstance(entities_or_facts, Fact):
                 facts = FactList()
@@ -115,12 +117,12 @@ class LocalFactMemory(FactMemory):
                     if object_id not in self._entities:
                         self.update(fact.obj)
                     previous_fact = self._facts[fact_id]
-                    # previous_edge = (previous_fact.subj.id, previous_fact.obj.id)
-                    # previous_edge_label = previous_fact.rel.name
                     if self._graph.has_edge(previous_fact.subj.id, previous_fact.obj.id, key=previous_fact.rel.name):
                         self._graph.remove_edge(previous_fact.subj.id, previous_fact.obj.id, key=previous_fact.rel.name)
                     self._facts[fact_id] = fact
                     self._graph.add_edge(subject_id, object_id, key=fact.rel.name, label=fact.rel.name)
+                if fact.vector is not None:
+                    self._facts_embeddings[fact_id] = fact.vector
     
     def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
         """
@@ -141,9 +143,13 @@ class LocalFactMemory(FactMemory):
                 label = self._facts[fact_or_entity_id].rel.name
                 self._graph.remove_edge((subject_id, object_id), key=label)
                 del self._facts[fact_or_entity_id]
+                if fact_or_entity_id in self._facts_embeddings:
+                    del self._facts_embeddings[fact_or_entity_id]
             elif fact_or_entity_id in self._entities:
                 self._graph.remove_node([fact_or_entity_id])
                 del self._entities[fact_or_entity_id]
+                if fact_or_entity_id in self._entities_embeddings:
+                    del self._entities_embeddings[fact_or_entity_id]
 
     def get_entities(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> EntityList:
         """
@@ -182,9 +188,9 @@ class LocalFactMemory(FactMemory):
         else:
             facts_ids = id_or_ids
         result = FactList()
-        for fact_id in entities_ids:
+        for fact_id in facts_ids:
             fact_id = str(fact_id)
-            if entity_id in self._facts:
+            if fact_id in self._facts:
                 fact = self._facts[fact_id]
                 result.facts.append(fact)
         return result

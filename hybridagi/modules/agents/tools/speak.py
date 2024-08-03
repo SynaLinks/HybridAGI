@@ -25,11 +25,12 @@ class SpeakTool(Tool):
     def __init__(
             self,
             agent_state: AgentState,
+            name: str = "Speak",
             speak_func: Optional[Callable[[str], None]] = None,
             simulated: bool = True,
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "Speak", lm = lm)
+        super().__init__(name = name, lm = lm)
         self.predict = dspy.Predict(SpeakSignature)
         self.simulated = simulated
         self.agent_state = agent_state

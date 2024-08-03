@@ -4,35 +4,36 @@ from typing import Optional, Callable
 from hybridagi.core.datatypes import (
     ToolInput,
     Query,
-)
-from hybridagi.core.graph_program import (
-    GraphProgramList,
+    QueryWithEntities,
 )
 from hybridagi.output_parsers import PredictionOutputParser
+from hybridagi.output_parsers import QueryOutputParser
 
-class ProgramSearchSignature(dspy.Signature):
+class EntitySearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     query = dspy.OutputField(desc = "The similarity search query")
 
-class ProgramSearchTool(Tool):
+class EntitySearchTool(Tool):
     def __init__(
             self,
             retriever: dspy.Module,
+            name: str = "EntitySearch",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "ProgramSearch", lm = lm)
+        super().__init__(name = name, lm = lm)
         self.retriever = retriever
-        self.predict = dspy.Predict(ProgramSearchSignature)
+        self.predict = dspy.Predict(EntitySearchSignature)
         self.prediction_parser = PredictionOutputParser()
+        self.query_parser = QueryOutputParser()
         
-    def program_search(self, query: str):
+    def entity_search(self, query: str):
         retriver_input = Query(query=query)
         return self.retriever(retriver_input)
     
-    def forward(self, tool_input: ToolInput) -> GraphProgramList:
+    def forward(self, tool_input: ToolInput) -> QueryWithEntities:
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(
@@ -45,8 +46,9 @@ class ProgramSearchTool(Tool):
                 pred.query,
                 prefix = "Query:",
             )
-            program_list = self.program_search(pred.query)
-            return program_list
+            pred.query = self.query_parser.parse(pred.query)
+            query_with_entities = self.entity_search(pred.query)
+            return query_with_entities
         else:
-            program_list = self.program_search(tool_input.prompt)
-            return program_list
+            query_with_entities = self.entity_search(tool_input.prompt)
+            return query_with_entities

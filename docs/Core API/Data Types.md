@@ -24,6 +24,8 @@ class DocumentList(BaseModel, dspy.Prediction):
 
 `Fact`: Represent a first order predicate to be processed or saved into the `FactMemory`
 
+`EntityList`: A list of entities to be processed or saved into memory
+
 `FactList`: A list of facts to be processed or saved into memory
   
 ```python

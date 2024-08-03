@@ -2,7 +2,8 @@ from typing import Union, List, Dict, Optional
 from uuid import UUID
 from collections import OrderedDict
 from hybridagi.memory.program_memory import ProgramMemory
-from hybridagi.core.graph_program import GraphProgram, GraphProgramList
+from hybridagi.core.graph_program import GraphProgram
+from hybridagi.core.datatypes import GraphProgramList
 import networkx as nx
 
 class LocalProgramMemory(ProgramMemory):
@@ -62,7 +63,7 @@ class LocalProgramMemory(ProgramMemory):
             if prog_id not in self._programs:
                 self._graph.add_node(prog_id, title=prog.to_cypher())
             else:
-                self._graph.node(prog_id)["title"] = prog.to_cypher()
+                self._graph.nodes[prog_id]["title"] = prog.to_cypher()
             self._programs[prog_id] = prog
             if prog.vector is not None:
                 self._embeddings[prog_id] = prog.vector

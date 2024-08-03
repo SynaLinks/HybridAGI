@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Union, List
 from uuid import UUID
-from hybridagi.core.graph_program import GraphProgram, GraphProgramList
+from hybridagi.core.graph_program import GraphProgram
+from hybridagi.core.datatypes import GraphProgramList
 
 class ProgramMemory(ABC):
 

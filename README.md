@@ -1,7 +1,7 @@
 # HybridAGI: for people who want AI to behave as expected
 ## The programmable Cypher-oriented neuro-symbolic AGI
 
-### Programming the future of Neuro-Symbolic AGI systems
+### Programming the future one node at a time
 
 <div align="center">
 
@@ -11,6 +11,8 @@
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
 </div>
+
+**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. The FalkorDB integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other graph databases. For more information, join the Discord channel.
 
 ## Notebooks
 
@@ -134,7 +136,7 @@ print(main)
 
 With HybridAGI you can build data extraction pipelines, RAG applications or advanced Agent systems, each being possibly optimized by using DSPy optimizers. We also provide pre-made modules and metrics for easy prototyping.
 
-Each module and data type is *strictly typed and use Pydantic* as data validation layer. You can build pipelines in no time by stacking Modules sequentially.
+Each module and data type is *strictly typed and use Pydantic* as data validation layer. You can build pipelines in no time by stacking Modules sequentially like in Keras or HuggingFace.
 
 ```python
 from hybridagi.embeddings import SentenceTransformerEmbeddings
@@ -149,7 +151,7 @@ embeddings = SentenceTransformerEmbeddings(
 )
 
 reader = PDFReader()
-input_docs = reader("data/SpelkeKinzlerCoreKnowledge.pdf")
+input_docs = reader("data/SpelkeKinzlerCoreKnowledge.pdf") # This is going to extract 1 document per page
 
 # Now that we have our input documents, we can start to make our data processing pipeline
 
@@ -159,7 +161,6 @@ pipeline.add("chunk_documents", DocumentSentenceSplitter())
 pipeline.add("embed_chunks", DocumentEmbedder(embeddings=embeddings))
 
 output_docs = pipeline(input_docs)
-
 ```
 
 ### Native tools
@@ -176,14 +177,14 @@ We provide the following list of native tools to R/W into the memory system or m
 | `UpdateObjective` | Update the long-term Objective of the Agent |
 | `DocumentSearch` | Used to search for information into the document memory |
 | `PastActionSearch` | Used to search for past actions into the trace memory |
-| `ProgramSearch` | Used to search for graph programs into the program memory |
+| `GraphProgramSearch` | Used to search for graph programs into the program memory |
 | `EntitySearch` | Used to search for entities into the fact memory |
 | `FactSearch` | Used to search for facts into the fact memory |
 | `QueryFacts` | Used to query facts from the fact memory |
 
 </div>
 
-### Adding more tools
+<!-- ### Adding more tools
 
 You can easely add more tools by using the `FunctionTool` and python functions like nowadays function calling.
 
@@ -192,21 +193,22 @@ from hybridagi.modules.agents.tools import FunctionTool
 
 def my_awesome_tool(foo: str):
     """
-    The instructions to infer the input parameters 
+    The instructions to infer the tools parameters, this is going to be used in DSPy Signature
     """
     print(foo)
+    # You should return a dictionary (usually containing the tool input + observation)
     return {"message": foo}
 
 tool = FunctionTool(
     name = "AwesomeTool",
-    func = my_awesome_tool
+    func = my_awesome_tool,
 )
 
-```
+``` -->
 
 ### Differences with LangGraph/LangChain or Llama-Index
 
-We focus on **explainable and robust** systems, we don't support ReACT Agents that lack control and efficiency. We also provide everything to scale your application into production by offering optimizable pipelines and agents. Our system is a memory-centric agent with a special care to the long-term memory. Moreover our codebase is **readable, clean and elegant** we didn't over-engineer our system to obfuscate it or sell other services.
+We focus on **explainable and robust** systems, we don't support ReACT Agents that lack control and efficiency. We also provide everything to scale your application into production by offering optimizable pipelines, agents and graph databases integrations. Our system is a memory-centric agent with a special care to the long-term memory. Moreover our codebase is **readable, clean and elegant** we didn't over-engineer our system to obfuscate it or sell other services.
 
 ### Differences with DSPy
 
@@ -224,8 +226,6 @@ Become a part of our community of developers, researchers, and AI enthusiasts. C
   <img src="https://contrib.rocks/image?repo=SynaLinks/HybridAGI" />
 </a>
 
-By contributing to this open-source project, you grant us the right to issue permisive licences to start-ups or businesses that want to make a partnership or have a contract with SynaLinks SAS.
-
 ## Who we are?
 
 We're not based in Silicon Valley or part of a big company; we're a small, dedicated team from the south of France. Our focus is on delivering an AI product where the user maintains control. We're dissatisfied with the current trajectory of Agent-based products. We are expert in human-robot interactions and building interactive systems that behave as expected. While we draw inspiration from cognitive sciences and symbolic AI, we aim to keep our concepts grounded in computer science for a wider audience.
@@ -233,7 +233,3 @@ We're not based in Silicon Valley or part of a big company; we're a small, dedic
 Our mission extends beyond AI safety and performance; it's about shaping the world we want to live in. Even if programming becomes obsolete in 5 or 10 years, replaced by some magical prompt, we believe that traditional prompts are insufficient for preserving jobs. They're too simplistic and *fail to accurately convey intentions*.
 
 In contrast, programming each reasoning step demands expert knowledge in prompt engineering and programming. Surprisingly, it's enjoyable and not that difficult for programmers, you'll gain insight into how AI truly operates by controlling it, beeing able to enhance the sequence of action and decision. Natural language combined with algorithms opens up endless possibilities. We can't envision a world without it.
-
-## Services
-
-We provide training, consulting, development and synthetic data generation & data managment services for businesses that want to implement *robust and explainable AI systems*. Do not hesitate to reach out our team for more information about our prices and services.

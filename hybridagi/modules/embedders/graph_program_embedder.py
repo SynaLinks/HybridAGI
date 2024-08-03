@@ -1,7 +1,8 @@
 import dspy
 from typing import Union
 from hybridagi.embeddings.embeddings import Embeddings
-from hybridagi.core.graph_program import GraphProgram, GraphProgramList
+from hybridagi.core.graph_program import GraphProgram
+from hybridagi.core.datatypes import GraphProgramList
 
 class GraphProgramEmbedder(dspy.Module):
     """

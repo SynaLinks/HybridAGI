@@ -20,9 +20,10 @@ class PastActionSearchTool(Tool):
     def __init__(
             self,
             retriever: dspy.Module,
+            name: str = "PastActionSearch",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "PastActionSearch", lm = lm)
+        super().__init__(name = name, lm = lm)
         self.retriever = retriever
         self.predict = dspy.Predict(PastActionSearchSignature)
         self.prediction_parser = PredictionOutputParser()

@@ -3,33 +3,35 @@ from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
     ToolInput,
+    Query,
+    GraphProgramList,
 )
 from hybridagi.output_parsers import PredictionOutputParser
 
-class PredictSignature(dspy.Signature):
+class GraphProgramSearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    answer = dspy.OutputField(desc = "The correct answer")
+    query = dspy.OutputField(desc = "The similarity search query")
 
-class PredictOutput(dspy.Prediction):
-    answer: str
-    
-    def to_dict(self):
-        return {"answer": self.answer}
-
-class PredictTool(Tool):
+class GraphProgramSearchTool(Tool):
     def __init__(
             self,
-            name: str = "Predict",
+            retriever: dspy.Module,
+            name: str = "GraphProgramSearch",
             lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = name, lm = lm)
-        self.predict = dspy.Predict(PredictSignature)
+        self.retriever = retriever
+        self.predict = dspy.Predict(GraphProgramSearchSignature)
         self.prediction_parser = PredictionOutputParser()
         
-    def forward(self, tool_input: ToolInput) -> PredictOutput:
+    def program_search(self, query: str):
+        retriver_input = Query(query=query)
+        return self.retriever(retriver_input)
+    
+    def forward(self, tool_input: ToolInput) -> GraphProgramList:
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(
@@ -38,15 +40,12 @@ class PredictTool(Tool):
                     purpose = tool_input.purpose,
                     prompt = tool_input.prompt,
                 )
-            pred.answer = self.prediction_parser.parse(
-                pred.answer,
-                prefix = "Answer:",
+            pred.query = self.prediction_parser.parse(
+                pred.query,
+                prefix = "Query:",
             )
-            pred.answer = pred.answer.strip("\"")
-            return PredictOutput(
-                answer = pred.answer
-            )
+            program_list = self.program_search(pred.query)
+            return program_list
         else:
-            return PredictOutput(
-                answer = tool_input.prompt,
-            )
+            program_list = self.program_search(tool_input.prompt)
+            return program_list

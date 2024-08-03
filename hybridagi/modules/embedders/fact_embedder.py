@@ -42,6 +42,6 @@ class FactEmbedder(dspy.Module):
             facts.facts = [fact_or_facts]
         else:
             facts = fact_or_facts
-        for fact in facts.docs:
+        for fact in facts.facts:
             fact.vector = self.embeddings.embed_text(fact.subj.name+" "+fact.rel.name+" "+fact.obj.name)
         return facts

@@ -13,19 +13,23 @@ class ChainOfThoughtSignature(dspy.Signature):
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
     answer = dspy.OutputField(desc = "The correct answer")
 
-class PredictOutput(dspy.Prediction):
+class ChainOfThoughtOutput(dspy.Prediction):
     answer: str
+    
+    def to_dict(self):
+        return {"answer": self.answer}
 
 class ChainOfThoughtTool(Tool):
     def __init__(
             self,
+            name: str = "ChainOfThought",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "Predict", lm = lm)
+        super().__init__(name = name, lm = lm)
         self.predict = dspy.ChainOfThought(ChainOfThoughtSignature)
         self.prediction_parser = PredictionOutputParser()
         
-    def forward(self, tool_input: ToolInput) -> PredictOutput:
+    def forward(self, tool_input: ToolInput) -> ChainOfThoughtOutput:
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(
@@ -35,13 +39,14 @@ class ChainOfThoughtTool(Tool):
                     prompt = tool_input.prompt,
                 )
             pred.answer = self.prediction_parser.parse(
-                pred.message,
+                pred.answer,
                 prefix = "Answer:",
             )
-            return PredictOutput(
+            pred.answer = pred.answer.strip("\"")
+            return ChainOfThoughtOutput(
                 answer = pred.answer
             )
         else:
-            return PredictOutput(
+            return ChainOfThoughtOutput(
                 answer = tool_input.prompt,
             )

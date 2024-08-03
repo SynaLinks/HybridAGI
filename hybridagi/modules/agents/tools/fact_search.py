@@ -3,33 +3,37 @@ from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
     ToolInput,
+    Query,
+    QueryWithFacts,
 )
 from hybridagi.output_parsers import PredictionOutputParser
+from hybridagi.output_parsers import QueryOutputParser
 
-class PredictSignature(dspy.Signature):
+class FactSearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    answer = dspy.OutputField(desc = "The correct answer")
+    query = dspy.OutputField(desc = "The similarity search query")
 
-class PredictOutput(dspy.Prediction):
-    answer: str
-    
-    def to_dict(self):
-        return {"answer": self.answer}
-
-class PredictTool(Tool):
+class FactSearchTool(Tool):
     def __init__(
             self,
-            name: str = "Predict",
+            retriever: dspy.Module,
+            name: str = "FactSearch",
             lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = name, lm = lm)
-        self.predict = dspy.Predict(PredictSignature)
+        self.retriever = retriever
+        self.predict = dspy.Predict(FactSearchSignature)
         self.prediction_parser = PredictionOutputParser()
+        self.query_parser = QueryOutputParser()
         
-    def forward(self, tool_input: ToolInput) -> PredictOutput:
+    def fact_search(self, query: str):
+        retriver_input = Query(query=query)
+        return self.retriever(retriver_input)
+    
+    def forward(self, tool_input: ToolInput) -> QueryWithFacts:
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(
@@ -38,15 +42,13 @@ class PredictTool(Tool):
                     purpose = tool_input.purpose,
                     prompt = tool_input.prompt,
                 )
-            pred.answer = self.prediction_parser.parse(
-                pred.answer,
-                prefix = "Answer:",
+            pred.query = self.prediction_parser.parse(
+                pred.query,
+                prefix = "Query:",
             )
-            pred.answer = pred.answer.strip("\"")
-            return PredictOutput(
-                answer = pred.answer
-            )
+            pred.query = self.query_parser.parse(pred.query)
+            query_with_facts = self.fact_search(pred.query)
+            return query_with_facts
         else:
-            return PredictOutput(
-                answer = tool_input.prompt,
-            )
+            query_with_facts = self.fact_search(tool_input.prompt)
+            return query_with_facts

@@ -20,9 +20,10 @@ class DocumentSearchTool(Tool):
     def __init__(
             self,
             retriever: dspy.Module,
+            name: str = "DocumentSearch",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = "DocumentSearch", lm = lm)
+        super().__init__(name = name, lm = lm)
         self.retriever = retriever
         self.predict = dspy.Predict(DocumentSearchSignature)
         self.prediction_parser = PredictionOutputParser()

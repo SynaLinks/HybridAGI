@@ -53,7 +53,8 @@ class GraphProgram(BaseModel, dspy.Prediction):
             name: str,
             description: Optional[str] = None,
         ):
-        super().__init__(name=name, description=description)
+        BaseModel.__init__(self, name=name, description=description)
+        dspy.Prediction.__init__(self, name=name, description=description)
         self._graph.add_node("start", label="Start", color="red")
         self._graph.add_node("end", label="End", color="red")
         self.steps = OrderedDict()
@@ -356,7 +357,16 @@ class GraphProgram(BaseModel, dspy.Prediction):
         cypher = cypher.rstrip(",")
         return cypher
     
+    def to_dict(self):
+        return {"name": self.name, "description": self.description, "routine": self.to_cypher()}
+    
     def save(self, filepath: str = ""):
+        """
+        Save the graph program as a Cypher file
+        
+        Parameters:
+            filepath (str): The path of the file (default empty) if empty, save it into '{self.name}.cypher' file.         
+        """
         if filepath == "":
             filepath = f"{self.name}.cypher"
         if not filepath.endswith(".cypher"):
@@ -376,6 +386,3 @@ class GraphProgram(BaseModel, dspy.Prediction):
         net.from_nx(self._graph)
         net.toggle_physics(True)
         net.show(f'{self.name}.html', notebook=notebook)
-
-class GraphProgramList(BaseModel):
-    progs: Optional[List[GraphProgram]] = Field(description="List of graph programs", default=[])

@@ -15,8 +15,12 @@ from hybridagi.core.graph_program import (
     Program,
 )
 
-class Query(BaseModel):
-    query: str = Field(description="The input user query", default="")
+class Query(BaseModel, dspy.Prediction):
+    query: str = Field(description="The input query", default="")
+    
+    def __init__(self, **kwargs):
+        BaseModel.__init__(self, **kwargs)
+        dspy.Prediction.__init__(self, **kwargs)
 
 class QueryList(BaseModel, dspy.Prediction):
     queries: Optional[List[Query]] = Field(description="List of queries", default=[])
@@ -82,7 +86,7 @@ class EntityList(BaseModel, dspy.Prediction):
     def to_dict(self):
         return {"entities": [e.to_dict() for e in self.entities]}
     
-class QueryWithEntities(BaseModel):
+class QueryWithEntities(BaseModel, dspy.Prediction):
     query: Query = Field(description="The input query", default_factory=Query)
     entities: List[Entity] = Field(description="List of entities", default=[])
     
@@ -96,12 +100,6 @@ class QueryWithEntities(BaseModel):
 class Relationship(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the relation", default_factory=uuid4)
     name: str = Field(description="Relationship name")
-    # TODO work on relationship properties
-    # inverse: str = Field(description="Inverse relation if any", default=None)
-    # symetric: Optional[bool] = Field(description="Either True if the relation is symetric, False otherwise or None if unknow", default=None)
-    # assymetric: Optional[bool] = Field(description="Either True if the relation is assymetric, False otherwise or None if unknow", default=None)
-    # antisymetric: Optional[bool] = Field(description="Either True if the relation is antisymetric, False otherwise or None if unknow", default=None)
-    # transitive: Optional[bool] = Field(description="Either True if the relation is transitive, False otherwise or None if unknow", default=None)
     vector: Optional[List[float]] = Field(description="Vector representation of the relationship", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the relationship", default={})
     created_at: datetime = Field(description="Time when the relationship was created", default_factory=datetime.now)
@@ -120,7 +118,7 @@ class Fact(BaseModel):
     created_at: datetime = Field(description="Time when the fact was created", default_factory=datetime.now)
     
     def to_dict(self):
-        return {"fact": self.subj.name + "-[:"+self.rel.name+"]->" + self.obj.name, "metadata": self.metadata}
+        return {"fact": "(:"+self.subj.label+" {name:\""+self.subj.name+"\"})-[:"+self.rel.name+"]->(:"+self.obj.label+" {name:\""+self.obj.name+"\"})"}
 
 class FactList(BaseModel, dspy.Prediction):
     facts: List[Fact] = Field(description="List of facts", default=[])
@@ -132,9 +130,9 @@ class FactList(BaseModel, dspy.Prediction):
     def to_dict(self):
         return {"facts": [f.to_dict() for f in self.facts]}
     
-class QueryWithFacts(BaseModel):
+class QueryWithFacts(BaseModel, dspy.Prediction):
     query: Query = Field(description="The input query", default_factory=Query)
-    facts: List[Fact] = Field(description="List of facts", default=[])
+    facts: Optional[List[Fact]] = Field(description="List of facts", default=[])
     
     def __init__(self, **kwargs):
         BaseModel.__init__(self, **kwargs)
@@ -180,9 +178,9 @@ class InteractionSession(BaseModel):
     def to_dict():
         return {"user": self.user.to_dict(), "chat_history": [m.to_dict() for m in self.msgs]}
     
-class QueryWithSession(BaseModel):
+class QueryWithSession(BaseModel, dspy.Prediction):
     query: Query = Field(description="The input user query", default_factory=Query)
-    session: InteractionSession = Field(description="The current interaction session")
+    session: InteractionSession = Field(description="The current interaction session", default_factory=InteractionSession)
     
     def __init__(self, **kwargs):
         BaseModel.__init__(self, **kwargs)
@@ -198,23 +196,23 @@ class AgentStepType(str, Enum):
     ProgramEnd = "ProgramEnd"
     
 ACTION_TEMPLATE = \
-""" --- Step {hop} ---
+"""--- Step {hop} ---
 Action Purpose: {purpose}
 Action: {prediction}"""
 
 DECISION_TEMPLATE = \
-""" --- Step {hop} ---
+"""--- Step {hop} ---
 Decision Purpose: {purpose}
 Decision Question: {question}
 Decision: {choice}"""
 
 CALL_PROGRAM_TEMPLATE = \
-""" --- Step {hop} ---
+"""--- Step {hop} ---
 Call Program: {program}
 Program Purpose: {purpose}"""
 
 END_PROGRAM_TEMPLATE = \
-""" --- Step {hop} ---
+"""--- Step {hop} ---
 End Program: {program}"""
 
 class AgentStep(BaseModel):
@@ -350,3 +348,20 @@ class AgentState(BaseModel):
     def end_program(self):
         """Method to end the current program (pop the stack)"""
         self.program_stack.pop()
+        
+class GraphProgramList(BaseModel, dspy.Prediction):
+    progs: Optional[List[GraphProgram]] = Field(description="List of graph programs", default=[])
+    
+    def to_dict(self):
+        return {"routines": [p.to_dict() for p in self.progs]}
+    
+class QueryWithGraphPrograms(BaseModel, dspy.Prediction):
+    query: Query = Field(description="The input query", default_factory=Query)
+    progs: Optional[List[GraphProgram]] = Field(description="List of graph programs", default=[])
+    
+    def __init__(self, **kwargs):
+        BaseModel.__init__(self, **kwargs)
+        dspy.Prediction.__init__(self, **kwargs)
+        
+    def to_dict(self):
+        return {"query": self.query.query, "routines": [p.to_dict() for p in self.progs]}

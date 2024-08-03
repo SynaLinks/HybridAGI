@@ -5,7 +5,7 @@ CREATE
 (end:Control {id: "end"}),
 (answer:Action {
   id: "answer",
-  purpose: "Answer the user question",
+  purpose: "Answer the Objective's question",
   tool: "Speak",
   prompt: "Please answer to the Objective's question"
 }),

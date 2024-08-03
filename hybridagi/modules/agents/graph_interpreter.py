@@ -160,30 +160,31 @@ class GraphInterpreterAgent(dspy.Module):
             AgentStep: The initial step of the agent's execution.
         """
         if isinstance(query_or_query_with_session, Query):
-            self.agent_state.objective = query_or_query_with_session.query
+            self.agent_state.objective = query_or_query_with_session
             self.agent_state.session = InteractionSession()
             self.agent_state.session.chat.msgs.append(
                 Message(role="User", content=query_or_query_with_session.query)
             )
         elif isinstance(query_or_query_with_session, QueryWithSession):
-            query = query_or_query_with_session.query.query
+            query = query_or_query_with_session.query
             session = query_or_query_with_session.session
             self.agent_state.objective = query
             self.agent_state.session = session
             self.agent_state.session.chat.msgs.append(
-                Message(role="User", content=query)
+                Message(role="User", content=query.query)
             )
         else:
             raise ValueError(f"Invalid input for {type(self).__name__} must be Query or QueryWithSession")
         self.previous_agent_step = None
         self.agent_state.current_hop = 0
         self.agent_state.decision_hop = 0
+        self.agent_state.program_trace = AgentStepList()
         main_program = self.program_memory.get(self.entrypoint).progs[0]
         self.agent_state.call_program(main_program)
         agent_step = AgentStep(
             hop = self.agent_state.current_hop,
             step_type = AgentStepType.ProgramCall,
-            inputs = {"purpose": self.agent_state.objective, "program": self.entrypoint},
+            inputs = {"purpose": self.agent_state.objective.query, "program": self.entrypoint},
         )
         if self.verbose:
             print(f"{CONTROL_COLOR}{agent_step}{Style.RESET_ALL}")
@@ -205,6 +206,7 @@ class GraphInterpreterAgent(dspy.Module):
         """
         if len(self.agent_state.program_trace.steps) > 0:
             trace = "\n".join([str(s) for s in self.agent_state.program_trace.steps[-self.num_history:]])
+            trace += "\n--- END OF TRACE ---"
         else:
             trace = "Nothing done yet"
         if step.tool not in self.tools:
@@ -218,7 +220,7 @@ class GraphInterpreterAgent(dspy.Module):
                 prompt_kwargs[key] = ""
         rendered_template = jinja_template.render(**prompt_kwargs)
         tool_input = ToolInput(
-            objective = self.agent_state.objective,
+            objective = self.agent_state.objective.query,
             purpose = step.purpose,
             context = trace,
             prompt = rendered_template,
@@ -261,12 +263,13 @@ class GraphInterpreterAgent(dspy.Module):
         """
         if len(self.agent_state.program_trace.steps) > 0:
             trace = "\n".join([str(s) for s in self.agent_state.program_trace.steps[-self.num_history:]])
+            trace += "\n--- END OF TRACE ---"
         else:
             trace = "Nothing done yet"
         choices = self.agent_state.get_current_program().get_decision_choices(step.id)
         possible_answers = " or ".join(choices)
         pred = self.decisions[self.agent_state.decision_hop](
-            objective = self.agent_state.objective,
+            objective = self.agent_state.objective.query,
             context = trace,
             purpose = step.purpose,
             question = step.question,

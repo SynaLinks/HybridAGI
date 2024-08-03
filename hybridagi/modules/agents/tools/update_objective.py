@@ -3,33 +3,36 @@ from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
     ToolInput,
+    AgentState,
 )
 from hybridagi.output_parsers import PredictionOutputParser
 
-class PredictSignature(dspy.Signature):
+class UpdateObjectiveSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    answer = dspy.OutputField(desc = "The correct answer")
+    new_objective = dspy.OutputField(desc = "The new objective")
 
-class PredictOutput(dspy.Prediction):
-    answer: str
+class UpdateObjectiveOutput(dspy.Prediction):
+    new_objective: str
     
     def to_dict(self):
-        return {"answer": self.answer}
+        return {"new_objective": self.new_objective}
 
-class PredictTool(Tool):
+class UpdateObjectiveTool(Tool):
     def __init__(
             self,
-            name: str = "Predict",
+            agent_state: AgentState,
+            name: str = "UpdateObjective",
             lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = name, lm = lm)
-        self.predict = dspy.Predict(PredictSignature)
+        self.predict = dspy.Predict(UpdateObjectiveSignature)
         self.prediction_parser = PredictionOutputParser()
+        self.agent_state = agent_state
         
-    def forward(self, tool_input: ToolInput) -> PredictOutput:
+    def forward(self, tool_input: ToolInput) -> UpdateObjectiveOutput:
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(
@@ -38,15 +41,17 @@ class PredictTool(Tool):
                     purpose = tool_input.purpose,
                     prompt = tool_input.prompt,
                 )
-            pred.answer = self.prediction_parser.parse(
-                pred.answer,
-                prefix = "Answer:",
+            pred.new_objective = self.prediction_parser.parse(
+                pred.new_objective,
+                prefix = "Objective:",
             )
-            pred.answer = pred.answer.strip("\"")
-            return PredictOutput(
-                answer = pred.answer
+            pred.new_objective = pred.new_objective.strip("\"")
+            self.agent_state.objective.query = pred.new_objective
+            return UpdateObjectiveOutput(
+                new_objective = pred.new_objective,
             )
         else:
-            return PredictOutput(
-                answer = tool_input.prompt,
+            self.agent_state.objective.query = tool_input.prompt
+            return UpdateObjectiveOutput(
+                new_objective = tool_input.prompt,
             )

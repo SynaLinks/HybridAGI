@@ -3,8 +3,8 @@ import numpy as np
 from enum import Enum
 from typing import Optional
 import faiss
-from hybridagi.memory.trace_memory import TraceMemory
-from hybridagi.embeddings.embeddings import Embeddings
+from hybridagi.memory import TraceMemory
+from hybridagi.embeddings import Embeddings
 from hybridagi.core.datatypes import Query, QueryWithSteps
 from hybridagi.modules.retrievers import ActionRetriever
 from hybridagi.modules.rerankers import ActionReranker
