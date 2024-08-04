@@ -23,6 +23,7 @@
 
 import dspy
 import re
+from tqdm import tqdm
 from enum import Enum
 from pydantic import BaseModel
 from typing import List, Tuple, Callable, Union
@@ -111,7 +112,7 @@ class DocumentSentenceSplitter(DocumentSplitter):
         else:
             documents = doc_or_docs
         result = DocumentList()
-        for doc in documents.docs:
+        for doc in tqdm(documents.docs):
             text = doc.text
             chunks = self.split_text(text)
             for chunk in chunks:

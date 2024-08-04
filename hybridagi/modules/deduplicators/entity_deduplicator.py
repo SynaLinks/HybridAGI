@@ -1,4 +1,5 @@
 import dspy
+from tqdm import tqdm
 from enum import Enum
 from typing import Optional, Union
 from hybridagi.embeddings.embeddings import Embeddings
@@ -64,7 +65,7 @@ class EntityDeduplicator(dspy.Module):
             else:
                 entity_map = {}
                 result = FactList()
-                for fact in entities_or_facts.facts:
+                for fact in tqdm(entities_or_facts.facts):
                     # make the matching case insensitive
                     subject_name_and_label = fact.subj.name.lower() +" "+ fact.subj.label.lower()
                     object_name_and_label = fact.obj.name.lower() +" "+ fact.obj.label.lower()
@@ -82,7 +83,7 @@ class EntityDeduplicator(dspy.Module):
             if isinstance(entities_or_facts, EntityList):
                 entity_map = {}
                 result = EntityList()
-                for ent in entities_or_facts.entities:
+                for ent in tqdm(entities_or_facts.entities):
                     entity_name_and_label = ent.name.lower()+" "+ent.label.lower()
                     if len(entity_map) > 0:
                         match = process.extractOne(
@@ -103,7 +104,7 @@ class EntityDeduplicator(dspy.Module):
             else:
                 entity_map = {}
                 result = FactList()
-                for fact in entities_or_facts.facts:
+                for fact in tqdm(entities_or_facts.facts):
                     # make the matching case insensitive
                     subject_name_and_label = fact.subj.name.lower()+" "+fact.subj.label.lower()
                     object_name_and_label = fact.obj.name.lower()+" "+fact.obj.label.lower()

@@ -1,4 +1,5 @@
 import dspy
+from tqdm import tqdm
 from typing import Union
 from hybridagi.embeddings.embeddings import Embeddings
 from hybridagi.core.datatypes import Fact, FactList
@@ -42,6 +43,6 @@ class FactEmbedder(dspy.Module):
             facts.facts = [fact_or_facts]
         else:
             facts = fact_or_facts
-        for fact in facts.facts:
+        for fact in tqdm(facts.facts):
             fact.vector = self.embeddings.embed_text(fact.subj.name+" "+fact.rel.name+" "+fact.obj.name)
         return facts

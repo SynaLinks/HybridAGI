@@ -130,7 +130,7 @@ class LocalProgramMemory(ProgramMemory):
             raise ValueError(f"GraphProgram {prog_id} does not exist.")
         return self._graph.descendants(prog_id)
     
-    def depends_on(self, source_id: Union[UUID, str], target_id: Union[UUID, str]) -> List[str]:
+    def depends_on(self, source_id: Union[UUID, str], target_id: Union[UUID, str]) -> bool:
         """
         Check if a program depends on another program.
 

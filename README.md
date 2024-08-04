@@ -1,8 +1,6 @@
 # HybridAGI: for people who want AI to behave as expected
 ## The programmable Cypher-oriented neuro-symbolic AGI
 
-### Programming the future one node at a time
-
 <div align="center">
 
 [![Downloads](https://static.pepy.tech/badge/hybridagi/month)](https://pepy.tech/project/hybridagi)
@@ -12,13 +10,21 @@
 
 </div>
 
-**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. The FalkorDB integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other graph databases. For more information, join the Discord channel.
+**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. Only the Local integration if available, the FalkorDB integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other graph databases. For more information, join the Discord channel.
 
 ## Notebooks
 
+- [Datatypes](notebooks/datatypes.ipynb)
+- [GraphPrograms](notebooks/graph_programs.ipynb)
+- [Interpreter Prompting](notebooks/interpreter_prompting.ipynb)
+- [Simulating User](notebooks/simulating_user.ipynb)
+- [Vector Only RAG](notebooks/vector_only_rag.ipynb)
+- [Knowledge Graph RAG](notebooks/knowledge_graph_rag.ipynb)
+- [Episodic RAG](notebook/episodic_memory_rag.ipynb)
+
 ## What is HybridAGI?
 
-HybridAGI is the first (self)programmable LLM-based Agent that enables you to define its behavior using a **graph-based prompt programming** approach. Unlike other frameworks that view agents as advanced chatbots, we have adopted a methodology that is rooted in computer science, cognitive sciences, and symbolic AI.
+HybridAGI is the first programmable LLM-based Agent that enables you to define its behavior using a **graph-based prompt programming** approach. Unlike other frameworks that view agents as advanced chatbots, we have adopted a methodology that is rooted in computer science, cognitive sciences, and symbolic AI.
 
 To us, an agent system is an goal-directed cognitive software that can process natural language and execute the tasks it has been programmed to perform. Just like with traditional software, the developer specifies the behavior of the application, and the system is not truly autonomous unless it has been programmed to be so. Programming the system not only helps the agent to carry out its tasks but also allows for the *formalization of the developer's intent*.
 
@@ -196,7 +202,7 @@ def my_awesome_tool(foo: str):
     The instructions to infer the tools parameters, this is going to be used in DSPy Signature
     """
     print(foo)
-    # You should return a dictionary (usually containing the tool input + observation)
+    # You should return a dictionary (usually containing the tool inputs + observations/outputs)
     return {"message": foo}
 
 tool = FunctionTool(
@@ -206,9 +212,14 @@ tool = FunctionTool(
 
 ``` -->
 
+### Graph Databases Integrations
+
+- Local Memory for rapid prototyping based on [NetworkX]() and [FAISS]()
+- [FalkorDB]() low latency in-memory hybrid vector/graph database (coming soon)
+
 ### Differences with LangGraph/LangChain or Llama-Index
 
-We focus on **explainable and robust** systems, we don't support ReACT Agents that lack control and efficiency. We also provide everything to scale your application into production by offering optimizable pipelines, agents and graph databases integrations. Our system is a memory-centric agent with a special care to the long-term memory. Moreover our codebase is **readable, clean and elegant** we didn't over-engineer our system to obfuscate it or sell other services.
+We focus on **explainable and robust** systems, we don't support ReACT Agents that lack control and efficiency. The Agent system we provide, is custom made. We also provide everything to scale your application into production by offering optimizable pipelines, agents and graph databases integrations. Our system is a memory-centric agent with a special care to the long-term memory. Moreover our codebase is **readable, clean and elegant** we didn't over-engineer our system to obfuscate it or sell other services.
 
 ### Differences with DSPy
 
@@ -233,3 +244,8 @@ We're not based in Silicon Valley or part of a big company; we're a small, dedic
 Our mission extends beyond AI safety and performance; it's about shaping the world we want to live in. Even if programming becomes obsolete in 5 or 10 years, replaced by some magical prompt, we believe that traditional prompts are insufficient for preserving jobs. They're too simplistic and *fail to accurately convey intentions*.
 
 In contrast, programming each reasoning step demands expert knowledge in prompt engineering and programming. Surprisingly, it's enjoyable and not that difficult for programmers, you'll gain insight into how AI truly operates by controlling it, beeing able to enhance the sequence of action and decision. Natural language combined with algorithms opens up endless possibilities. We can't envision a world without it.
+
+## Commercial Usage
+
+Our software is released under GNU GPL license to protect ourselves and the contributions of the community.
+The logic of your application being separated (the graph programs) there no IP problems for you to use HybridAGI. Moreover when used in production, you surely want to make a FastAPI server to request your agent and separate the backend and frontend of your app (like a website), so the GPL license doesn't contaminate the other pieces of software.

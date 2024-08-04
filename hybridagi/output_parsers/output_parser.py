@@ -1,8 +1,11 @@
-import abc
+from abc import abstractmethod
 from typing import Any
 
 class OutputParser():
+    """
+    The output parser base class
+    """
 
-    @abc.abstractmethod
+    @abstractmethod
     def parse(self, output: str) -> Any:
         pass

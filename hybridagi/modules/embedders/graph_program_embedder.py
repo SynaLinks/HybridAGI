@@ -1,4 +1,5 @@
 import dspy
+from tqdm import tqdm
 from typing import Union
 from hybridagi.embeddings.embeddings import Embeddings
 from hybridagi.core.graph_program import GraphProgram
@@ -43,6 +44,6 @@ class GraphProgramEmbedder(dspy.Module):
             programs.progs = [prog_or_progs]
         else:
             programs = prog_or_progs
-        for prog in programs.progs:
+        for prog in tqdm(programs.progs):
             prog.vector = self.embeddings.embed_text(prog.description)
         return programs

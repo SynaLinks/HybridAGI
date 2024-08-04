@@ -1,4 +1,5 @@
 import dspy
+from tqdm import tqdm
 from typing import Union
 from hybridagi.embeddings.embeddings import Embeddings
 from hybridagi.core.datatypes import Document, DocumentList
@@ -42,6 +43,6 @@ class DocumentEmbedder(dspy.Module):
             documents.docs = [doc_or_docs]
         else:
             documents = doc_or_docs
-        for doc in documents.docs:
+        for doc in tqdm(documents.docs):
             doc.vector = self.embeddings.embed_text(doc.text)
         return documents

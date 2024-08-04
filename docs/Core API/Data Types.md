@@ -50,7 +50,7 @@ class FactList(BaseModel, dspy.Prediction):
 
 ```
 
-`UserProfile`: Represent the user profile used to personalize the interaction and 
+`UserProfile`: Represent the user profile used to personalize the interaction and by the simulation of the user.
   
 ```python
 

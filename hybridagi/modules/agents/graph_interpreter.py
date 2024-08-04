@@ -50,7 +50,7 @@ class DecisionSignature(dspy.Signature):
     purpose = dspy.InputField(desc = "The purpose of the decision (what you have to do now)")
     question = dspy.InputField(desc = "The decision-making question")
     options = dspy.InputField(desc = "The available options for the decision-making question")
-    choice = dspy.OutputField(desc = "The best choice to the assessed question", prefix="Choice:")
+    choice = dspy.OutputField(desc = "The best choice to the decision-making question", prefix="Choice:")
 
 class CorrectDecisionSignature(dspy.Signature):
     answer = dspy.InputField(desc = "The answer to assess")
@@ -89,7 +89,7 @@ class GraphInterpreterAgent(dspy.Module):
         self.embeddings = embeddings
         self.program_memory = program_memory
         self.trace_memory = trace_memory
-        self.agent_state = agent_state if agent_state is not None else AgentState()
+        self.agent_state = agent_state
         self.entrypoint = entrypoint
         self.num_history = num_history
         self.max_iters = max_iters

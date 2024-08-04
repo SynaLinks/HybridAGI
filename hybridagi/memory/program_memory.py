@@ -31,10 +31,16 @@ class ProgramMemory(ABC):
         )
     
     @abstractmethod
-    def depends_on(self, source_id: Union[UUID, str], target_id: Union[UUID, str]) -> List[str]:
+    def depends_on(self, source_id: Union[UUID, str], target_id: Union[UUID, str]) -> bool:
         raise NotImplementedError(
             f"ProgramMemory {type(self).__name__} is missing the required 'depends_on' method."
         )
+        
+    def is_protected(self, name: str) -> bool:
+        """
+        Returns True if the main program depends on the given program False otherwise
+        """
+        return self.depends_on("main", name)
         
     @abstractmethod
     def clear(self):
