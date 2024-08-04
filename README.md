@@ -1,5 +1,5 @@
 # HybridAGI: for people who want AI to behave as expected
-## The programmable Cypher-oriented neuro-symbolic AGI
+## The programmable Cypher-based Neuro-Symbolic AGI
 
 <div align="center">
 
@@ -21,6 +21,7 @@
 - [Vector Only RAG](notebooks/vector_only_rag.ipynb)
 - [Knowledge Graph RAG](notebooks/knowledge_graph_rag.ipynb)
 - [Episodic RAG](notebook/episodic_memory_rag.ipynb)
+- [Extracting Knowledge Graphs](notebook/extracting_knowledge_graphs.ipynb)
 
 ## What is HybridAGI?
 
@@ -46,7 +47,7 @@ pip install hybridagi
 
 ### Graphs for planning and knowledge management, no finetuning required.
 
-**No React Agents here**, the only agent system that we provide is our unique and innovative **Graph Interpreter Agent** that follow a strict methodology by executing node by node the graph programs it have in memory. Because we control the behavior of the Agent from end-to-end by offloading planning to symbolic components, we can correct/enhance the behavior of the system easely, removing the needs for finetuning but also allowing the system to learn on the fly.
+**No React Agents here**, the only agent system that we provide is our custom **Graph Interpreter Agent** that follow a strict methodology by executing node by node the graph programs it have in memory. Because we control the behavior of the Agent from end-to-end by offloading planning to symbolic components, we can correct/enhance the behavior of the system easely, removing the needs for finetuning but also allowing the system to learn on the fly.
 
 HybridAGI is build upon years of experience in making reliable robotics systems. We have combined our knowledge in Robotics, Symbolic AI, LLMs and Cognitive Sciences into a product for programmers, data-scientists and AI engineers. The long-term memory of our Agent system heavily use graphs to store structured and unstructured knowledge as well as its graph programs.
 
@@ -183,10 +184,11 @@ We provide the following list of native tools to R/W into the memory system or m
 | `UpdateObjective` | Update the long-term Objective of the Agent |
 | `DocumentSearch` | Used to search for information into the document memory |
 | `PastActionSearch` | Used to search for past actions into the trace memory |
-| `GraphProgramSearch` | Used to search for graph programs into the program memory |
 | `EntitySearch` | Used to search for entities into the fact memory |
 | `FactSearch` | Used to search for facts into the fact memory |
 | `QueryFacts` | Used to query facts from the fact memory |
+| `GraphProgramSearch` | Used to search for graph programs into the program memory |
+| `ReadGraphProgram` | Used to read a graph program from the program memory based on its name |
 
 </div>
 
@@ -214,8 +216,8 @@ tool = FunctionTool(
 
 ### Graph Databases Integrations
 
-- Local Memory for rapid prototyping based on [NetworkX]() and [FAISS]()
-- [FalkorDB]() low latency in-memory hybrid vector/graph database (coming soon)
+- Local Graph Memory for rapid prototyping
+- [FalkorDB](https://www.falkordb.com/) low latency in-memory hybrid vector/graph database (coming soon)
 
 ### Differences with LangGraph/LangChain or Llama-Index
 
@@ -248,4 +250,4 @@ In contrast, programming each reasoning step demands expert knowledge in prompt 
 ## Commercial Usage
 
 Our software is released under GNU GPL license to protect ourselves and the contributions of the community.
-The logic of your application being separated (the graph programs) there no IP problems for you to use HybridAGI. Moreover when used in production, you surely want to make a FastAPI server to request your agent and separate the backend and frontend of your app (like a website), so the GPL license doesn't contaminate the other pieces of software.
+The logic of your application being separated (the graph programs) there no IP problems for you to use HybridAGI. Moreover when used in production, you surely want to make a FastAPI server to request your agent and separate the backend and frontend of your app (like a website), so the GPL license doesn't contaminate the other pieces of your software.

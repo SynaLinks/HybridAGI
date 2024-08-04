@@ -1,4 +1,4 @@
-# class Tool(BaseTool):
+# class FunctionTool(BaseTool):
 
 #     def __init__(
 #             self,
