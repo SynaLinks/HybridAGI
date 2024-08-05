@@ -15,7 +15,7 @@ class ControlType(str, Enum):
     end = "end"
 
 class Control(BaseModel):
-    id: ControlType = Field(description="The step id")
+    id: str = Field(description="The step id")
 
 class Action(BaseModel):
     id: str = Field(description="Unique identifier for the step")
@@ -312,7 +312,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
         for step_id, step in self.steps.items():
             if isinstance(step, Control):
                 args = {
-                    "id": step_id,
+                    "id": step.id.value if isinstance(step.id, ControlType) else step.id,
                 }
                 cleaned_args = re.sub(key_quotes_regex, sub_regex, json.dumps(args))
                 cypher += f"\n({step_id}:Control "+cleaned_args+"),"
