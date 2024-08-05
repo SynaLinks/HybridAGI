@@ -1,4 +1,5 @@
 import dspy
+import copy
 from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
@@ -13,7 +14,7 @@ class SpeakSignature(dspy.Signature):
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    message = dspy.OutputField(desc = "The message to send to the user")
+    message = dspy.OutputField(desc = "The message")
 
 class SpeakOutput(dspy.Prediction):
     message: str
@@ -74,3 +75,14 @@ class SpeakTool(Tool):
             return SpeakOutput(
                 message = tool_input.prompt,
             )
+    
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            agent_state = self.agent_state,
+            name = self.name,
+            speak_func = self.speak_func,
+            simulated = self.simulated,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

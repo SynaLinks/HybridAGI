@@ -1,6 +1,7 @@
 import dspy
 import json
 import re
+import os
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any, Union
 from enum import Enum
@@ -46,7 +47,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the cypher program", default={})
     steps: Optional[Dict[str, Optional[Union[Control, Action, Decision, Program]]]] = Field(description="Steps of the cypher program", default={})
     dependencies: Optional[List[str]] = Field(description="Dependencies of the cypher program", default=[])
-    _graph = nx.DiGraph()
+    _graph = None
     
     def __init__(
             self,
@@ -55,9 +56,10 @@ class GraphProgram(BaseModel, dspy.Prediction):
         ):
         BaseModel.__init__(self, name=name, description=description)
         dspy.Prediction.__init__(self, name=name, description=description)
+        self._graph = nx.DiGraph()
+        self.steps = OrderedDict()
         self._graph.add_node("start", label="Start", color="red")
         self._graph.add_node("end", label="End", color="red")
-        self.steps = OrderedDict()
         self.steps["start"] = Control(id="start")
         self.steps["end"] = Control(id="end")
 
@@ -360,17 +362,18 @@ class GraphProgram(BaseModel, dspy.Prediction):
     def to_dict(self):
         return {"name": self.name, "description": self.description, "routine": self.to_cypher()}
     
-    def save(self, filepath: str = ""):
+    def save(self, folderpath: str = ""):
         """
         Save the graph program as a Cypher file
         
         Parameters:
             filepath (str): The path of the file (default empty) if empty, save it into '{self.name}.cypher' file.         
         """
-        if filepath == "":
-            filepath = f"{self.name}.cypher"
-        if not filepath.endswith(".cypher"):
-            raise ValueError(f"GraphProgram {self.name} should be saved into a .cypher file")
+        filename = f"{self.name}.cypher"
+        if folderpath == "":
+            filepath = filename
+        else:
+            filepath = os.path.join(folderpath, filename)
         with open(filepath, 'w') as f:
             f.write(self.to_cypher())
     

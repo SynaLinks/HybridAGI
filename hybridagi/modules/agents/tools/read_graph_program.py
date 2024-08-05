@@ -1,4 +1,5 @@
 import dspy
+import copy
 from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
@@ -63,3 +64,12 @@ class ReadGraphProgramTool(Tool):
                 name = tool_input.prompt,
                 routine = graph_program,
             )
+            
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            program_memory = self.program_memory,
+            name = self.name,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

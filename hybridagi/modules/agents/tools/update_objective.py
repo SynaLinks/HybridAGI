@@ -1,4 +1,5 @@
 import dspy
+import copy
 from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
@@ -55,3 +56,12 @@ class UpdateObjectiveTool(Tool):
             return UpdateObjectiveOutput(
                 new_objective = tool_input.prompt,
             )
+            
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            agent_state = self.agent_state,
+            name = self.name,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

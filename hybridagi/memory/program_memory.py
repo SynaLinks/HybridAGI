@@ -5,9 +5,15 @@ from hybridagi.core.graph_program import GraphProgram
 from hybridagi.core.datatypes import GraphProgramList
 
 class ProgramMemory(ABC):
+    
+    @abstractmethod
+    def exist(self, prog_id) -> bool:
+        raise NotImplementedError(
+            f"ProgramMemory {type(self).__name__} is missing the required 'exist' method."
+        )
 
     @abstractmethod
-    def update(self, doc_or_docs: Union[GraphProgram, GraphProgramList]) -> None:
+    def update(self, prog_or_progs: Union[GraphProgram, GraphProgramList]) -> None:
         raise NotImplementedError(
             f"ProgramMemory {type(self).__name__} is missing the required 'update' method."
         )

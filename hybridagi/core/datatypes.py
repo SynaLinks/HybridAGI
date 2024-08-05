@@ -15,6 +15,9 @@ from hybridagi.core.graph_program import (
     Program,
 )
 
+CYPHER_FACT_REGEX = r'\(:(\w+)\s*{name:"(.*?)"}\)\s*-\[:(\w+)\]->\s*\(:(\w+)\s*{name:"(.*?)"}\)'
+CYPHER_SCHEMA_REGEX = r'\(:(\w+)\)\s*-\[:(\w+)\]->\s*\(:(\w+)\)'
+
 class Query(BaseModel, dspy.Prediction):
     query: str = Field(description="The input query", default="")
     
@@ -28,6 +31,9 @@ class QueryList(BaseModel, dspy.Prediction):
     def __init__(self, **kwargs):
         BaseModel.__init__(self, **kwargs)
         dspy.Prediction.__init__(self, **kwargs)
+        
+    def to_dict(self):
+        return {"queries": [q.to_dict() for q in self.queries]}
 
 class Document(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the document", default_factory=uuid4)
@@ -109,16 +115,29 @@ class Relationship(BaseModel):
 
 class Fact(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the fact", default_factory=uuid4)
-    subj: Entity = Field(description="Entity that is the subject of the fact")
-    rel: Relationship = Field(description="Relation between the subject and object entities")
-    obj: Entity = Field(description="Entity that is the object of the fact")
+    subj: Entity = Field(description="Entity that is the subject of the fact", default=None)
+    rel: Relationship = Field(description="Relation between the subject and object entities", default=None)
+    obj: Entity = Field(description="Entity that is the object of the fact", default=None)
     weight: float = Field(description="The fact weight (between 0.0 and 1.0, default 1.0)", default=1.0)
     vector: Optional[List[float]] = Field(description="Vector representation of the fact", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the fact", default={})
     created_at: datetime = Field(description="Time when the fact was created", default_factory=datetime.now)
     
+    def to_cypher(self):
+        return "(:"+self.subj.label+" {name:\""+self.subj.name+"\"})-[:"+self.rel.name+"]->(:"+self.obj.label+" {name:\""+self.obj.name+"\"})"
+    
+    def from_cypher(self, cypher_fact:str, metadata: Dict[str, Any] = {}) -> "Fact":
+        match = re.match(CYPHER_FACT_REGEX, cypher_fact)
+        if match:
+            self.subj = Entity(label=match.group(1), name=match.group(2))
+            self.rel = Relationship(name=match.group(3))
+            self.obj = Entity(label=match.group(4), name=match.group(5))
+            self.metadata = metadata
+        else:
+            raise ValueError("Invalid Cypher fact provided")
+    
     def to_dict(self):
-        return {"fact": "(:"+self.subj.label+" {name:\""+self.subj.name+"\"})-[:"+self.rel.name+"]->(:"+self.obj.label+" {name:\""+self.obj.name+"\"})"}
+        return {"fact": self.to_cypher()}
 
 class FactList(BaseModel, dspy.Prediction):
     facts: List[Fact] = Field(description="List of facts", default=[])
@@ -127,8 +146,78 @@ class FactList(BaseModel, dspy.Prediction):
         BaseModel.__init__(self, **kwargs)
         dspy.Prediction.__init__(self, **kwargs)
         
+    def to_cypher(self):
+        return ",\n".join([f.to_cypher() for f in self.facts])
+    
+    def from_cypher(self, cypher_facts: str, metadata: Dict[str, Any] = {}):
+        triplets = re.findall(CYPHER_FACT_REGEX, cypher_facts)
+        self.facts = []
+        for triplet in triplets:
+            subject_label, subject_name, predicate, object_label, object_name = triplet
+            self.facts.append(Fact(
+                subj = Entity(name=subject_name, label=subject_label),
+                rel = Relationship(name=predicate),
+                obj = Entity(name=object_name, label=object_label),
+                metadata = metadata,
+            ))
+        return self
+    
     def to_dict(self):
         return {"facts": [f.to_dict() for f in self.facts]}
+    
+class FactSchema(BaseModel):
+    source: str
+    predicate: str
+    target: str
+    
+    def to_cypher(self):
+        return "(:"+self.source+")-[:"+self.predicate+"]->(:"+self.target+")"
+    
+    def from_cypher(self, cypher_schema: str) -> "FactSchema":
+        match = re.match(CYPHER_SCHEMA_REGEX, cypher_schema)
+        if match:
+            self.source = match.group(1)
+            self.predicate = match.group(2)
+            self.target = match.group(3)
+        else:
+            ValueError("Invalid Cypher schema provided")
+        
+    def is_valid(self, fact: Fact):
+        if fact.subj.label != self.source:
+            return False
+        if fact.rel.name != self.rel:
+            return False
+        if fact.obj.label != self.target:
+            return False
+        return True
+    
+    def to_dict(self):
+        return {"fact_schema": self.to_cypher()}
+   
+class GraphSchema(BaseModel, dspy.Prediction):
+    schemas: Optional[List[FactSchema]] = Field(description="The graph schema", default=[])
+    
+    def __init__(self, **kwargs):
+        BaseModel.__init__(self, **kwargs)
+        dspy.Prediction.__init__(self, **kwargs)
+        
+    def to_cypher(self) -> str:
+        return ",\n".join([s.to_cypher() for s in self.schemas])
+    
+    def from_cypher(self, cypher_schema: str) -> "GraphSchema":
+        graph_schema = re.findall(CYPHER_SCHEMA_REGEX, cypher_schema)
+        self.schemas = []
+        for schema in graph_schema:
+            subject_label, predicate, object_label = schema
+            self.schemas.append(FactSchema(
+                subj = subject_label,
+                predicate = predicate,
+                obj = object_label,
+            ))
+        return self
+    
+    def to_dict(self):
+        return {"schema": [s.to_dict() for s in self.schemas]}
     
 class QueryWithFacts(BaseModel, dspy.Prediction):
     query: Query = Field(description="The input query", default_factory=Query)
@@ -298,8 +387,8 @@ class ToolInput(BaseModel):
     disable_inference: bool = Field(description="Weither or not to disable inference (default False)", default=False)
 
 class ProgramState(BaseModel):
-    current_program: GraphProgram
-    current_step: Union[Control, Action, Decision, Program]
+    current_program: GraphProgram = Field(description="The current program")
+    current_step: Union[Control, Action, Decision, Program] = Field(description="The current step")
 
 class AgentState(BaseModel):
     current_hop: int = Field(description="The current hop", default=0)

@@ -1,5 +1,6 @@
 import dspy
 import json
+import copy
 from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
@@ -102,3 +103,15 @@ class AskUserTool(Tool):
                 question = tool_input.prompt,
                 answer = answer,
             )
+            
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            agent_state = self.agent_state,
+            name = self.name,
+            ask_user_func = self.ask_user_func,
+            simulated = self.simulated,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        cpy.simulate = copy.deepcopy(self.simulate)
+        return cpy

@@ -38,6 +38,9 @@ class LocalTraceMemory(TraceMemory):
         self.wipe_on_start = wipe_on_start
         if wipe_on_start:
             self.clear()
+            
+    def exist(self, step_id) -> bool:
+        return step_id in self._steps
     
     def update(self, step_or_steps: Union[AgentStep, AgentStepList]) -> None:
         """

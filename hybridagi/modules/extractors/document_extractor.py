@@ -7,4 +7,6 @@ class DocumentExtractor(dspy.Module):
     
     @abstractmethod
     def forward(self, doc_or_docs: Union[Document, DocumentList])-> DocumentList:
-        pass
+        raise NotImplementedError(
+            f"DocumentExtractor {type(self).__name__} is missing the required 'forward' method."
+        )

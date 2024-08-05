@@ -26,7 +26,7 @@ class LocalDocumentMemory(DocumentMemory):
     def __init__(
             self,
             index_name: str,
-            wipe_on_start: bool=True,
+            wipe_on_start: bool = True,
         ):
         """
         Initialize the local document memory.
@@ -38,6 +38,9 @@ class LocalDocumentMemory(DocumentMemory):
         self.wipe_on_start = wipe_on_start
         if wipe_on_start:
             self.clear()
+            
+    def exist(self, doc_id) -> bool:
+        return doc_id in self._documents
     
     def update(self, doc_or_docs: Union[Document, DocumentList]) -> None:
         """

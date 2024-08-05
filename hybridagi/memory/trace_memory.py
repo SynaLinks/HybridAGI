@@ -4,9 +4,15 @@ from uuid import UUID
 from hybridagi.core.datatypes import AgentStep, AgentStepList
 
 class TraceMemory(ABC):
+    
+    @abstractmethod
+    def exist(self, step_id) -> bool:
+        raise NotImplementedError(
+            f"FactMemory {type(self).__name__} is missing the required 'exist' method."
+        )
 
     @abstractmethod
-    def update(self, doc_or_docs: Union[AgentStep, AgentStepList]) -> None:
+    def update(self, step_or_steps: Union[AgentStep, AgentStepList]) -> None:
         raise NotImplementedError(
             f"TraceMemory {type(self).__name__} is missing the required 'update' method."
         )

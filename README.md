@@ -1,5 +1,7 @@
 # HybridAGI: for people who want AI to behave as expected
-## The programmable Cypher-based Neuro-Symbolic AGI
+## The Programmable Cypher-based Neuro-Symbolic AGI
+
+### Your All-In-One framework for interactive knowledge intensive LLM applications
 
 <div align="center">
 
@@ -8,9 +10,13 @@
 ![Beta](https://img.shields.io/badge/Release-Beta-blue)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
+<p align="center">
+  <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
+</p>
+
 </div>
 
-**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. Only the Local integration if available, the FalkorDB integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other graph databases. For more information, join the Discord channel.
+**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. For now, only the focal integration if available, the FalkorDB integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other Cypher-based graph databases. For more information, join the Discord channel.
 
 ## Notebooks
 
@@ -188,7 +194,8 @@ We provide the following list of native tools to R/W into the memory system or m
 | `FactSearch` | Used to search for facts into the fact memory |
 | `QueryFacts` | Used to query facts from the fact memory |
 | `GraphProgramSearch` | Used to search for graph programs into the program memory |
-| `ReadGraphProgram` | Used to read a graph program from the program memory based on its name |
+| `ReadGraphProgram` | Used to read a graph program from memory by name |
+| `CallGraphProgram` | Used to dynamically call a graph program from memory by name |
 
 </div>
 
@@ -218,6 +225,10 @@ tool = FunctionTool(
 
 - Local Graph Memory for rapid prototyping
 - [FalkorDB](https://www.falkordb.com/) low latency in-memory hybrid vector/graph database (coming soon)
+
+### LLM Agent as Graph VS LLM Agent as Graph Interpreter
+
+What makes our approach different from Agent as Graph is the fact that our agent system is not a process represented by a Graph, but an interpreter that can read/write and execute a graph data structure separated from that process. Making possible for the Agent to learn by executing, reading and modifying the graph data (like any other data), in its essence HybridAGI is intended to be a self-programming system centered around the Cypher language. It is a production-ready research project centered around neuro-symbolic programming, program synthesis and symbolic AI.
 
 ### Differences with LangGraph/LangChain or Llama-Index
 
@@ -250,4 +261,4 @@ In contrast, programming each reasoning step demands expert knowledge in prompt 
 ## Commercial Usage
 
 Our software is released under GNU GPL license to protect ourselves and the contributions of the community.
-The logic of your application being separated (the graph programs) there no IP problems for you to use HybridAGI. Moreover when used in production, you surely want to make a FastAPI server to request your agent and separate the backend and frontend of your app (like a website), so the GPL license doesn't contaminate the other pieces of your software.
+The logic of your application being separated (the graph programs) there is no IP problems for you to use HybridAGI. Moreover when used in production, you surely want to make a FastAPI server to request your agent and separate the backend and frontend of your app (like a website), so the GPL license doesn't contaminate the other pieces of your software.

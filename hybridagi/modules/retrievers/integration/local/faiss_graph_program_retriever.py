@@ -59,8 +59,9 @@ class FAISSGraphProgramRetriever(GraphProgramRetriever):
                 if distances[0][i] < self.max_distance:
                     progran_index = indexes[0][i]
                     program_id = list(embeddings_map.keys())[progran_index]
-                    program = self.program_memory.get(program_id).progs[0]
-                    result.progs.append(program)
+                    if not self.program_memory.is_protected(program_id):
+                        program = self.program_memory.get(program_id).progs[0]
+                        result.progs.append(program)
                 else:
                     break
             if self.reranker is not None:

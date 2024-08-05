@@ -246,9 +246,11 @@ class GraphInterpreterAgent(dspy.Module):
             else:
                 embedded_string = tool_output.to_dict()[list(tool_output.to_dict().keys())[0]]
             agent_step.vector = self.embeddings.embed_text(embedded_string)
-        current_program = self.agent_state.get_current_program()
-        next_step = current_program.get_next_step(step.id)
-        self.agent_state.set_current_step(next_step)
+        if step.tool != "CallGraphProgram":
+            current_program = self.agent_state.get_current_program()
+            current_step = self.agent_state.get_current_step()
+            next_step = current_program.get_next_step(current_step.id)
+            self.agent_state.set_current_step(next_step)
         return agent_step
         
     def decide(self, step: Decision) -> AgentStep:

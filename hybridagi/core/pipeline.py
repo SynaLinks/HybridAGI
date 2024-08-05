@@ -8,8 +8,12 @@ class Pipeline(dspy.Module):
     It provides methods to add, remove, get, and clear modules, and to run the pipeline.
     """
     
-    _modules: Dict[str, Optional[dspy.Module]] = OrderedDict()
-    _outputs: Dict[str, Optional[dspy.Module]] = OrderedDict()
+    _modules: Dict[str, Optional[dspy.Module]] = None
+    _outputs: Dict[str, Optional[dspy.Module]] = None
+    
+    def __init__(self):
+        self._modules = OrderedDict()
+        self._outputs = OrderedDict()
 
     def add(self, module_name: str, module: dspy.Module):
         """

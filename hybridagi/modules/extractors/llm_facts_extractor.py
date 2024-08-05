@@ -4,9 +4,7 @@ from tqdm import tqdm
 from abc import abstractmethod
 from typing import Union, Optional
 from hybridagi.modules.extractors import FactExtractor
-from hybridagi.core.datatypes import Document, DocumentList, Fact, Relationship, Entity, FactList
-
-MATCHING_REGEX = r'\(:(\w+)\s*{name:"(.*?)"}\)\s*-\[:(\w+)\]->\s*\(:(\w+)\s*{name:"(.*?)"}\)'
+from hybridagi.core.datatypes import Document, DocumentList, Fact, Relationship, Entity, FactList, GraphSchema
 
 class FactsExtractorSignature(dspy.Signature):
     """Given the fields `document`, produce the fields `triplets`.
@@ -20,11 +18,13 @@ class FactsExtractorSignature(dspy.Signature):
     """
     document: str = dspy.InputField(desc="The input document")
     triplets: str = dspy.OutputField(desc="The comma separated triplets extracted from the document")
+
     
 class LLMFactsExtractor(FactExtractor):
     
     def __init__(
             self,
+            schema: Optional[GraphSchema] = None,
             lm: Optional[dspy.LM] = None,
         ):
         self.lm = lm
@@ -43,13 +43,5 @@ class LLMFactsExtractor(FactExtractor):
             pred = self.extraction(
                 document = doc.text,
             )
-            triplets = re.findall(MATCHING_REGEX, pred.triplets)
-            for triplet in triplets:
-                subject_label, subject_name, predicate, object_label, object_name = triplet
-                result.facts.append(Fact(
-                    subj = Entity(name=subject_name, label=subject_label),
-                    rel = Relationship(name=predicate),
-                    obj = Entity(name=object_name, label=object_label),
-                    metadata = doc.metadata,
-                ))
+            result.from_cypher(pred.triplets, doc.metadata)
         return result

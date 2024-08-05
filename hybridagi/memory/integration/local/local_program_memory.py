@@ -40,6 +40,9 @@ class LocalProgramMemory(ProgramMemory):
         self.index_name = index_name
         if wipe_on_start:
             self.clear()
+            
+    def exist(self, prog_id) -> bool:
+        return prog_id in self._programs
     
     def update(self, program_or_programs: Union[GraphProgram, GraphProgramList]) -> None:
         """
@@ -61,7 +64,7 @@ class LocalProgramMemory(ProgramMemory):
         for prog in programs.progs:
             prog_id = str(prog.name)
             if prog_id not in self._programs:
-                self._graph.add_node(prog_id, title=prog.to_cypher())
+                self._graph.add_node(prog_id, title=prog.to_cypher(), color="orange" if prog.name == "main" else "green")
             else:
                 self._graph.nodes[prog_id]["title"] = prog.to_cypher()
             self._programs[prog_id] = prog

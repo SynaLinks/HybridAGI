@@ -52,3 +52,13 @@ class FactSearchTool(Tool):
         else:
             query_with_facts = self.fact_search(tool_input.prompt)
             return query_with_facts
+        
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            retriever = self.retriever,
+            name = self.name,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        cpy.retriever = copy.deepcopy(self.retriever)
+        return cpy

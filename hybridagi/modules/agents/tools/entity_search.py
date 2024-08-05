@@ -1,4 +1,5 @@
 import dspy
+import copy
 from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
@@ -52,3 +53,13 @@ class EntitySearchTool(Tool):
         else:
             query_with_entities = self.entity_search(tool_input.prompt)
             return query_with_entities
+        
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            retriever = self.retriever,
+            name = self.name,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        cpy.retriever = copy.deepcopy(self.retriever)
+        return cpy

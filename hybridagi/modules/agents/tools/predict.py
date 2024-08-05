@@ -1,4 +1,5 @@
 import dspy
+import copy
 from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.core.datatypes import (
@@ -50,3 +51,11 @@ class PredictTool(Tool):
             return PredictOutput(
                 answer = tool_input.prompt,
             )
+            
+    def __deepcopy__(self, memo):
+        cpy = (type)(self)(
+            name = self.name,
+            lm = self.lm,
+        )
+        cpy.predict = copy.deepcopy(self.predict)
+        return cpy

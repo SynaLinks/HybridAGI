@@ -4,6 +4,12 @@ from uuid import UUID
 from hybridagi.core.datatypes import Document, DocumentList
 
 class DocumentMemory(ABC):
+    
+    @abstractmethod
+    def exist(self, doc_id) -> bool:
+        raise NotImplementedError(
+            f"DocumentMemory {type(self).__name__} is missing the required 'exist' method."
+        )
 
     @abstractmethod
     def update(self, doc_or_docs: Union[Document, DocumentList]) -> None:

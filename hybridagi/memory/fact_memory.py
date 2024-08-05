@@ -5,6 +5,12 @@ from hybridagi.core.datatypes import Entity, EntityList
 from hybridagi.core.datatypes import Fact, FactList
 
 class FactMemory(ABC):
+    
+    @abstractmethod
+    def exist(self, entity_or_fact_id) -> bool:
+        raise NotImplementedError(
+            f"FactMemory {type(self).__name__} is missing the required 'exist' method."
+        )
 
     @abstractmethod
     def update(self, entities_or_facts: Union[Entity, EntityList, Fact, FactList]) -> None:

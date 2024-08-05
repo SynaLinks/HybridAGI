@@ -58,6 +58,9 @@ class LocalFactMemory(FactMemory):
         if wipe_on_start:
             self.clear()
             
+    def exist(self, fact_or_entity_id) -> bool:
+        return fact_or_entity_id in self._entities or fact_or_entity_id in self._facts
+            
     def update(self, entities_or_facts: Union[Entity, EntityList, Fact, FactList]) -> None:
         """
         Update the local fact memory with new entities or facts.
