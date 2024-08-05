@@ -3,9 +3,9 @@
 
 import numpy as np
 from typing import Union, List
-from .base import BaseEmbeddings
+from hybridagi.embeddings.embeddings import Embeddings
 
-class SentenceTransformerEmbeddings(BaseEmbeddings):
+class SentenceTransformerEmbeddings(Embeddings):
 
     def __init__(
             self,

@@ -1,4 +1,5 @@
 documentation/
+*.html
 *.json
 local_cache/
 *.zip
