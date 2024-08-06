@@ -270,6 +270,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         prompt=step_props["prompt"],
                         inputs=step_props["inputs"] if "inputs" in step_props else None,
                         output=step_props["output"] if "output" in step_props else None,
+                        disable_inference=step_props["disable_inference"] if "disable_inference" in step_props else None,
                     ))
                 elif step_type == "Decision":
                     self.add(Decision(
@@ -282,8 +283,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
                     self.add(Program(
                         id=step_props["id"],
                         purpose=step_props["purpose"],
-                        inputs=step_props["inputs"] if "inputs" in step_props else None,
-                        output=step_props["output"] if "output" in step_props else None,
+                        program=step_props["program"],
                     ))
                 else:
                     raise ValueError(f"Invalid step type for {step_id} should be between: Control, Action, Decision, Program")

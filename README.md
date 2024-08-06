@@ -28,6 +28,7 @@
 - [Knowledge Graph RAG](notebooks/knowledge_graph_rag.ipynb)
 - [Episodic RAG](notebook/episodic_memory_rag.ipynb)
 - [Extracting Knowledge Graphs](notebook/extracting_knowledge_graphs.ipynb)
+- [Dynamic Graph Program](notebook/dynamic_graph_program.ipynb)
 
 ## What is HybridAGI?
 
