@@ -270,7 +270,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         prompt=step_props["prompt"],
                         inputs=step_props["inputs"] if "inputs" in step_props else None,
                         output=step_props["output"] if "output" in step_props else None,
-                        disable_inference=step_props["disable_inference"] if "disable_inference" in step_props else None,
+                        disable_inference=True if "disable_inference" in step_props else False,
                     ))
                 elif step_type == "Decision":
                     self.add(Decision(
