@@ -18,7 +18,6 @@ class FactsExtractorSignature(dspy.Signature):
     """
     document: str = dspy.InputField(desc="The input document")
     triplets: str = dspy.OutputField(desc="The comma separated triplets extracted from the document")
-
     
 class LLMFactsExtractor(FactExtractor):
     

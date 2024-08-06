@@ -35,6 +35,8 @@ class DocumentSearchTool(Tool):
         return self.retriever(retriver_input)
     
     def forward(self, tool_input: ToolInput) -> QueryWithDocuments:
+        if not isinstance(tool_input, ToolInput):
+            raise ValueError(f"{type(self).__name__} input must be a ToolInput")
         if not tool_input.disable_inference:
             with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
                 pred = self.predict(

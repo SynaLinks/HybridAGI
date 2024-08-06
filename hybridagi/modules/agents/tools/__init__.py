@@ -18,7 +18,7 @@ from .update_objective import UpdateObjectiveTool
 from .call_graph_program import CallGraphProgramTool
 
 # Generic function calling tool
-# from.function_tool import FunctionTool
+from .function_tool import FunctionTool
 
 __all__ = [
     SpeakTool,
@@ -36,5 +36,5 @@ __all__ = [
     UpdateObjectiveTool,
     CallGraphProgramTool,
     
-    # FunctionTool,
+    FunctionTool,
 ]

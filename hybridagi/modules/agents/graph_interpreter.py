@@ -70,6 +70,7 @@ class GraphInterpreterAgent(dspy.Module):
             num_history: int = 5,
             max_iters: int = 20,
             verbose: bool = True,
+            debug: bool = False,
         ):
         """
         Initializes the Graph Interpreter Agent.
@@ -96,6 +97,7 @@ class GraphInterpreterAgent(dspy.Module):
         self.decision_parser = DecisionOutputParser()
         self.prediction_parser = PredictionOutputParser()
         self.verbose = verbose
+        self.debug = debug
         self.previous_agent_step = None
         if self.trace_memory is not None:
             if self.embeddings is None:
@@ -361,15 +363,18 @@ class GraphInterpreterAgent(dspy.Module):
         """
         self.start(query_or_query_with_session)
         for i in range(self.max_iters):
-            # try:
-            self.run_step()
-            # except Exception as e:
-            #     return AgentOutput(
-            #         finish_reason = FinishReason.Error,
-            #         final_answer = "Error occured: "+str(e),
-            #         program_trace = self.agent_state.program_trace,
-            #         session = self.agent_state.session,
-            #     )
+            if self.debug is False:
+                try:
+                    self.run_step()
+                except Exception as e:
+                    return AgentOutput(
+                        finish_reason = FinishReason.Error,
+                        final_answer = "Error occured: "+str(e),
+                        program_trace = self.agent_state.program_trace,
+                        session = self.agent_state.session,
+                    )
+            else:
+                self.run_step()
             if self.finished():
                 return AgentOutput(
                     finish_reason = FinishReason.Finished,

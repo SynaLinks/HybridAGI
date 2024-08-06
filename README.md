@@ -16,7 +16,7 @@
 
 </div>
 
-**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. For now, only the focal integration if available, the FalkorDB integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other Cypher-based graph databases. For more information, join the Discord channel.
+**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. For now, only the Local integration if available, the FalkorDB & Kuzu integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other Cypher-based graph databases. For more information, join the Discord channel.
 
 ## Notebooks
 
@@ -29,6 +29,7 @@
 - [Episodic RAG](notebook/episodic_memory_rag.ipynb)
 - [Extracting Knowledge Graphs](notebook/extracting_knowledge_graphs.ipynb)
 - [Dynamic Graph Program](notebook/dynamic_graph_program.ipynb)
+- [Using External Tools](notebook/using_external_tools.ipynb)
 
 ## What is HybridAGI?
 
@@ -56,7 +57,7 @@ pip install hybridagi
 
 **No React Agents here**, the only agent system that we provide is our custom **Graph Interpreter Agent** that follow a strict methodology by executing node by node the graph programs it have in memory. Because we control the behavior of the Agent from end-to-end by offloading planning to symbolic components, we can correct/enhance the behavior of the system easely, removing the needs for finetuning but also allowing the system to learn on the fly.
 
-HybridAGI is build upon years of experience in making reliable robotics systems. We have combined our knowledge in Robotics, Symbolic AI, LLMs and Cognitive Sciences into a product for programmers, data-scientists and AI engineers. The long-term memory of our Agent system heavily use graphs to store structured and unstructured knowledge as well as its graph programs.
+HybridAGI is build upon years of experience in making reliable Robotics systems. We have combined our knowledge in Robotics, Symbolic AI, LLMs and Cognitive Sciences into a product for programmers, data-scientists and AI engineers. The long-term memory of our Agent system heavily use graphs to store structured and unstructured knowledge as well as its graph programs.
 
 We provide everything for you to build your LLM application with a focus around Cypher Graph databases. We provide also a local database for rapid prototyping before scaling your application with one of our integration.
 
@@ -200,36 +201,48 @@ We provide the following list of native tools to R/W into the memory system or m
 
 </div>
 
-<!-- ### Adding more tools
+### Adding more tools
 
-You can easely add more tools by using the `FunctionTool` and python functions like nowadays function calling.
+You can add more tools by using the `FunctionTool` and python functions like nowadays function calling.
 
 ```python
+import requests
 from hybridagi.modules.agents.tools import FunctionTool
 
-def my_awesome_tool(foo: str):
+# The function inputs should be one or multiple strings, you can then convert or process them in your function
+# The docstring and input arguments will be used to create automatically a DSPy signature
+def get_crypto_price(crypto_name: str):
     """
-    The instructions to infer the tools parameters, this is going to be used in DSPy Signature
+    Please only give the name of the crypto to fetch like "bitcoin" or "cardano"
+    Never explain or apology, only give the crypto name.
     """
-    print(foo)
-    # You should return a dictionary (usually containing the tool inputs + observations/outputs)
-    return {"message": foo}
+    base_url = "https://api.coingecko.com/api/v3/simple/price?"
+    complete_url = base_url + "ids=" + crypto_name + "&vs_currencies=usd"
+    response = requests.get(complete_url)
+    data = response.json()
 
-tool = FunctionTool(
-    name = "AwesomeTool",
-    func = my_awesome_tool,
+    # The output of the tool should always be a dict
+    # It usually contains the sanitized input of the tool + the tool result (or observation)
+    if crypto_name in data:
+        return {"crypto_name": crypto_name, "result": str(data[crypto_name]["usd"])+" USD"}
+    else:
+        return {"crypto_name": crypto_name, "result": "Invalid crypto name"}
+    
+my_tool = FunctionTool(
+    name = "GetCryptoPrice",
+    func = get_crypto_price,
 )
-
-``` -->
+```
 
 ### Graph Databases Integrations
 
-- Local Graph Memory for rapid prototyping
+- Local Graph Memory for rapid prototyping based on [NetworkX](https://networkx.org/)
 - [FalkorDB](https://www.falkordb.com/) low latency in-memory hybrid vector/graph database (coming soon)
+- [Kuzu](https://kuzudb.com/) A highly scalable, extremely fast, easy-to-use embeddable graph database (coming soon)
 
 ### LLM Agent as Graph VS LLM Agent as Graph Interpreter
 
-What makes our approach different from Agent as Graph is the fact that our agent system is not a process represented by a Graph, but an interpreter that can read/write and execute a graph data structure separated from that process. Making possible for the Agent to learn by executing, reading and modifying the graph data (like any other data), in its essence HybridAGI is intended to be a self-programming system centered around the Cypher language. It is a production-ready research project centered around neuro-symbolic programming, program synthesis and symbolic AI.
+What makes our approach different from Agent as Graph is the fact that our Agent system is not a process represented by a graph, but an interpreter that can read/write and execute a graph data (the graph programs) structure separated from that process. Making possible for the Agent to learn by executing, reading and modifying the graph programs (like any other data), in its essence HybridAGI is intended to be a self-programming system centered around the Cypher language. It is a production-ready research project centered around neuro-symbolic programming, program synthesis and symbolic AI.
 
 ### Differences with LangGraph/LangChain or Llama-Index
 
@@ -257,9 +270,13 @@ We're not based in Silicon Valley or part of a big company; we're a small, dedic
 
 Our mission extends beyond AI safety and performance; it's about shaping the world we want to live in. Even if programming becomes obsolete in 5 or 10 years, replaced by some magical prompt, we believe that traditional prompts are insufficient for preserving jobs. They're too simplistic and *fail to accurately convey intentions*.
 
-In contrast, programming each reasoning step demands expert knowledge in prompt engineering and programming. Surprisingly, it's enjoyable and not that difficult for programmers, you'll gain insight into how AI truly operates by controlling it, beeing able to enhance the sequence of action and decision. Natural language combined with algorithms opens up endless possibilities. We can't envision a world without it.
+In contrast, programming each reasoning step demands expert knowledge in prompt engineering and programming. Surprisingly, it's enjoyable and not that difficult for programmers, you'll gain insight into how AI truly operates by controlling it, being able to enhance the sequence of action and decision. Natural language combined with algorithms opens up endless possibilities. We can't envision a world without it.
 
 ## Commercial Usage
 
 Our software is released under GNU GPL license to protect ourselves and the contributions of the community.
 The logic of your application being separated (the graph programs) there is no IP problems for you to use HybridAGI. Moreover when used in production, you surely want to make a FastAPI server to request your agent and separate the backend and frontend of your app (like a website), so the GPL license doesn't contaminate the other pieces of your software.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=SynaLinks/HybridAGI&type=Date)](https://star-history.com/#SynaLinks/HybridAGI&Date)
