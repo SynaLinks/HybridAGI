@@ -30,6 +30,8 @@
 - [Extracting Knowledge Graphs](notebook/extracting_knowledge_graphs.ipynb)
 - [Dynamic Graph Program](notebook/dynamic_graph_program.ipynb)
 - [Using External Tools](notebook/using_external_tools.ipynb)
+- [Add Documents (on the fly)](notebook/updating_documents.ipynb)
+- [Add Facts (on the fly)](notebook/updating_facts.ipynb)
 
 ## What is HybridAGI?
 
