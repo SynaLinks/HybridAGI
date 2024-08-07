@@ -1,12 +1,12 @@
 from .document_extractor import DocumentExtractor
 from .fact_extractor import FactExtractor
 
-from .llm_claims_extractor import LLMClaimsExtractor
-from .llm_facts_extractor import LLMFactsExtractor
+from .llm_claim_extractor import LLMClaimExtractor
+from .llm_fact_extractor import LLMFactExtractor
 
 __all__ = [
     DocumentExtractor,
     FactExtractor,
-    LLMClaimsExtractor,
-    LLMFactsExtractor,
+    LLMClaimExtractor,
+    LLMFactExtractor,
 ]

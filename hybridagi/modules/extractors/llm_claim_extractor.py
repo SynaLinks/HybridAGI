@@ -4,18 +4,18 @@ from typing import Union, Optional
 from hybridagi.modules.extractors import DocumentExtractor
 from hybridagi.core.datatypes import Document, DocumentList
 
-class ClaimsExtractorSignature(dspy.Signature):
+class ClaimExtractorSignature(dspy.Signature):
     document: str = dspy.InputField(desc="The input document")
     claims: str = dspy.OutputField(desc="The comma separated claims (factual assertions) contained in the document")
 
-class LLMClaimsExtractor(DocumentExtractor):
+class LLMClaimExtractor(DocumentExtractor):
     
     def __init__(
             self,
             lm: Optional[dspy.LM] = None,
         ):
         self.lm = lm
-        self.extraction = dspy.Predict(ClaimsExtractorSignature)
+        self.extraction = dspy.Predict(ClaimExtractorSignature)
     
     def forward(self, doc_or_docs: Union[Document, DocumentList])-> DocumentList:
         if not isinstance(doc_or_docs, Document) and not isinstance(doc_or_docs, DocumentList):

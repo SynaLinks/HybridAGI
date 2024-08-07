@@ -13,6 +13,10 @@ from .graph_program_search import GraphProgramSearchTool
 from .entity_search import EntitySearchTool
 from .fact_search import FactSearchTool
 
+# Memorization related tools
+from .add_document import AddDocumentTool
+from .add_fact import AddFactTool
+
 # Agent state related tools
 from .update_objective import UpdateObjectiveTool
 from .call_graph_program import CallGraphProgramTool
@@ -32,6 +36,9 @@ __all__ = [
     GraphProgramSearchTool,
     EntitySearchTool,
     FactSearchTool,
+    
+    AddDocumentTool,
+    AddFactTool,
     
     UpdateObjectiveTool,
     CallGraphProgramTool,

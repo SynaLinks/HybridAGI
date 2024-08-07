@@ -190,6 +190,8 @@ We provide the following list of native tools to R/W into the memory system or m
 | `Speak` | Used to send message to the User and give the final answer |
 | `AskUser` | Used to ask question to the User (can simulate the user persona) |
 | `UpdateObjective` | Update the long-term Objective of the Agent |
+| `AddDocument` | Save into memory a new document |
+| `AddFacts` | Save into memory new facts |
 | `DocumentSearch` | Used to search for information into the document memory |
 | `PastActionSearch` | Used to search for past actions into the trace memory |
 | `EntitySearch` | Used to search for entities into the fact memory |
@@ -246,7 +248,7 @@ What makes our approach different from Agent as Graph is the fact that our Agent
 
 ### Differences with LangGraph/LangChain or Llama-Index
 
-We focus on **explainable and robust** systems, we don't support ReACT Agents that lack control and efficiency. The Agent system we provide, is custom made. We also provide everything to scale your application into production by offering optimizable pipelines, agents and graph databases integrations. Our system is a memory-centric agent with a special care to the long-term memory. Moreover our codebase is **readable, clean and elegant** we didn't over-engineer our system to obfuscate it or sell other services.
+We focus on **explainable and robust** systems, we don't support ReACT Agents that lack control and efficiency. The Agent system we provide, is custom made. We also provide everything to scale your application into production by offering optimizable pipelines, agents and graph databases integrations. Our system is a memory-centric agent with a special care to the long-term memory. Moreover our codebase is **readable, clean and elegant** we didn't over-engineer our system to obfuscate it to sell other services.
 
 ### Differences with DSPy
 

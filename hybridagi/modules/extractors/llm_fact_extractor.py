@@ -6,7 +6,7 @@ from typing import Union, Optional
 from hybridagi.modules.extractors import FactExtractor
 from hybridagi.core.datatypes import Document, DocumentList, Fact, Relationship, Entity, FactList, GraphSchema
 
-class FactsExtractorSignature(dspy.Signature):
+class FactExtractorSignature(dspy.Signature):
     """Given the fields `document`, produce the fields `triplets`.
     To infer the field `triplets`, please use the following syntax:
     
@@ -19,7 +19,7 @@ class FactsExtractorSignature(dspy.Signature):
     document: str = dspy.InputField(desc="The input document")
     triplets: str = dspy.OutputField(desc="The comma separated triplets extracted from the document")
     
-class LLMFactsExtractor(FactExtractor):
+class LLMFactExtractor(FactExtractor):
     
     def __init__(
             self,
@@ -27,7 +27,7 @@ class LLMFactsExtractor(FactExtractor):
             lm: Optional[dspy.LM] = None,
         ):
         self.lm = lm
-        self.extraction = dspy.Predict(FactsExtractorSignature)
+        self.extraction = dspy.Predict(FactExtractorSignature)
     
     def forward(self, doc_or_docs: Union[Document, DocumentList])-> FactList:
         if not isinstance(doc_or_docs, Document) and not isinstance(doc_or_docs, DocumentList):
