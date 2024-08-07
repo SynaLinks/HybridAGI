@@ -26,12 +26,12 @@
 - [Simulating User](notebooks/simulating_user.ipynb)
 - [Vector Only RAG](notebooks/vector_only_rag.ipynb)
 - [Knowledge Graph RAG](notebooks/knowledge_graph_rag.ipynb)
-- [Episodic RAG](notebook/episodic_memory_rag.ipynb)
-- [Extracting Knowledge Graphs](notebook/extracting_knowledge_graphs.ipynb)
-- [Dynamic Graph Program](notebook/dynamic_graph_program.ipynb)
-- [Using External Tools](notebook/using_external_tools.ipynb)
-- [Add Documents (on the fly)](notebook/updating_documents.ipynb)
-- [Add Facts (on the fly)](notebook/updating_facts.ipynb)
+- [Episodic RAG](notebooks/episodic_memory_rag.ipynb)
+- [Extracting Knowledge Graphs](notebooks/extracting_knowledge_graphs.ipynb)
+- [Dynamic Graph Program](notebooks/dynamic_graph_program.ipynb)
+- [Using External Tools](notebooks/using_external_tools.ipynb)
+- [Add Documents (on the fly)](notebooks/updating_documents.ipynb)
+- [Add Facts (on the fly)](notebooks/updating_facts.ipynb)
 
 ## What is HybridAGI?
 
