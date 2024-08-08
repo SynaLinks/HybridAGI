@@ -1,4 +1,4 @@
-import pymupdf
+from pypdf import PdfReader
 from hybridagi.core.datatypes import Document, DocumentList
 from .document_reader import DocumentReader
  
@@ -6,9 +6,9 @@ class PDFReader(DocumentReader):
     
     def read(self, filepath: str) -> DocumentList:
         result = DocumentList()
-        pdf_document = pymupdf.open(filepath)
-        for page_nb, page in enumerate(pdf_document): # iterate over the document pages
-            text = page.get_text()
+        reader = PdfReader(filepath)
+        for page_nb, page in enumerate(reader.pages): # iterate over the document pages
+            text = page.extract_text().replace("\n", " ")
             result.docs.append(
                 Document(
                     text=text,

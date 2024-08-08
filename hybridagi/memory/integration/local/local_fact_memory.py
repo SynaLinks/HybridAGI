@@ -89,10 +89,10 @@ class LocalFactMemory(FactMemory):
                         color = random_color()
                         self._labels_colors[ent.label] = color
                     self._entities[ent_id] = ent
-                    self._graph.add_node(ent_id, color=color, title=ent.description if ent.description else ent.name)
+                    self._graph.add_node(ent_id, color=color, title=ent.label+"("+ent.description+")" if ent.description else ent.label+"("+ent.name+")")
                 else:
                     self._entities[ent_id] = ent
-                    self._graph.node(ent_id)["title"] = ent.description if ent.description else ent.name
+                    self._graph.node(ent_id)["title"] = ent.label+"("+ent.description+")" if ent.description else ent.label+"("+ent.name+")"
                 if ent.vector is not None:
                     self._entities_embeddings[ent_id] = ent.vector
         else:
