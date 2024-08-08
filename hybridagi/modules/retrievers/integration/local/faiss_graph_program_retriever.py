@@ -14,6 +14,17 @@ class EmbeddingsDistance(str, Enum):
     Euclidean = "euclidean"
 
 class FAISSGraphProgramRetriever(GraphProgramRetriever):
+    """
+    A class for retrieving graph programs using FAISS (Facebook AI Similarity Search) and embeddings.
+
+    Parameters:
+        program_memory (ProgramMemory): An instance of ProgramMemory class which stores the graph programs.
+        embeddings (Embeddings): An instance of Embeddings class which is used to convert text into numerical vectors.
+        distance (str, optional): The distance metric to use for similarity search. Should be either "cosine" or "euclidean". Defaults to "cosine".
+        max_distance (float, optional): The maximum distance threshold for considering a graph program as a match. Defaults to 0.7.
+        k (int, optional): The number of nearest neighbors to retrieve. Defaults to 5.
+        reranker (Optional[GraphProgramReranker], optional): An instance of GraphProgramReranker class which is used to re-rank the retrieved graph programs. Defaults to None.
+    """
     
     def __init__(
             self,
@@ -42,6 +53,15 @@ class FAISSGraphProgramRetriever(GraphProgramRetriever):
             self.index = faiss.IndexFlatIP(vector_dim)
     
     def forward(self, query: Query) -> QueryWithGraphPrograms:
+        """
+        Retrieve graph programs based on the given query.
+
+        Parameters:
+            query (Query): An instance of Query class which contains the query text.
+
+        Returns:
+            QueryWithGraphPrograms: An instance of QueryWithGraphPrograms class which contains the query text and the retrieved graph programs.
+        """
         if not isinstance(query, Query):
             raise ValueError(f"{type(self).__name__} input must be a Query")
         result = QueryWithGraphPrograms()

@@ -14,6 +14,17 @@ class EmbeddingsDistance(str, Enum):
     Euclidean = "euclidean"
 
 class FAISSActionRetriever(ActionRetriever):
+    """
+    A class for retrieving actions using FAISS (Facebook AI Similarity Search) and embeddings.
+
+    Parameters:
+        trace_memory (TraceMemory): An instance of TraceMemory class which stores the memory of the agent.
+        embeddings (Embeddings): An instance of Embeddings class which is used to convert text into numerical vectors.
+        distance (str, optional): The distance metric to use for similarity search. Should be either "cosine" or "euclidean". Defaults to "cosine".
+        max_distance (float, optional): The maximum distance threshold for considering an action as a match. Defaults to 0.9.
+        k (int, optional): The number of nearest neighbors to retrieve. Defaults to 5.
+        reranker (Optional[ActionReranker], optional): An instance of ActionReranker class which is used to re-rank the retrieved actions. Defaults to None.
+    """
     
     def __init__(
             self,
@@ -42,6 +53,15 @@ class FAISSActionRetriever(ActionRetriever):
             self.index = faiss.IndexFlatIP(vector_dim)
     
     def forward(self, query: Query) -> QueryWithSteps:
+        """
+        Retrieve actions based on the given query.
+
+        Parameters:
+            query (Query): An instance of Query class which contains the query text.
+
+        Returns:
+            QueryWithSteps: An instance of QueryWithSteps class which contains the query text and the retrieved actions.
+        """
         if not isinstance(query, Query):
             raise ValueError(f"{type(self).__name__} input must be a Query")
         result = QueryWithSteps()

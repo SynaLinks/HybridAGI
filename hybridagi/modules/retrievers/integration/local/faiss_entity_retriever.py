@@ -14,6 +14,17 @@ class EmbeddingsDistance(str, Enum):
     Euclidean = "euclidean"
 
 class FAISSEntityRetriever(EntityRetriever):
+    """
+    A class for retrieving entities using FAISS (Facebook AI Similarity Search) and embeddings.
+
+    Parameters:
+        fact_memory (FactMemory): An instance of FactMemory class which stores the entities.
+        embeddings (Embeddings): An instance of Embeddings class which is used to convert text into numerical vectors.
+        distance (str, optional): The distance metric to use for similarity search. Should be either "cosine" or "euclidean". Defaults to "cosine".
+        max_distance (float, optional): The maximum distance threshold for considering an entity as a match. Defaults to 0.7.
+        k (int, optional): The number of nearest neighbors to retrieve. Defaults to 5.
+        reranker (Optional[EntityReranker], optional): An instance of EntityReranker class which is used to re-rank the retrieved entities. Defaults to None.
+    """
     
     def __init__(
             self,
@@ -42,6 +53,15 @@ class FAISSEntityRetriever(EntityRetriever):
             self.index = faiss.IndexFlatIP(vector_dim)
     
     def forward(self, query: Query) -> QueryWithEntities:
+        """
+        Retrieve entities based on the given query.
+
+        Parameters:
+            query (Query): An instance of Query class which contains the query text.
+
+        Returns:
+            QueryWithEntities: An instance of QueryWithEntities class which contains the query text and the retrieved entities.
+        """
         if not isinstance(query, Query):
             raise ValueError(f"{type(self).__name__} input must be a Query")
         result = QueryWithEntities()

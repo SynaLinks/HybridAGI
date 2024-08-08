@@ -9,7 +9,7 @@ class QueryToPartiallyParametrableQuery(dspy.Signature):
     query: str = dspy.Input(desc="The natural language query to translate into a partially parametrable query")
     fact: PartiallyParametrableQuery = dspy.Output(desc="The partially parametrable query")
 
-class QueryFactRetriever(dspy.Module):
+class FAISSQueryFact(dspy.Module):
     
     def __init__(self):
         pass#TODO

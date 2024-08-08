@@ -14,6 +14,17 @@ class EmbeddingsDistance(str, Enum):
     Euclidean = "euclidean"
 
 class FAISSDocumentRetriever(DocumentRetriever):
+    """
+    A class for retrieving documents using FAISS (Facebook AI Similarity Search) and embeddings.
+
+    Parameters:
+        document_memory (DocumentMemory): An instance of DocumentMemory class which stores the documents.
+        embeddings (Embeddings): An instance of Embeddings class which is used to convert text into numerical vectors.
+        distance (str, optional): The distance metric to use for similarity search. Should be either "cosine" or "euclidean". Defaults to "cosine".
+        max_distance (float, optional): The maximum distance threshold for considering a document as a match. Defaults to 0.7.
+        k (int, optional): The number of nearest neighbors to retrieve. Defaults to 5.
+        reranker (Optional[DocumentReranker], optional): An instance of DocumentReranker class which is used to re-rank the retrieved documents. Defaults to None.
+    """
     
     def __init__(
             self,
@@ -42,6 +53,15 @@ class FAISSDocumentRetriever(DocumentRetriever):
             self.index = faiss.IndexFlatIP(vector_dim)
     
     def forward(self, query: Query) -> QueryWithDocuments:
+        """
+        Retrieve documents based on the given query.
+
+        Parameters:
+            query (Query): An instance of Query class which contains the query text.
+
+        Returns:
+            QueryWithDocuments: An instance of QueryWithDocuments class which contains the query text and the retrieved documents.
+        """
         if not isinstance(query, Query):
             raise ValueError(f"{type(self).__name__} input must be a Query")
         result = QueryWithDocuments()

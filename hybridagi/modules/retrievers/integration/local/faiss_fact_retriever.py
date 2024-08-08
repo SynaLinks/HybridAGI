@@ -14,6 +14,17 @@ class EmbeddingsDistance(str, Enum):
     Euclidean = "euclidean"
 
 class FAISSFactRetriever(FactRetriever):
+    """
+    A class for retrieving facts using FAISS (Facebook AI Similarity Search) and embeddings.
+
+    Parameters:
+        fact_memory (FactMemory): An instance of FactMemory class which stores the facts.
+        embeddings (Embeddings): An instance of Embeddings class which is used to convert text into numerical vectors.
+        distance (str, optional): The distance metric to use for similarity search. Should be either "cosine" or "euclidean". Defaults to "cosine".
+        max_distance (float, optional): The maximum distance threshold for considering a fact as a match. Defaults to 0.7.
+        k (int, optional): The number of nearest neighbors to retrieve. Defaults to 5.
+        reranker (Optional[FactReranker], optional): An instance of FactReranker class which is used to re-rank the retrieved facts. Defaults to None.
+    """
     
     def __init__(
             self,

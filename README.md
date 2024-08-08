@@ -32,6 +32,7 @@
 - [Using External Tools](notebooks/using_external_tools.ipynb)
 - [Add Documents (on the fly)](notebooks/updating_documents.ipynb)
 - [Add Facts (on the fly)](notebooks/updating_facts.ipynb)
+- [ReACT agent](notebooks/react_agent.ipynb)
 
 ## What is HybridAGI?
 

@@ -32,16 +32,30 @@ class FactMemory(ABC):
     
     #TODO
     # @abstractmethod
-    # def get_successors(self, entity_id: Union[UUID, str]) -> EntityList:
+    # def get_entity_successors(self, entity_id: Union[UUID, str]) -> EntityList:
     #     raise NotImplementedError(
-    #         f"FactMemory {type(self).__name__} is missing the required 'get_successors' method."
+    #         f"FactMemory {type(self).__name__} is missing the required 'get_entity_successors' method."
     #     )
     
     #TODO
     # @abstractmethod
-    # def get_predeccessors(self, entity_id: Union[UUID, str]) -> EntityList:
+    # def get_entity_predeccessors(self, entity_id: Union[UUID, str]) -> EntityList:
     #     raise NotImplementedError(
-    #         f"FactMemory {type(self).__name__} is missing the required 'get_predeccessors' method."
+    #         f"FactMemory {type(self).__name__} is missing the required 'get_entity_predeccessors' method."
+    #     )
+    
+    #TODO
+    # @abstractmethod
+    # def get_fact_successors(self, fact_id: Union[UUID, str]) -> EntityList:
+    #     raise NotImplementedError(
+    #         f"FactMemory {type(self).__name__} is missing the required 'get_fact_successors' method."
+    #     )
+    
+    #TODO
+    # @abstractmethod
+    # def get_fact_predeccessors(self, fact_id: Union[UUID, str]) -> EntityList:
+    #     raise NotImplementedError(
+    #         f"FactMemory {type(self).__name__} is missing the required 'get_fact_predeccessors' method."
     #     )
     
     @abstractmethod
