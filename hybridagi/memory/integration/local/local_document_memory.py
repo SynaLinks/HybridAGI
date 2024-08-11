@@ -5,7 +5,10 @@ from hybridagi.memory.document_memory import DocumentMemory
 from hybridagi.core.datatypes import Document, DocumentList
 import networkx as nx
 
-class LocalDocumentMemory(DocumentMemory):
+from .local_memory import LocalMemory
+
+
+class LocalDocumentMemory(LocalMemory, DocumentMemory):
     """
     A class used to manage and store documents locally.
 
@@ -145,18 +148,3 @@ class LocalDocumentMemory(DocumentMemory):
         self._documents = {}
         self._embeddings = {}
         self._graph = nx.DiGraph()
-    
-    def show(self, notebook=False):
-        """
-        Visualize the local document memory as a network graph.
-
-        Parameters:
-            notebook (bool): Whether to display the graph in a Jupyter notebook or not.
-        """
-        from pyvis.network import Network
-        net = Network(notebook=notebook, directed=True)
-        net.from_nx(self._graph)
-        net.toggle_physics(True)
-        net.show(f'{self.index_name}_document_memory.html', notebook=notebook)
-    
-        

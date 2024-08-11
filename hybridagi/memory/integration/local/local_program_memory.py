@@ -6,7 +6,10 @@ from hybridagi.core.graph_program import GraphProgram
 from hybridagi.core.datatypes import GraphProgramList
 import networkx as nx
 
-class LocalProgramMemory(ProgramMemory):
+from .local_memory import LocalMemory
+
+
+class LocalProgramMemory(LocalMemory, ProgramMemory):
     """
     A class used to manage and store programs locally.
 
@@ -161,16 +164,3 @@ class LocalProgramMemory(ProgramMemory):
         self._programs = {}
         self._embeddings = {}
         self._graph = nx.DiGraph()
-        
-    def show(self, notebook: bool=False):
-        """
-        Visualize the program memory as a network graph.
-
-        Parameters:
-            notebook (bool): Whether to display the graph in a Jupyter notebook or not.
-        """
-        from pyvis.network import Network
-        net = Network(notebook=notebook, directed=True)
-        net.from_nx(self._graph)
-        net.toggle_physics(True)
-        net.show(f'{self.index_name}_program_memory.html', notebook=notebook)

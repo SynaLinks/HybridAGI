@@ -5,7 +5,10 @@ from hybridagi.memory.trace_memory import TraceMemory
 from hybridagi.core.datatypes import AgentStep, AgentStepList, AgentStepType
 import networkx as nx
 
-class LocalTraceMemory(TraceMemory):
+from .local_memory import LocalMemory
+
+
+class LocalTraceMemory(LocalMemory, TraceMemory):
     """
     A class used to manage and store agent steps locally.
 
@@ -136,16 +139,3 @@ class LocalTraceMemory(TraceMemory):
         self._steps = {}
         self._embeddings = OrderedDict()
         self._graph = nx.DiGraph()
-        
-    def show(self, notebook: bool=False):
-        """
-        Visualize the trace memory as a network graph.
-
-        Parameters:
-            notebook (bool): Whether to display the graph in a Jupyter notebook or not.
-        """
-        from pyvis.network import Network
-        net = Network(notebook=notebook, directed=True)
-        net.from_nx(self._graph)
-        net.toggle_physics(True)
-        net.show(f'{self.index_name}_trace_memory.html', notebook=notebook)

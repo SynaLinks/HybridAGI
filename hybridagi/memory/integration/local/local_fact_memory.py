@@ -1,39 +1,21 @@
 from collections import OrderedDict
 from typing import Union, List, Dict, Optional
-from uuid import UUID, uuid4
-from urllib.parse import quote
+from uuid import UUID
 from hybridagi.memory.fact_memory import FactMemory
 from hybridagi.core.datatypes import Entity, EntityList
 from hybridagi.core.datatypes import Fact, FactList
 import networkx as nx
 import random
 
+from .local_memory import LocalMemory
+
+
 def random_color():
     """Utilitary function to generate a random color"""
     return "#%06x" % random.randint(0, 0xFFFFFF)
 
 
-def isolate(html_code):
-    """
-    When drawing the same pyvis graph from multiple cells in a jupyter notebook
-    They end up sharing the same id for the javascript <script> and thus messing each other
-    display(display_id=...) or making unique IDs in HTML() doesn't work unfortunately
-    Here's the issue that proposes this workaround https://github.com/jupyter/notebook/issues/6598
-    """
-    content = quote(html_code, safe='')
-    return """
-    <iframe
-        width="100%"
-        height="610px"
-        style="border: none"
-        sandbox="allow-scripts allow-modals"
-        referrerpolicy="no-referrer"
-        src="data:text/html;charset=UTF-8,{content}"
-    ></iframe>
-    """.format(content=content)
-
-
-class LocalFactMemory(FactMemory):
+class LocalFactMemory(LocalMemory, FactMemory):
     """
     A class used to manage and store facts locally.
 
@@ -230,23 +212,3 @@ class LocalFactMemory(FactMemory):
         self._entities_embeddings = OrderedDict()
         self._facts_embeddings = OrderedDict()
         self._labels_colors = {}
-                    
-    def show(self, notebook=False):
-        """
-        Visualize the local fact memory as a network graph.
-
-        Parameters:
-            notebook (bool): Whether to display the graph in a Jupyter notebook or not.
-        """
-        from pyvis.network import Network
-        net = Network(notebook=notebook, directed=True, cdn_resources='in_line')
-        net.from_nx(self._graph)
-        net.toggle_physics(True)
-
-        if notebook:
-            from IPython.display import display, HTML
-            unique_id = f'{uuid4().hex}.html'
-            html = net.generate_html(unique_id, notebook=True)
-            display(HTML(isolate(html)), display_id=unique_id)
-        else:
-            net.show(f'{self.index_name}_fact_memory.html', notebook=notebook)
