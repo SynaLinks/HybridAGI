@@ -25,10 +25,15 @@ def isolate(html_code: str) -> str:
 class LocalMemory:       
     def show(self, notebook: bool = False, cdn_resources: str = 'in_line') -> None:
         """
-        Visualize the local fact memory as a network graph.
+        Visualize the local memory as a network graph.
 
         Parameters:
             notebook (bool): Whether to display the graph in a Jupyter notebook or not.
+            cdn_resources (str): Where to pull resources for css and js files. Defaults to local.
+                Options ['local','in_line','remote'].
+                local: pull resources from local lib folder.
+                in_line: insert lib resources as inline script tags.
+                remote: pull resources from hash checked cdns.
         """
         from pyvis.network import Network
         net = Network(notebook=notebook, directed=True, cdn_resources=cdn_resources)
