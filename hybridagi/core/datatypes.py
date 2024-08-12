@@ -151,7 +151,6 @@ class FactList(BaseModel, dspy.Prediction):
     
     def from_cypher(self, cypher_facts: str, metadata: Dict[str, Any] = {}):
         triplets = re.findall(CYPHER_FACT_REGEX, cypher_facts)
-        self.facts = []
         for triplet in triplets:
             subject_label, subject_name, predicate, object_label, object_name = triplet
             self.facts.append(Fact(
