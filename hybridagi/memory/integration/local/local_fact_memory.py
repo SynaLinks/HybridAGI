@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
-from typing import Union, List, Dict, Optional
 from collections import OrderedDict
+from typing import Union, List, Dict, Optional
 from uuid import UUID
 from hybridagi.memory.fact_memory import FactMemory
 from hybridagi.core.datatypes import Entity, EntityList
@@ -8,11 +7,15 @@ from hybridagi.core.datatypes import Fact, FactList
 import networkx as nx
 import random
 
-# Utilitary function to generate a random color
+from .local_memory import LocalMemory
+
+
 def random_color():
+    """Utilitary function to generate a random color"""
     return "#%06x" % random.randint(0, 0xFFFFFF)
 
-class LocalFactMemory(FactMemory):
+
+class LocalFactMemory(LocalMemory, FactMemory):
     """
     A class used to manage and store facts locally.
 
@@ -209,16 +212,3 @@ class LocalFactMemory(FactMemory):
         self._entities_embeddings = OrderedDict()
         self._facts_embeddings = OrderedDict()
         self._labels_colors = {}
-                    
-    def show(self, notebook=False):
-        """
-        Visualize the local fact memory as a network graph.
-
-        Parameters:
-            notebook (bool): Whether to display the graph in a Jupyter notebook or not.
-        """
-        from pyvis.network import Network
-        net = Network(notebook=notebook, directed=True)
-        net.from_nx(self._graph)
-        net.toggle_physics(True)
-        net.show(f'{self.index_name}_fact_memory.html', notebook=notebook)
