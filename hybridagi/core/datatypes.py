@@ -123,8 +123,16 @@ class Fact(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the fact", default={})
     created_at: datetime = Field(description="Time when the fact was created", default_factory=datetime.now)
     
-    def to_cypher(self):
-        return "(:"+self.subj.label+" {name:\""+self.subj.name+"\"})-[:"+self.rel.name+"]->(:"+self.obj.label+" {name:\""+self.obj.name+"\"})"
+    def to_cypher(self) -> str:
+        if self.subj.description is not None:
+            subj = "(:"+self.subj.label+" {name:\""+self.subj.name+"\", description:\""+self.subj.description+"\"})"
+        else:
+            subj = "(:"+self.subj.label+" {name:\""+self.subj.name+"\"})"
+        if self.obj.description is not None:
+            obj = "(:"+self.obj.label+" {name:\""+self.obj.name+"\", description:\""+self.obj.description+"\"})"
+        else:
+            obj = "(:"+self.obj.label+" {name:\""+self.obj.name+"\"})"
+        return subj+"-[:"+self.rel.name+"]->"+obj
     
     def from_cypher(self, cypher_fact:str, metadata: Dict[str, Any] = {}) -> "Fact":
         match = re.match(CYPHER_FACT_REGEX, cypher_fact)
@@ -133,11 +141,12 @@ class Fact(BaseModel):
             self.rel = Relationship(name=match.group(3))
             self.obj = Entity(label=match.group(4), name=match.group(5))
             self.metadata = metadata
+            return self
         else:
             raise ValueError("Invalid Cypher fact provided")
     
     def to_dict(self):
-        return {"fact": self.to_cypher()}
+        return {"fact": self.to_cypher(), "metadata": self.metadata}
 
 class FactList(BaseModel, dspy.Prediction):
     facts: List[Fact] = Field(description="List of facts", default=[])
@@ -146,7 +155,7 @@ class FactList(BaseModel, dspy.Prediction):
         BaseModel.__init__(self, **kwargs)
         dspy.Prediction.__init__(self, **kwargs)
         
-    def to_cypher(self):
+    def to_cypher(self) -> str:
         return ",\n".join([f.to_cypher() for f in self.facts])
     
     def from_cypher(self, cypher_facts: str, metadata: Dict[str, Any] = {}):
@@ -170,7 +179,7 @@ class FactSchema(BaseModel):
     predicate: str
     target: str
     
-    def to_cypher(self):
+    def to_cypher(self) -> str:
         return "(:"+self.source+")-[:"+self.predicate+"]->(:"+self.target+")"
     
     def from_cypher(self, cypher_schema: str) -> "FactSchema":
@@ -179,6 +188,7 @@ class FactSchema(BaseModel):
             self.source = match.group(1)
             self.predicate = match.group(2)
             self.target = match.group(3)
+            return self
         else:
             ValueError("Invalid Cypher schema provided")
         
