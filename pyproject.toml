@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hybridagi"
-version = "0.2.4353"
+version = "0.2.4354"
 description = "The Programmable Neuro-Symbolic Cypher-based AGI"
 readme = "README.md"
 authors = ["Yoan Sallami"]
