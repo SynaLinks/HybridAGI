@@ -124,3 +124,26 @@ def test_interaction_session_with_chat():
     session.chat.msgs.append(dt.Message(role=dt.Role.User, content="Can you tell me what is the capital of France?"))
     assert session.chat.msgs[0].content == "Hello, I'm an AI assistant what can I do to help you?"
     assert session.chat.msgs[1].content == "Can you tell me what is the capital of France?"
+
+def test_fact_list_from_cypher():
+    cypher_facts = """
+    (:Person {name:"John"})-[:KNOWS]->(:Person {name:"Jane"}),
+    (:City {name:"New York"})-[:LOCATED_IN]->(:Country {name:"USA"})
+    """
+    fact_list = dt.FactList().from_cypher(cypher_facts)
+    
+    assert len(fact_list.facts) == 2
+    
+    # Test first fact
+    assert fact_list.facts[0].subj.label == "Person"
+    assert fact_list.facts[0].subj.name == "John"
+    assert fact_list.facts[0].rel.name == "KNOWS"
+    assert fact_list.facts[0].obj.label == "Person"
+    assert fact_list.facts[0].obj.name == "Jane"
+    
+    # Test second fact
+    assert fact_list.facts[1].subj.label == "City"
+    assert fact_list.facts[1].subj.name == "New York"
+    assert fact_list.facts[1].rel.name == "LOCATED_IN"
+    assert fact_list.facts[1].obj.label == "Country"
+    assert fact_list.facts[1].obj.name == "USA"
