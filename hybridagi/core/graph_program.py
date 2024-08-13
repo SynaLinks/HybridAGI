@@ -420,4 +420,4 @@ class GraphProgram(BaseModel, dspy.Prediction):
             html = net.generate_html(unique_id, notebook=True)
             display(HTML(isolate(html)), display_id=unique_id)
         else:
-            net.show(f'{self.index_name}.html', notebook=notebook)
+            net.show(f'{self.name}.html', notebook=notebook)
