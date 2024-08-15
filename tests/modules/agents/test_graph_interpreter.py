@@ -4,7 +4,6 @@ from hybridagi.core.datatypes import AgentState, Query
 from hybridagi.memory.integration.local import LocalProgramMemory
 from hybridagi.modules.agents.graph_interpreter import GraphInterpreterAgent
 from hybridagi.modules.agents.tools import SpeakTool
-
 from dspy.utils.dummies import DummyLM
 
 def test_graph_interpreter_one_action():
@@ -32,6 +31,8 @@ def test_graph_interpreter_one_action():
     
     program_memory.update(main)
     
+    # main.show()
+    
     agent_state = AgentState()
     
     tools = [
@@ -50,7 +51,7 @@ def test_graph_interpreter_one_action():
     agent_output = agent(input_query)
     assert agent_output.final_answer == "Paris"
     assert agent_output.finish_reason == "finished"
-    
+
 def test_graph_interpreter_two_actions():
     answers = ["The objective question is what is the capital of France, which is Paris","Paris"]
     dspy.settings.configure(lm=DummyLM(answers=answers))
@@ -102,7 +103,7 @@ def test_graph_interpreter_two_actions():
     agent_output = agent(input_query)
     assert agent_output.final_answer == "Paris"
     assert agent_output.finish_reason == "finished"
-    
+
 def test_graph_interpreter_one_decision():
     answers = [" blabla \nChoice: Answer", "Paris"]
     dspy.settings.configure(lm=DummyLM(answers=answers))
@@ -170,7 +171,7 @@ def test_graph_interpreter_one_decision():
     agent_output = agent(input_query)
     assert agent_output.final_answer == "Paris"
     assert agent_output.finish_reason == "finished"
-    
+
 def test_graph_interpreter_one_program():
     answers = [" blabla \nChoice: Answer", "Paris"]
     dspy.settings.configure(lm=DummyLM(answers=answers))

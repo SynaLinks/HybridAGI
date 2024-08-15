@@ -1,7 +1,8 @@
-from typing import Union, List
+from typing import Union, List, Optional, Dict
 from uuid import UUID
+from collections import OrderedDict
 from hybridagi.memory.fact_memory import FactMemory
-from hybridagi.core.datatypes import Entity, EntityList, Fact, FactList, Relationship
+from hybridagi.core.datatypes import Entity, EntityList, Fact, FactList, Relationship, GraphProgram
 from hybridagi.embeddings.embeddings import Embeddings
 from .falkordb_memory import FalkorDBMemory
 
@@ -23,7 +24,22 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
 
     This implementation provides a scalable and flexible solution for fact-based
     knowledge representation in AI and machine learning applications.
+
+    Attributes:
+        _entities (Optional[Dict[str, Entity]]): A dictionary to store entities.
+        _relationships (Optional[Dict[str, Fact]]): A dictionary to store relationships.
+        _facts (Optional[Dict[str, Fact]]): A dictionary to store facts.
+        _entities_embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store entity embeddings.
+        _relationships_embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store relationship embeddings.
+        _facts_embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store fact embeddings.
     """
+    _entities: Optional[Dict[str, Entity]] = {}
+    _relationships: Optional[Dict[str, Fact]] = {}
+    _facts: Optional[Dict[str, Fact]] = {}
+    
+    _entities_embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
+    _relationships_embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
+    _facts_embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
     def __init__(
         self,
         index_name: str,
@@ -48,6 +64,12 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             wipe_on_start = wipe_on_start,
         )
         self.schema = ""
+        self._entities = {}
+        self._relationships = {}
+        self._facts = {}
+        self._entities_embeddings = OrderedDict()
+        self._relationships_embeddings = OrderedDict()
+        self._facts_embeddings = OrderedDict()
 
     def exist(self, fact_or_entity_id) -> bool:
         """
@@ -68,30 +90,12 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         result = self.hybridstore.query(query, params=params)
         return sum(int(count[0]) for count in result.result_set) > 0
 
-    def update(self, entities_or_facts: Union[Entity, EntityList, Fact, FactList]) -> None:
-        """
-        Update entities or facts in the database.
-
-        Args:
-            entities_or_facts: The entities or facts to update. Can be a single Entity or Fact,
-                               or a list of entities (EntityList) or facts (FactList).
-
-        Raises:
-            ValueError: If an invalid datatype is provided.
-        """
-        if isinstance(entities_or_facts, (Entity, EntityList)):
-            self._update_entities(entities_or_facts)
-        elif isinstance(entities_or_facts, (Fact, FactList)):
-            self._update_facts(entities_or_facts)
-        else:
-            raise ValueError("Invalid datatype provided must be Entity or EntityList or Fact or FactList")
-
     def _update_entities(self, entities: Union[Entity, EntityList]) -> None:
         """
-        Update or create entities in the FalkorDB graph.
+        Update or create entities in the FalkorDB graph and local cache.
 
         This method takes either a single Entity or an EntityList and updates or creates
-        the corresponding nodes in the graph. If an entity with the given ID already exists,
+        the corresponding nodes in the graph and local cache. If an entity with the given ID already exists,
         its properties are updated. If it doesn't exist, a new entity node is created.
 
         Args:
@@ -99,8 +103,10 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
 
         Note:
             - The method uses a MERGE operation, which either matches existing nodes or creates new ones.
-            - Entity properties (name, label, description, and vector) are updated or set.
+            - Entity properties (name, description, and vector) are updated or set.
             - The vector is converted to a list if present, or set to None if not available.
+            - The label is included in the properties instead of being part of the node label.
+            - The entity is also stored in the local cache (_entities) and its embedding in _entities_embeddings.
         """
         entities = [entities] if isinstance(entities, Entity) else entities.entities
         for entity in entities:
@@ -113,10 +119,13 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                     "vector": list(entity.vector) if entity.vector is not None else None
                 }
             }
-            self.hybridstore.query(
-                "MERGE (e:Entity {id: $id}) SET e += $properties",
-                params=params
-            )
+            query = "MERGE (e:Entity {id: $id}) SET e += $properties"
+            self.hybridstore.query(query, params=params)
+
+            # Update local cache
+            self._entities[str(entity.id)] = entity
+            if entity.vector is not None:
+                self._entities_embeddings[str(entity.id)] = list(entity.vector)
 
     def _update_facts(self, facts: Union[Fact, FactList]) -> None:
         """
@@ -155,23 +164,6 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                 params=params
             )
 
-    def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
-        """
-        Remove entities or facts from the database.
-
-        Args:
-            id_or_ids: The ID(s) of the entities or facts to remove. Can be a single UUID or string,
-                       or a list of UUIDs or strings.
-        """
-        ids = [str(id_or_ids)] if isinstance(id_or_ids, (UUID, str)) else [str(id) for id in id_or_ids]
-        for id in ids:
-            self.hybridstore.query(
-                "MATCH (e:Entity {id: $id}) DETACH DELETE e "
-                "UNION "
-                "MATCH ()-[r:RELATION {id: $id}]->() DELETE r",
-                params={"id": id}
-            )
-
     def get_entities(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> EntityList:
         """
         Retrieve entities from the database.
@@ -193,11 +185,11 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         for row in result.result_set:
             entity_data = row[0]
             entity = Entity(
-                id=entity_data['id'],
-                name=entity_data['name'],
-                label=entity_data['label'],
-                description=entity_data['description'],
-                vector=entity_data['vector']
+                id=entity_data.properties.get('id'),
+                name=entity_data.properties.get('name'),
+                label=entity_data.properties.get('label'),
+                description=entity_data.properties.get('description'),
+                vector=entity_data.properties.get('vector')
             )
             entities.entities.append(entity)
         return entities
@@ -222,28 +214,113 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         facts = FactList()
         for row in result.result_set:
             fact_data, subject_data, object_data = row
-            subject = Entity(id=subject_data['id'], name=subject_data['name'], 
-                             label=subject_data['label'], description=subject_data['description'], 
-                             vector=subject_data['vector'])
-            relation = Relationship(name=fact_data['name'])
-            object = Entity(id=object_data['id'], name=object_data['name'], 
-                            label=object_data['label'], description=object_data['description'], 
-                            vector=object_data['vector'])
-            fact = Fact(id=fact_data['id'], subj=subject, rel=relation, obj=object, vector=fact_data['vector'])
+            subject = Entity(id=subject_data.properties.get('id'), name=subject_data.properties.get('name'), 
+                             label=subject_data.properties.get('label'), description=subject_data.properties.get('description'), 
+                             vector=subject_data.properties.get('vector'))
+            relation = Relationship(name=fact_data.properties.get('name'))
+            object = Entity(id=object_data.properties.get('id'), name=object_data.properties.get('name'), 
+                            label=object_data.properties.get('label'), description=object_data.properties.get('description'), 
+                            vector=object_data.properties.get('vector'))
+            fact = Fact(id=fact_data.properties.get('id'), subj=subject, rel=relation, obj=object)
             facts.facts.append(fact)
         return facts
 
-    def clear(self):
+    def get_related_facts(self, entity_id: Union[UUID, str], relation: Optional[str] = None) -> FactList:
         """
-        Clear all data from the database.
+        Retrieve facts related to a specific entity.
 
-        This method removes all nodes and relationships from the graph,
-        effectively resetting the fact memory to an empty state. It uses
-        a Cypher query to match and delete all nodes and their relationships.
+        Args:
+            entity_id: The ID of the entity to find related facts for.
+            relation: Optional relation type to filter the facts.
 
-        Note: This operation is irreversible and should be used with caution.
+        Returns:
+            FactList: A list of facts related to the given entity.
         """
-        self.hybridstore.query("MATCH (n) DETACH DELETE n", params={})
+        query = (
+            "MATCH (e:Entity {id: $entity_id})-[r:RELATION]->(o:Entity) "
+            "WHERE $relation IS NULL OR r.name = $relation "
+            "RETURN r AS fact, e AS subject, o AS object "
+            "UNION "
+            "MATCH (s:Entity)-[r:RELATION]->(e:Entity {id: $entity_id}) "
+            "WHERE $relation IS NULL OR r.name = $relation "
+            "RETURN r AS fact, s AS subject, e AS object"
+        )
+        params = {"entity_id": str(entity_id), "relation": relation}
+        result = self.hybridstore.query(query, params=params)
+        
+        facts = FactList()
+        for row in result.result_set:
+            fact_data, subject_data, object_data = row
+            subject = Entity(id=subject_data.properties.get('id'), name=subject_data.properties.get('name'), 
+                             label=subject_data.properties.get('label'), description=subject_data.properties.get('description'), 
+                             vector=subject_data.properties.get('vector'))
+            relation = Relationship(name=fact_data.properties.get('name'))
+            object = Entity(id=object_data.properties.get('id'), name=object_data.properties.get('name'), 
+                            label=object_data.properties.get('label'), description=object_data.properties.get('description'), 
+                            vector=object_data.properties.get('vector'))
+            fact = Fact(id=fact_data.properties.get('id'), subj=subject, rel=relation, obj=object)
+            facts.facts.append(fact)
+        return facts
+
+    def get_entities_by_type(self, entity_type: str) -> EntityList:
+        """
+        Retrieve entities of a specific type.
+
+        Args:
+            entity_type: The type (label) of entities to retrieve.
+
+        Returns:
+            EntityList: A list of entities of the specified type.
+        """
+        query = "MATCH (e:Entity {label: $entity_type}) RETURN e"
+        params = {"entity_type": entity_type}
+        result = self.hybridstore.query(query, params=params)
+        
+        entities = EntityList()
+        for row in result.result_set:
+            entity_data = row[0]
+            entity = Entity(
+                id=entity_data.properties.get('id'),
+                name=entity_data.properties.get('name'),
+                label=entity_data.properties.get('label'),
+                description=entity_data.properties.get('description'),
+                vector=entity_data.properties.get('vector')
+            )
+            entities.entities.append(entity)
+        return entities
+
+    def search_entities(self, query: str, limit: int = 10) -> EntityList:
+        """
+        Search for entities based on a query string.
+
+        Args:
+            query: The search query string.
+            limit: The maximum number of results to return.
+
+        Returns:
+            EntityList: A list of entities matching the search query.
+        """
+        cypher_query = (
+            "MATCH (e:Entity) "
+            "WHERE e.name CONTAINS $query OR e.description CONTAINS $query "
+            "RETURN e "
+            "LIMIT $limit"
+        )
+        params = {"query": query, "limit": limit}
+        result = self.hybridstore.query(cypher_query, params=params)
+        
+        entities = EntityList()
+        for row in result.result_set:
+            entity_data = row[0]
+            entity = Entity(
+                id=entity_data.properties.get('id'),
+                name=entity_data.properties.get('name'),
+                label=entity_data.properties.get('label'),
+                description=entity_data.properties.get('description'),
+                vector=entity_data.properties.get('vector')
+            )
+            entities.entities.append(entity)
+        return entities
 
     def update(self, entities_or_facts: Union[Entity, EntityList, Fact, FactList]) -> None:
         """
@@ -275,6 +352,21 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         else:
             raise ValueError("Invalid datatype provided must be Entity or EntityList or Fact or FactList")
 
+    def clear(self) -> None:
+        """
+        Clear all entities and facts from the FalkorDB graph.
+
+        This method removes all entities and their relationships (facts) from the graph.
+        It ensures that the entire graph is cleared of all data.
+        """
+        self.hybridstore.query("MATCH (n:Entity) DETACH DELETE n")
+        self.hybridstore.query("MATCH (n:Fact) DETACH DELETE n")
+        self.hybridstore.query("MATCH (n:Relationship) DETACH DELETE n")
+        self.hybridstore.query("MATCH (n:GraphProgram) DETACH DELETE n")
+        self.hybridstore.query("MATCH (n:UserProfile) DETACH DELETE n")
+        self.hybridstore.query("MATCH (n:Message) DETACH DELETE n")
+        self.hybridstore.query("MATCH ()-[r:RELATION]->() DELETE r")
+    
     def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
         """
         Remove entities or facts from the FalkorDB graph.
@@ -290,14 +382,18 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         Note:
             - For entities, it uses DETACH DELETE to remove the node and all its relationships.
             - For facts (relationships), it removes only the relationship, leaving the connected nodes intact.
-            - The method uses a UNION operation to handle both entity and fact removals in a single query.
+            - The method uses separate queries for entity and fact removals to ensure correct execution.
             - If a list of IDs is provided, the removal operation is performed for each ID in the list.
         """
         ids = [str(id_or_ids)] if isinstance(id_or_ids, (UUID, str)) else [str(id) for id in id_or_ids]
         for id in ids:
+            # Remove entity (if it exists)
             self.hybridstore.query(
-                "MATCH (e:Entity {id: $id}) DETACH DELETE e "
-                "UNION "
+                "MATCH (e:Entity {id: $id}) DETACH DELETE e",
+                params={"id": id}
+            )
+            # Remove fact/relationship (if it exists)
+            self.hybridstore.query(
                 "MATCH ()-[r:RELATION {id: $id}]->() DELETE r",
                 params={"id": id}
             )

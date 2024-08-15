@@ -43,6 +43,9 @@ class SentenceTransformerEmbeddings(Embeddings):
         self.model.max_seq_length = self.max_seq_length
 
     def embed_text(self, query_or_queries: Union[str, List[str]]) -> np._typing.NDArray:
+        if isinstance(query_or_queries, str) and query_or_queries == "":
+            raise ValueError("Input cannot be an empty string.")
+        
         text_to_vectorize = [query_or_queries] if not isinstance(query_or_queries, list) else query_or_queries
 
         if self.is_gpu and self.num_devices > 1:

@@ -1,5 +1,8 @@
-from typing import Union, List
+import uuid
+import json
+from typing import Union, List, Optional, Dict
 from uuid import UUID
+from collections import OrderedDict
 from hybridagi.embeddings.embeddings import Embeddings
 from hybridagi.memory.trace_memory import TraceMemory
 from hybridagi.core.datatypes import AgentStep, AgentStepList, AgentStepType
@@ -23,6 +26,10 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
     This implementation provides a scalable and flexible solution for trace-based
     knowledge representation in AI and machine learning applications.
     """
+
+    _steps: Optional[Dict[str, AgentStep]] = {}
+    _embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
+
     def __init__(
         self,
         index_name: str,
@@ -34,21 +41,25 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
         password: str = "",
         indexed_label: str = "Content",
         wipe_on_start: bool = False,
+        **kwargs
     ):
         super().__init__(
-            index_name = index_name,
-            graph_index = graph_index,
-            embeddings = embeddings,
-            hostname = hostname,
-            port = port,
-            username = username,
-            password = password,
-            indexed_label = indexed_label,
-            wipe_on_start = wipe_on_start,
+            index_name=index_name,
+            graph_index=graph_index,
+            embeddings=embeddings,
+            hostname=hostname,
+            port=port,
+            username=username,
+            password=password,
+            indexed_label=indexed_label,
+            wipe_on_start=wipe_on_start,
+            **kwargs
         )
-        self.schema = ""
+        self.current_commit = None
+        self._steps = {}
+        self._embeddings = OrderedDict()
 
-    def exist(self, step_id) -> bool:
+    def exist(self, step_id: Union[UUID, str]) -> bool:
         """
         Check if an agent step exists by its ID.
 
@@ -58,7 +69,15 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
         Returns:
             bool: True if the agent step exists, False otherwise.
         """
-        return self.exists(str(step_id), label="AgentStep")
+        # Convert step_id to string if it's a UUID
+        step_id_str = str(step_id)
+        
+        # Check for existence specific to AgentStep
+        query = "MATCH (s:AgentStep {id: $id}) RETURN COUNT(s) > 0 AS exists"
+        params = {"id": step_id_str}
+        result = self.hybridstore.query(query, params=params)
+        
+        return result.result_set[0][0] if result.result_set else False
 
     def update(self, step_or_steps: Union[AgentStep, AgentStepList]) -> None:
         """
@@ -81,25 +100,35 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
             raise ValueError("Invalid datatype provided must be AgentStep or AgentStepList")
 
         for step in steps.steps:
+            step_id = str(step.id)
             params = {
-                "id": str(step.id),
+                "id": step_id,
                 "step_type": step.step_type.value,
-                "parent_id": str(step.parent_id) if step.parent_id else None,
                 "vector": list(step.vector) if step.vector is not None else None,
                 "name": step.name,
-                "description": step.description
+                "description": step.description,
+                "parent_id": str(step.parent_id) if step.parent_id else None
             }
+            
+            # Create or update the step
             self.hybridstore.query(
                 "MERGE (s:AgentStep {id: $id}) "
                 "SET s.step_type = $step_type, s.vector = $vector, s.name = $name, s.description = $description",
                 params=params
             )
-            if step.parent_id:
+            
+            # Create parent-child relationship if parent exists
+            if params["parent_id"]:
                 self.hybridstore.query(
-                    "MATCH (s:AgentStep {id: $id}), (p:AgentStep {id: $parent_id}) "
-                    "MERGE (s)-[:NEXT]->(p)",
+                    "MATCH (parent:AgentStep {id: $parent_id}), (child:AgentStep {id: $id}) "
+                    "MERGE (parent)-[:NEXT]->(child)",
                     params=params
                 )
+            
+            # Update local cache
+            self._steps[step_id] = step
+            if step.vector is not None:
+                self._embeddings[step_id] = step.vector
 
     def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
         """
@@ -136,7 +165,7 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
         ids = [str(id_or_ids)] if isinstance(id_or_ids, (UUID, str)) else [str(id) for id in id_or_ids]
         result = self.hybridstore.query(
             "MATCH (s:AgentStep) WHERE s.id IN $ids "
-            "RETURN s.id, s.step_type, s.parent_id, s.vector",
+            "RETURN s.id, s.step_type, s.parent_id, s.vector, s.name, s.description",
             params={"ids": ids}
         )
         steps = AgentStepList()
@@ -144,8 +173,10 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
             step = AgentStep(
                 id=UUID(row[0]),
                 step_type=AgentStepType(row[1]),
-                parent_id=UUID(row[2]) if row[2] else None,
-                vector=row[3]
+                parent_id=UUID(row[2]) if row[2] is not None else None,
+                vector=row[3],
+                name=row[4],
+                description=row[5]
             )
             steps.steps.append(step)
         return steps
@@ -154,18 +185,84 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
         """
         Retrieve the trace of agent steps starting from a specific step ID.
 
-        This method fetches the sequence of agent steps that follow the specified step ID.
+        This method fetches the sequence of agent steps that lead to the specified step ID.
 
         Args:
-            step_id (Union[UUID, str]): The ID of the agent step to start the trace from.
+            step_id (Union[UUID, str]): The ID of the agent step to end the trace at.
 
         Returns:
             AgentStepList: A list of AgentStep objects representing the trace of agent steps.
+
+        Raises:
+            Exception: If there's an error in retrieving the trace.
+        """
+        step_id_str = str(step_id)
+        query = """
+        MATCH (step:AgentStep {id: $step_id})
+        MATCH (step)<-[:NEXT*0..]-(ancestor:AgentStep)
+        RETURN ancestor.id, ancestor.step_type, ancestor.parent_id, ancestor.vector, ancestor.name, ancestor.description
+        ORDER BY length((ancestor)-[:NEXT*]->(step)) DESC
+        """
+        result = self.hybridstore.query(query, params={"step_id": step_id_str})
+        
+        steps = AgentStepList()
+        for row in result.result_set:
+            step = AgentStep(
+                id=UUID(row[0]),
+                step_type=AgentStepType(row[1]),
+                parent_id=UUID(row[2]) if row[2] else None,
+                vector=row[3],
+                name=row[4],
+                description=row[5]
+            )
+            steps.steps.append(step)
+        
+        return steps
+
+    def add(self, step: AgentStep) -> None:
+        """
+        Add a new agent step to the database.
+
+        Args:
+            step (AgentStep): The agent step to add.
+        """
+        if step.inputs is None:
+            step.inputs = {}
+        if "purpose" not in step.inputs:
+            step.inputs["purpose"] = "Not specified"
+        self.update(step)
+
+    def add_many(self, steps: AgentStepList) -> None:
+        """
+        Add multiple agent steps to the database.
+
+        Args:
+            steps (AgentStepList): The list of agent steps to add.
+        """
+        for step in steps.steps:
+            if step.inputs is None:
+                step.inputs = {}
+            if "purpose" not in step.inputs:
+                step.inputs["purpose"] = "Not specified"
+        self.update(steps)
+
+    def search(self, query: str, k: int = 10) -> AgentStepList:
+        """
+        Search for agent steps based on a query string.
+
+        Args:
+            query (str): The search query.
+            k (int): The number of results to return.
+
+        Returns:
+            AgentStepList: A list of AgentStep objects matching the search query.
         """
         result = self.hybridstore.query(
-            "MATCH (s:AgentStep {id: $id})-[:NEXT*]->(p:AgentStep) "
-            "RETURN p.id, p.step_type, p.parent_id, p.vector",
-            params={"id": str(step_id)}
+            "MATCH (s:AgentStep) "
+            "WHERE s.name CONTAINS $query OR s.description CONTAINS $query "
+            "RETURN s.id, s.step_type, s.parent_id, s.vector, s.name, s.description "
+            "LIMIT $k",
+            params={"query": query, "k": k}
         )
         steps = AgentStepList()
         for row in result.result_set:
@@ -173,19 +270,106 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
                 id=UUID(row[0]),
                 step_type=AgentStepType(row[1]),
                 parent_id=UUID(row[2]) if row[2] else None,
-                vector=row[3]
+                vector=row[3],
+                name=row[4],
+                description=row[5]
             )
             steps.steps.append(step)
         return steps
 
-    def clear(self):
+    def clear(self) -> None:
         """
-        Remove all agent steps from the database.
-
-        This method deletes all AgentStep nodes and their relationships from the graph database.
-
-        Note:
-            - This operation is irreversible and will delete all agent step data.
-            - Use with caution as it will empty the entire agent step store.
+        Clear all agent steps from the database and local cache.
         """
-        self.hybridstore.query("MATCH (s:AgentStep) DETACH DELETE s", params={})
+        # Clear FalkorDB
+        self.hybridstore.query("MATCH (s:AgentStep) DETACH DELETE s")
+        
+        # Clear local cache
+        self._steps = {}
+        self._embeddings = OrderedDict()
+        
+        # Call parent class clear method
+        super().clear()
+
+    def get_schema(self) -> Optional[str]:
+        """
+        Get the schema of the trace memory.
+
+        Returns:
+            Optional[str]: The schema of the trace memory, if available.
+        """
+        return self.schema
+
+    def set_schema(self, schema: str) -> None:
+        """
+        Set the schema of the trace memory.
+
+        Args:
+            schema (str): The schema to set for the trace memory.
+        """
+        self.schema = schema
+
+    def get_schema(self) -> Optional[str]:
+        """
+        Get the schema of the trace memory.
+
+        Returns:
+            Optional[str]: The schema of the trace memory, if available.
+        """
+        return self.schema
+
+    def set_schema(self, schema: str) -> None:
+        """
+        Set the schema of the trace memory.
+
+        Args:
+            schema (str): The schema to set for the trace memory.
+        """
+        self.schema = schema
+
+    def start_new_trace(self):
+        """Start a new trace"""
+        self.current_commit = None
+
+    def get_trace_indexes(self) -> List[str]:
+        """Get the traces indexes (the first commit index of each trace)"""
+        trace_indexes = []
+        result = self.hybridstore.query('MATCH (n:ProgramCall {program:"main"}) RETURN n.name as name')
+        for record in result.result_set:
+            trace_indexes.append(record[0])
+        return trace_indexes
+
+    def is_finished(self, trace_index: str) -> bool:
+        """Returns True if the execution of the program terminated"""
+        params = {"index": trace_index}
+        result = self.hybridstore.query(
+            'MATCH (n:ProgramCall {name:$index, program:"main"})'
+            +'-[:NEXT*]->(m:ProgramEnd {program:"main"}) RETURN m',
+            params=params,
+        )
+        return len(result.result_set) > 0
+
+    def get_full_trace(self) -> AgentStepList:
+        """
+        Retrieve the full trace of agent steps.
+
+        Returns:
+            AgentStepList: A list of all AgentStep objects in the trace, ordered by their relationships.
+        """
+        result = self.hybridstore.query(
+            "MATCH (s:AgentStep) "
+            "RETURN s.id, s.step_type, s.parent_id, s.vector, s.name, s.description "
+            "ORDER BY s.id"
+        )
+        steps = AgentStepList()
+        for row in result.result_set:
+            step = AgentStep(
+                id=UUID(row[0]),
+                step_type=AgentStepType(row[1]),
+                parent_id=UUID(row[2]) if row[2] else None,
+                vector=row[3],
+                name=row[4],
+                description=row[5]
+            )
+            steps.steps.append(step)
+        return steps
