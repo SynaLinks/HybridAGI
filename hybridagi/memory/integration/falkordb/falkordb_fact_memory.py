@@ -3,7 +3,7 @@ from uuid import UUID
 from hybridagi.memory.fact_memory import FactMemory
 from hybridagi.core.datatypes import Entity, EntityList, Fact, FactList, Relationship
 from hybridagi.embeddings.embeddings import Embeddings
-from .falkordb_memory import FalkorDBMemory, FalkorDB
+from .falkordb_memory import FalkorDBMemory
 
 class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
     """

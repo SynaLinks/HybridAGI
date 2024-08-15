@@ -12,21 +12,7 @@ class FalkorDBMemory():
     It serves as a foundation for more specialized memory classes that implement
     specific types of memory (e.g., fact memory, document memory) using FalkorDB
     as the underlying storage system.
-
-    Attributes:
-        hostname (str): The hostname of the FalkorDB server.
-        port (int): The port number for the FalkorDB server.
-        username (str): The username for authentication (if required).
-        password (str): The password for authentication (if required).
-        index_name (str): The name of the index used in FalkorDB.
-        graph_index (str): The name of the graph used within FalkorDB.
-        embeddings (Embeddings): An instance of the Embeddings class for vector operations.
-        indexed_label (str): The label used for indexing in the graph.
-        wipe_on_start (bool): Whether to clear the existing data on initialization.
-        client (FalkorDB): The FalkorDB client instance.
-        hybridstore (Graph): The graph instance used for operations.
     """
-
     def __init__(
             self,
             index_name: str,

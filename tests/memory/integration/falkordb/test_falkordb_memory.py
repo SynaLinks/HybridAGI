@@ -1,5 +1,6 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+from hybridagi.embeddings.fake import FakeEmbeddings
 from hybridagi.memory.integration.falkordb.falkordb_memory import FalkorDBMemory
 
 @pytest.fixture
@@ -9,7 +10,7 @@ def memory():
         memory = FalkorDBMemory(
             index_name="test_index",
             graph_index="test_graph",
-            embeddings=MagicMock(),
+            embeddings=FakeEmbeddings(dim=250),
             hostname="localhost",
             port=6379,
             username="",
@@ -38,7 +39,7 @@ def test_init_with_wipe_on_start():
         memory = FalkorDBMemory(
             index_name="test_index",
             graph_index="test_graph",
-            embeddings=MagicMock(),
+            embeddings=FakeEmbeddings(dim=250),
             hostname="localhost",
             port=6379,
             username="",

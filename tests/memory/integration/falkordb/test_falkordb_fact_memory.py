@@ -1,8 +1,8 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from hybridagi.memory.integration.falkordb.falkordb_fact_memory import FalkorDBFactMemory
 from hybridagi.embeddings.fake import FakeEmbeddings
-from hybridagi.core.datatypes import Entity, EntityList, Fact, FactList, Relationship
+from hybridagi.core.datatypes import Entity, Fact, Relationship
 
 @pytest.fixture
 def memory():
