@@ -273,8 +273,8 @@ class InteractionSession(BaseModel):
     user: Optional[UserProfile] = Field(description="The user profile", default_factory=UserProfile)
     chat: Optional[ChatHistory] = Field(description="The chat history", default_factory=ChatHistory)
     
-    def to_dict():
-        return {"user": self.user.to_dict(), "chat_history": [m.to_dict() for m in self.msgs]}
+    def to_dict(self):
+        return {"user": self.user.to_dict(), "chat_history": [m.to_dict() for m in self.chat.msgs]}
     
 class QueryWithSession(BaseModel, dspy.Prediction):
     query: Query = Field(description="The input user query", default_factory=Query)
@@ -285,7 +285,7 @@ class QueryWithSession(BaseModel, dspy.Prediction):
         dspy.Prediction.__init__(self, **kwargs)
         
     def to_dict(self):
-        return {"query": self.query.query, "session": session.to_dict()}
+        return {"query": self.query.query, "session": self.session.to_dict()}
 
 class AgentStepType(str, Enum):
     Action = "Action"
@@ -315,10 +315,12 @@ End Program: {program}"""
 
 class AgentStep(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for a step", default_factory=uuid4)
-    parent_id: Union[UUID, str] = Field(description="The previous step id if any", default=None)
+    parent_id: Optional[Union[UUID, str]] = Field(description="The previous step id if any", default=None)
     hop: int = Field(description="The step hop", default=0)
     step_type: AgentStepType = Field(description="The step type")
     weight: float = Field(description="The step weight (between 0.0 and 1.0, default 1.0)", default=1.0)
+    name: Optional[str] = Field(description="The name of the step", default=None)
+    description: Optional[str] = Field(description="The description of the step", default=None)
     inputs: Optional[Dict[str, Any]] = Field(description="The inputs of the step", default=None)
     outputs: Optional[Dict[str, Any]] = Field(description="The outputs of the step", default=None)
     vector: Optional[List[float]] = Field(description="Vector representation of the step", default=None)
@@ -326,29 +328,32 @@ class AgentStep(BaseModel):
     created_at: datetime = Field(description="Time when the step was created", default_factory=datetime.now)
     
     def __str__(self):
+        if self.inputs is None:
+            self.inputs = {}
+        
         if self.step_type == AgentStepType.Action:
             return ACTION_TEMPLATE.format(
                 hop=self.hop,
-                purpose=self.inputs["purpose"],
+                purpose=self.inputs.get("purpose", ""),
                 prediction=json.dumps(self.outputs, indent=2),
             )
         elif self.step_type == AgentStepType.Decision:
             return DECISION_TEMPLATE.format(
                 hop=self.hop,
-                purpose=self.inputs["purpose"],
-                question=self.inputs["question"],
-                choice=self.outputs["choice"],
+                purpose=self.inputs.get("purpose", ""),
+                question=self.inputs.get("question", ""),
+                choice=self.outputs["choice"] if self.outputs and "choice" in self.outputs else "",
             )
         elif self.step_type == AgentStepType.ProgramCall:
             return CALL_PROGRAM_TEMPLATE.format(
                 hop=self.hop,
-                purpose=self.inputs["purpose"],
-                program=self.inputs["program"],
+                purpose=self.inputs.get("purpose", ""),
+                program=self.inputs.get("program", ""),
             )
         elif self.step_type == AgentStepType.ProgramEnd:
             return END_PROGRAM_TEMPLATE.format(
                 hop=self.hop,
-                program=self.inputs["program"],
+                program=self.inputs.get("program", ""),
             )
         else:
             raise ValueError("Invalid type for AgentStep")
