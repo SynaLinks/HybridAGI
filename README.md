@@ -16,7 +16,7 @@
 
 </div>
 
-**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. For now, only the Local integration if available, the FalkorDB & Kuzu integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other Cypher-based graph databases. For more information, join the Discord channel.
+**Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. For now, only the Local integration is available, the FalkorDB & Kuzu integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other Cypher-based graph databases. For more information, join the Discord channel.
 
 ## Notebooks
 
