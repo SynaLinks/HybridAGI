@@ -8,7 +8,6 @@ import networkx as nx
 
 from .local_memory import LocalMemory
 
-
 class LocalProgramMemory(LocalMemory, ProgramMemory):
     """
     A class used to manage and store programs locally.
@@ -29,7 +28,6 @@ class LocalProgramMemory(LocalMemory, ProgramMemory):
     def __init__(
             self,
             index_name: str,
-            entrypoint: str="main",
             wipe_on_start: bool=True,
         ):
         """
@@ -37,7 +35,6 @@ class LocalProgramMemory(LocalMemory, ProgramMemory):
 
         Parameters:
             index_name (str): The name of the index used for program storage.
-            entrypoint (str): The name of the entry point program. Default is "main".
             wipe_on_start (bool): Whether to clear the memory when the object is initialized.
         """
         self.index_name = index_name
@@ -57,7 +54,7 @@ class LocalProgramMemory(LocalMemory, ProgramMemory):
         Raises:
             ValueError: If the input is not a GraphProgram or GraphProgramList.
         """
-        if not isinstance(program_or_programs, GraphProgram) and not isinstance(program_or_programs, GraphProgramList):
+        if not isinstance(program_or_programs, (GraphProgram, GraphProgramList)):
             raise ValueError("Invalid datatype provided must be GraphProgram or GraphProgramList")
         if isinstance(program_or_programs, GraphProgram):
             programs = GraphProgramList()

@@ -33,6 +33,7 @@ class FAISSActionRetriever(ActionRetriever):
             distance: str = "cosine",
             max_distance: float = 0.9,
             k: int = 5,
+            reverse: bool = True,
             reranker: Optional[ActionReranker] = None,
         ):
         self.trace_memory = trace_memory
@@ -46,6 +47,7 @@ class FAISSActionRetriever(ActionRetriever):
         self.max_distance = max_distance
         self.reranker = reranker
         self.k = k
+        self.reverse = reverse
         vector_dim = self.embeddings.dim
         if self.distance == "euclidean":
             self.index = faiss.IndexFlatL2(vector_dim)
@@ -85,4 +87,6 @@ class FAISSActionRetriever(ActionRetriever):
                     break
             if self.reranker is not None:
                 return self.reranker(result)
+        if self.reverse:
+            result.steps.reverse()
         return result

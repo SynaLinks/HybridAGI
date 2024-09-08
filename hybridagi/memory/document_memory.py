@@ -6,7 +6,7 @@ from hybridagi.core.datatypes import Document, DocumentList
 class DocumentMemory(ABC):
     
     @abstractmethod
-    def exist(self, doc_id) -> bool:
+    def exist(self, doc_id: Union[UUID, str]) -> bool:
         raise NotImplementedError(
             f"DocumentMemory {type(self).__name__} is missing the required 'exist' method."
         )

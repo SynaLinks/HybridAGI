@@ -1,3 +1,5 @@
+#TODO finish it
+
 from typing import Union, List, Optional, Dict
 from uuid import UUID
 from collections import OrderedDict
@@ -24,22 +26,8 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
 
     This implementation provides a scalable and flexible solution for fact-based
     knowledge representation in AI and machine learning applications.
-
-    Attributes:
-        _entities (Optional[Dict[str, Entity]]): A dictionary to store entities.
-        _relationships (Optional[Dict[str, Fact]]): A dictionary to store relationships.
-        _facts (Optional[Dict[str, Fact]]): A dictionary to store facts.
-        _entities_embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store entity embeddings.
-        _relationships_embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store relationship embeddings.
-        _facts_embeddings (Optional[Dict[str, List[float]]]): An ordered dictionary to store fact embeddings.
     """
-    _entities: Optional[Dict[str, Entity]] = {}
-    _relationships: Optional[Dict[str, Fact]] = {}
-    _facts: Optional[Dict[str, Fact]] = {}
-    
-    _entities_embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
-    _relationships_embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
-    _facts_embeddings: Optional[Dict[str, List[float]]] = OrderedDict()
+   
     def __init__(
         self,
         index_name: str,
@@ -63,13 +51,6 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             indexed_label = indexed_label,
             wipe_on_start = wipe_on_start,
         )
-        self.schema = ""
-        self._entities = {}
-        self._relationships = {}
-        self._facts = {}
-        self._entities_embeddings = OrderedDict()
-        self._relationships_embeddings = OrderedDict()
-        self._facts_embeddings = OrderedDict()
 
     def exist(self, fact_or_entity_id) -> bool:
         """

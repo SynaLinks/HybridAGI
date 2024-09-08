@@ -7,7 +7,7 @@ from hybridagi.core.datatypes import Fact, FactList
 class FactMemory(ABC):
     
     @abstractmethod
-    def exist(self, entity_or_fact_id) -> bool:
+    def exist(self, entity_or_fact_id: Union[UUID, str]) -> bool:
         raise NotImplementedError(
             f"FactMemory {type(self).__name__} is missing the required 'exist' method."
         )

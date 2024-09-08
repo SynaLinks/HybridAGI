@@ -39,8 +39,9 @@ class LLMFactExtractor(FactExtractor):
             documents = doc_or_docs
         result = FactList()
         for doc in tqdm(documents.docs):
-            pred = self.extraction(
-                document = doc.text,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.extraction(
+                    document = doc.text,
+                )
             result.from_cypher(pred.triplets, doc.metadata)
         return result

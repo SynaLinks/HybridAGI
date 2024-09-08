@@ -45,6 +45,10 @@ FINISH_COLOR = f"{Fore.YELLOW}"
 CHAT_COLOR = f"{Fore.GREEN}"
 
 class DecisionSignature(dspy.Signature):
+    """You will be given an objective, context, purpose, question and option your task is to infer the correct choice between the given options
+    
+    You answer should always start with the label choosed.
+    """
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the decision (what you have to do now)")
@@ -53,6 +57,10 @@ class DecisionSignature(dspy.Signature):
     choice = dspy.OutputField(desc = "The best choice to the decision-making question", prefix="Choice:")
 
 class CorrectDecisionSignature(dspy.Signature):
+    """You will be given an answer, options tour task is to infer the choice among the options.
+    
+    Only choose one of the provided option and start your answer with the label choosed.
+    """
     answer = dspy.InputField(desc = "The answer to assess")
     options = dspy.InputField(desc = "The available options")
     choice = dspy.OutputField(desc = "The correct choice", prefix="Choice:")
@@ -180,6 +188,7 @@ class GraphInterpreterAgent(dspy.Module):
         self.previous_agent_step = None
         self.agent_state.current_hop = 0
         self.agent_state.decision_hop = 0
+        self.agent_state.final_answer = ""
         self.agent_state.program_trace = AgentStepList()
         main_program = self.program_memory.get(self.entrypoint).progs[0]
         self.agent_state.call_program(main_program)

@@ -27,9 +27,10 @@ class LLMClaimExtractor(DocumentExtractor):
             documents = doc_or_docs
         result = DocumentList()
         for doc in tqdm(documents.docs):
-            pred = self.extraction(
-                document = doc.text,
-            )
+            with dspy.context(lm=self.lm if self.lm is not None else dspy.settings.lm):
+                pred = self.extraction(
+                    document = doc.text,
+                )
             claims = pred.claims.split(",")
             for claim in claims:
                 result.docs.append(Document(

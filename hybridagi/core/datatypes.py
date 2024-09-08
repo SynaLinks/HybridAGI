@@ -41,10 +41,12 @@ class Document(BaseModel):
     parent_id: Optional[Union[UUID, str]] = Field(description="Identifier for the parent document", default=None)
     vector: Optional[List[float]] = Field(description="Vector representation of the document", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the document", default={})
-    created_at: datetime = Field(description="Time when the document was created", default_factory=datetime.now)
     
     def to_dict(self):
-        return {"text": self.text, "metadata": self.metadata}
+        if self.metadata:
+            return {"text": self.text, "metadata": self.metadata}
+        else:
+            return {"text": self.text}
 
 class DocumentList(BaseModel, dspy.Prediction):
     docs: Optional[List[Document]] = Field(description="List of documents", default=[])
@@ -74,13 +76,18 @@ class Entity(BaseModel):
     description: Optional[str] = Field(description="Description of the entity", default=None)
     vector: Optional[List[float]] = Field(description="Vector representation of the document", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the document", default={})
-    created_at: datetime = Field(description="Time when the entity was created", default_factory=datetime.now)
     
     def to_dict(self):
-        if self.description is not None:
-            return {"name": self.name, "label": self.label, "description": self.description, "metadata": self.metadata}
+        if self.metadata:
+            if self.description is not None:
+                return {"name": self.name, "label": self.label, "description": self.description, "metadata": self.metadata}
+            else:
+                return {"name": self.name, "label": self.label, "metadata": self.metadata}
         else:
-            return {"name": self.name, "label": self.label, "metadata": self.metadata}
+            if self.description is not None:
+                return {"name": self.name, "label": self.label, "description": self.description}
+            else:
+                return {"name": self.name, "label": self.label}
 
 class EntityList(BaseModel, dspy.Prediction):
     entities: List[Entity] = Field(description="List of entities", default=[])
@@ -108,10 +115,12 @@ class Relationship(BaseModel):
     name: str = Field(description="Relationship name")
     vector: Optional[List[float]] = Field(description="Vector representation of the relationship", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the relationship", default={})
-    created_at: datetime = Field(description="Time when the relationship was created", default_factory=datetime.now)
     
     def to_dict(self):
-        return {"name": self.name, "metadata": self.metadata}
+        if self.metadata:
+            return {"name": self.name, "metadata": self.metadata}
+        else:
+            return {"name": self.name}
 
 class Fact(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the fact", default_factory=uuid4)
@@ -121,7 +130,6 @@ class Fact(BaseModel):
     weight: float = Field(description="The fact weight (between 0.0 and 1.0, default 1.0)", default=1.0)
     vector: Optional[List[float]] = Field(description="Vector representation of the fact", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the fact", default={})
-    created_at: datetime = Field(description="Time when the fact was created", default_factory=datetime.now)
     
     def to_cypher(self) -> str:
         if self.subj.description is not None:
@@ -146,7 +154,10 @@ class Fact(BaseModel):
             raise ValueError("Invalid Cypher fact provided")
     
     def to_dict(self):
-        return {"fact": self.to_cypher(), "metadata": self.metadata}
+        if self.metadata:
+            return {"fact": self.to_cypher(), "metadata": self.metadata}
+        else:
+            return {"fact": self.to_cypher()}
 
 class FactList(BaseModel, dspy.Prediction):
     facts: List[Fact] = Field(description="List of facts", default=[])
@@ -245,7 +256,6 @@ class UserProfile(BaseModel):
     profile: Optional[str] = Field(description="The user profile", default="An average user")
     vector: Optional[List[float]] = Field(description="Vector representation of the user", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the user", default={})
-    created_at: datetime = Field(description="Time when the user profile was created", default_factory=datetime.now)
     
     def to_dict(self):
         return {"name": self.name, "profile": self.profile, "metadata": self.metadata}
@@ -318,9 +328,6 @@ class AgentStep(BaseModel):
     parent_id: Optional[Union[UUID, str]] = Field(description="The previous step id if any", default=None)
     hop: int = Field(description="The step hop", default=0)
     step_type: AgentStepType = Field(description="The step type")
-    weight: float = Field(description="The step weight (between 0.0 and 1.0, default 1.0)", default=1.0)
-    name: Optional[str] = Field(description="The name of the step", default=None)
-    description: Optional[str] = Field(description="The description of the step", default=None)
     inputs: Optional[Dict[str, Any]] = Field(description="The inputs of the step", default=None)
     outputs: Optional[Dict[str, Any]] = Field(description="The outputs of the step", default=None)
     vector: Optional[List[float]] = Field(description="Vector representation of the step", default=None)

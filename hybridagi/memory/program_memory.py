@@ -7,7 +7,7 @@ from hybridagi.core.datatypes import GraphProgramList
 class ProgramMemory(ABC):
     
     @abstractmethod
-    def exist(self, prog_id) -> bool:
+    def exist(self, prog_id: Union[UUID, str]) -> bool:
         raise NotImplementedError(
             f"ProgramMemory {type(self).__name__} is missing the required 'exist' method."
         )

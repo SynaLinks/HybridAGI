@@ -33,6 +33,7 @@ class FAISSDocumentRetriever(DocumentRetriever):
             distance: str = "cosine",
             max_distance: float = 0.7,
             k: int = 5,
+            reverse: bool = True,
             reranker: Optional[DocumentReranker] = None,
         ):
         self.document_memory = document_memory
@@ -46,6 +47,7 @@ class FAISSDocumentRetriever(DocumentRetriever):
         self.max_distance = max_distance
         self.reranker = reranker
         self.k = k
+        self.reverse = reverse
         vector_dim = self.embeddings.dim
         if self.distance == "euclidean":
             self.index = faiss.IndexFlatL2(vector_dim)
@@ -85,4 +87,6 @@ class FAISSDocumentRetriever(DocumentRetriever):
                     break
             if self.reranker is not None:
                 return self.reranker(result)
+        if self.reverse:
+            result.docs.reverse()
         return result

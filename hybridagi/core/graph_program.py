@@ -380,7 +380,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
         return cypher
     
     def to_dict(self):
-        return {"name": self.name, "description": self.description, "routine": self.to_cypher()}
+        return {"name": self.name, "routine": self.to_cypher()}
     
     def save(self, folderpath: str = ""):
         """

@@ -10,10 +10,6 @@
 ![Beta](https://img.shields.io/badge/Release-Beta-blue)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL-green.svg)](https://opensource.org/license/gpl-3-0/)
 
-<p align="center">
-  <img alt="HybridAGI long-term memory" src="img/memories.svg"/>
-</p>
-
 </div>
 
 **Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. For now, only the Local integration if available, the FalkorDB & Kuzu integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other Cypher-based graph databases. For more information, join the Discord channel.
@@ -64,91 +60,21 @@ HybridAGI is build upon years of experience in making reliable Robotics systems.
 
 We provide everything for you to build your LLM application with a focus around Cypher Graph databases. We provide also a local database for rapid prototyping before scaling your application with one of our integration.
 
+<div align="center">
+
+![pipeline](img/memories.png)
+
+</div>
+
 ### Predictable/Deterministic behavior and infinite number of tools
 
 Because we don't let the Agent choose the sequence of tools to use, we can use an infinite number of tools. By following the Graph Programs, we ensure a predictable and deterministic methodology for our Agent system. We can combine every memory system into one unique Agent by using the corresponding tools without limitation.
 
-```python
-import hybridagi.core.graph_program as gp
+<div align="center">
 
-main = gp.GraphProgram(
-    name="main",
-    description="The main program",
-)
-    
-main.add(gp.Decision(
-    id="is_objective_unclear",
-    purpose="Check if the Objective's is unclear",
-    question="Is the Objective's question unclear?",
-))
+![pipeline](img/graph_program.png)
 
-main.add(gp.Action(
-    id="clarify",
-    purpose="Ask one question to clarify the user's Objective",
-    tool="AskUser",
-    prompt="Please pick one question to clarify the Objective's question",
-))
-
-main.add(gp.Action(
-    id="answer",
-    purpose="Answer the question",
-    tool="Speak",
-    prompt="Please answer to the Objective's question",
-))
-    
-main.add(gp.Action(
-    id="refine_objective",
-    purpose="Refine the objective",
-    tool="UpdateObjective",
-    prompt="Please refine the user Objective",
-))
-    
-main.connect("start", "is_objective_unclear")
-main.connect("is_objective_unclear", "clarify", label="Clarify")
-main.connect("is_objective_unclear", "answer", label="Answer")
-main.connect("clarify", "refine_objective")
-main.connect("refine_objective", "answer")
-main.connect("answer", "end")
-
-main.build() # Verify the structure of the program
-
-print(main)
-# // @desc: The main program
-# CREATE
-# // Nodes declaration
-# (start:Control {id: "start"}),
-# (end:Control {id: "end"}),
-# (is_objective_unclear:Decision {
-#   id: "is_objective_unclear",
-#   purpose: "Check if the Objective's is unclear",
-#   question: "Is the Objective's question unclear?"
-# }),
-# (clarify:Action {
-#   id: "clarify",
-#   purpose: "Ask one question to clarify the user's Objective",
-#   tool: "AskUser",
-#   prompt: "Please pick one question to clarify the Objective's question"
-# }),
-# (answer:Action {
-#   id: "answer",
-#   purpose: "Answer the question",
-#   tool: "Speak",
-#   prompt: "Please answer to the Objective's question"
-# }),
-# (refine_objective:Action {
-#   id: "refine_objective",
-#   purpose: "Refine the objective",
-#   tool: "UpdateObjective",
-#   prompt: "Please refine the user Objective"
-# }),
-# // Structure declaration
-# (start)-[:NEXT]->(is_objective_unclear),
-# (is_objective_unclear)-[:CLARIFY]->(clarify),
-# (is_objective_unclear)-[:ANSWER]->(answer),
-# (clarify)-[:NEXT]->(refine_objective),
-# (answer)-[:NEXT]->(end),
-# (refine_objective)-[:NEXT]->(answer)
-```
+</div>
 
 ### Modular Pipelines
 
@@ -156,30 +82,11 @@ With HybridAGI you can build data extraction pipelines, RAG applications or adva
 
 Each module and data type is *strictly typed and use Pydantic* as data validation layer. You can build pipelines in no time by stacking Modules sequentially like in Keras or HuggingFace.
 
-```python
-from hybridagi.embeddings import SentenceTransformerEmbeddings
-from hybridagi.readers import PDFReader
-from hybridagi.core.pipeline import Pipeline
-from hybridagi.modules.splitters import DocumentSentenceSplitter
-from hybridagi.modules.embedders import DocumentEmbedder
+<div align="center">
 
-embeddings = SentenceTransformerEmbeddings(
-    model_name_or_path = "all-MiniLM-L6-v2",
-    dim = 384, # The dimention of the embeddings vector
-)
+![pipeline](img/pipeline.png)
 
-reader = PDFReader()
-input_docs = reader("data/SpelkeKinzlerCoreKnowledge.pdf") # This is going to extract 1 document per page
-
-# Now that we have our input documents, we can start to make our data processing pipeline
-
-pipeline = Pipeline()
-
-pipeline.add("chunk_documents", DocumentSentenceSplitter())
-pipeline.add("embed_chunks", DocumentEmbedder(embeddings=embeddings))
-
-output_docs = pipeline(input_docs)
-```
+</div>
 
 ### Native tools
 
@@ -210,34 +117,11 @@ We provide the following list of native tools to R/W into the memory system or m
 
 You can add more tools by using the `FunctionTool` and python functions like nowadays function calling.
 
-```python
-import requests
-from hybridagi.modules.agents.tools import FunctionTool
+<div align="center">
 
-# The function inputs should be one or multiple strings, you can then convert or process them in your function
-# The docstring and input arguments will be used to create automatically a DSPy signature
-def get_crypto_price(crypto_name: str):
-    """
-    Please only give the name of the crypto to fetch like "bitcoin" or "cardano"
-    Never explain or apology, only give the crypto name.
-    """
-    base_url = "https://api.coingecko.com/api/v3/simple/price?"
-    complete_url = base_url + "ids=" + crypto_name + "&vs_currencies=usd"
-    response = requests.get(complete_url)
-    data = response.json()
+![pipeline](img/custom_tool.png)
 
-    # The output of the tool should always be a dict
-    # It usually contains the sanitized input of the tool + the tool result (or observation)
-    if crypto_name in data:
-        return {"crypto_name": crypto_name, "result": str(data[crypto_name]["usd"])+" USD"}
-    else:
-        return {"crypto_name": crypto_name, "result": "Invalid crypto name"}
-    
-my_tool = FunctionTool(
-    name = "GetCryptoPrice",
-    func = get_crypto_price,
-)
-```
+</div>
 
 ### Graph Databases Integrations
 

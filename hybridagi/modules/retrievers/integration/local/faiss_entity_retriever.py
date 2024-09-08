@@ -33,6 +33,7 @@ class FAISSEntityRetriever(EntityRetriever):
             distance: str = "cosine",
             max_distance: float = 0.7,
             k: int = 5,
+            reverse: bool = True,
             reranker: Optional[EntityReranker] = None,
         ):
         self.fact_memory = fact_memory
@@ -85,4 +86,6 @@ class FAISSEntityRetriever(EntityRetriever):
                     break
             if self.reranker is not None:
                 return self.reranker(result)
+        if self.reverse:
+            result.entities.reverse()
         return result

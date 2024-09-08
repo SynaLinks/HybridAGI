@@ -6,7 +6,7 @@ from hybridagi.core.datatypes import AgentStep, AgentStepList
 class TraceMemory(ABC):
     
     @abstractmethod
-    def exist(self, step_id) -> bool:
+    def exist(self, step_id: Union[UUID, str]) -> bool:
         raise NotImplementedError(
             f"FactMemory {type(self).__name__} is missing the required 'exist' method."
         )
@@ -18,23 +18,11 @@ class TraceMemory(ABC):
         )
 
     @abstractmethod
-    def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
-        raise NotImplementedError(
-            f"TraceMemory {type(self).__name__} is missing the required 'remove' method."
-        )
-
-    @abstractmethod
     def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> AgentStepList:
         raise NotImplementedError(
             f"TraceMemory {type(self).__name__} is missing the required 'get' method."
         )
-        
-    @abstractmethod
-    def get_trace(self, id: Union[UUID, str]) -> AgentStepList:
-        raise NotImplementedError(
-            f"TraceMemory {type(self).__name__} is missing the required 'get_trace' method."
-        )
-       
+
     @abstractmethod
     def clear(self):
         raise NotImplementedError(

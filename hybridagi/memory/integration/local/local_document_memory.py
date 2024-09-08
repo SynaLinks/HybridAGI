@@ -53,9 +53,14 @@ class LocalDocumentMemory(LocalMemory, DocumentMemory):
             doc_or_docs (Union[Document, DocumentList]): A single document or a list of documents to be added to the memory.
 
         Raises:
-            ValueError: If the input is not a Document or DocumentList.
+            ValueError: If the input is neither a Document or DocumentList.
+        
+        Note:
+            - If a document with the given ID already exists, it will be updated.
+            - If a document with the given ID doesn't exist, a new one will be created.
+            - For documents with a parent_id, a PART_OF relationship is created or updated.
         """
-        if not isinstance(doc_or_docs, Document) and not isinstance(doc_or_docs, DocumentList):
+        if not isinstance(doc_or_docs, (Document, DocumentList)):
             raise ValueError("Invalid datatype provided must be Document or DocumentList")
         if isinstance(doc_or_docs, Document):
             documents = DocumentList()
@@ -64,7 +69,7 @@ class LocalDocumentMemory(LocalMemory, DocumentMemory):
             documents = doc_or_docs
         for doc in documents.docs:
             doc_id = str(doc.id)
-            if doc_id not in self._documents:
+            if not self.exist(doc_id):
                 parent_id = str(doc.parent_id)
                 if doc.parent_id is not None:
                     parent_id = str(doc.parent_id)
@@ -77,7 +82,7 @@ class LocalDocumentMemory(LocalMemory, DocumentMemory):
             if doc.vector is not None:
                 self._embeddings[doc_id] = doc.vector
             
-    def remove(self, id_or_ids: Union[Union[UUID, str], List[Union[UUID, str]]]) -> None:
+    def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
         """
         Remove documents from the local document memory.
 
@@ -133,8 +138,9 @@ class LocalDocumentMemory(LocalMemory, DocumentMemory):
             documents_ids = [id_or_ids]
         result = DocumentList()
         for doc_id in documents_ids:
+            doc_id = str(doc_id)
             if doc_id in self._documents:
-                parent_id = str(self._documents[str(doc_id)].parent_id)
+                parent_id = str(self._documents[doc_id].parent_id)
                 if parent_id in self._documents:
                     doc = self._documents[parent_id]
                     result.docs.append(doc)

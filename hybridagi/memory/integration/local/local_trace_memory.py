@@ -7,7 +7,6 @@ import networkx as nx
 
 from .local_memory import LocalMemory
 
-
 class LocalTraceMemory(LocalMemory, TraceMemory):
     """
     A class used to manage and store agent steps locally.
@@ -42,7 +41,7 @@ class LocalTraceMemory(LocalMemory, TraceMemory):
         if wipe_on_start:
             self.clear()
             
-    def exist(self, step_id) -> bool:
+    def exist(self, step_id: Union[UUID, str]) -> bool:
         return step_id in self._steps
     
     def update(self, step_or_steps: Union[AgentStep, AgentStepList]) -> None:
@@ -55,7 +54,7 @@ class LocalTraceMemory(LocalMemory, TraceMemory):
         Raises:
             ValueError: If the input is not an AgentStep or AgentStepList.
         """
-        if not isinstance(step_or_steps, AgentStep) and not isinstance(step_or_steps, AgentStepList):
+        if not isinstance(step_or_steps, (AgentStep, AgentStepList)):
             raise ValueError("Invalid datatype provided must be AgentStep or AgentStepList")
         if isinstance(step_or_steps, AgentStep):
             steps = AgentStepList()
@@ -82,11 +81,6 @@ class LocalTraceMemory(LocalMemory, TraceMemory):
             self._steps[step_id] = step
             if step.vector is not None:
                 self._embeddings[step_id] = step.vector
-                
-    def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
-        raise NotImplementedError(
-            f"TraceMemory {type(self).__name__} is missing the required 'remove' method."
-        )
 
     def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> AgentStepList:
         """
@@ -107,28 +101,6 @@ class LocalTraceMemory(LocalMemory, TraceMemory):
             if str(step_id) in self._steps:
                 step = self._steps[str(step_id)]
                 result.steps.append(step)
-        return result
-        
-    def get_trace(self, step_id: Union[UUID, str]) -> AgentStepList:
-        """
-        Retrieve the trace of a step.
-
-        Parameters:
-            step_id (Union[UUID, str]): The ID of the step whose trace is to be retrieved.
-
-        Returns:
-            AgentStepList: A list of steps that form the trace of the input step.
-
-        Raises:
-            ValueError: If the step does not exist.
-        """
-        if step_id not in self._steps:
-            raise ValueError(f"Step {step_id} does not exist.")
-        result = AgentStepList()
-        first_step = [n for n in self._graph.predecessors(step_id)][-1]
-        for step_id in self._graph.successors(first_step):
-            step = self._steps[str(step_id)]
-            result.steps.append(step)
         return result
         
     def clear(self):

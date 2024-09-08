@@ -2,10 +2,10 @@ from hybridagi.memory.integration.local.local_program_memory import LocalProgram
 import hybridagi.core.graph_program as gp
 
 def test_local_program_memory_empty():
-    program_memory = LocalProgramMemory(index_name="test")
+    program_memory = LocalProgramMemory(index_name="test_prog_memory_constructor")
 
 def test_local_program_memory_update_one_prog():
-    program_memory = LocalProgramMemory(index_name="test")
+    program_memory = LocalProgramMemory(index_name="test_update_one_prog")
     
     main = gp.GraphProgram(
         name="main",
@@ -29,7 +29,7 @@ def test_local_program_memory_update_one_prog():
     assert program_memory._programs["main"] == main
     
 def test_local_program_memory_remove_one_prog():
-    program_memory = LocalProgramMemory(index_name="test")
+    program_memory = LocalProgramMemory(index_name="test_remove_one_prog")
     
     main = gp.GraphProgram(
         name="main",
@@ -50,12 +50,12 @@ def test_local_program_memory_remove_one_prog():
     
     program_memory.update(main)
     
-    assert program_memory._programs["main"] == main
+    assert program_memory.exist("main")
     program_memory.remove("main")
-    assert len(program_memory._programs) == 0
-    
+    assert not program_memory.exist("main")
+        
 def test_local_program_memory_update_dependencies_prog():
-    program_memory = LocalProgramMemory(index_name="test")
+    program_memory = LocalProgramMemory(index_name="test_dependency")
     
     clarify_objective = gp.GraphProgram(
         name = "clarify_objective",
@@ -114,7 +114,7 @@ def test_local_program_memory_update_dependencies_prog():
 
     main.build()
     
-    program_memory.update(clarify_objective)
     program_memory.update(main)
+    program_memory.update(clarify_objective)
 
     assert program_memory.depends_on("main", "clarify_objective")

@@ -1,5 +1,6 @@
 import dspy
 import copy
+import re
 from .tool import Tool
 from typing import Optional, Callable
 from hybridagi.memory import ProgramMemory
@@ -32,7 +33,7 @@ class CallGraphProgramTool(Tool):
             lm: Optional[dspy.LM] = None,
         ):
         super().__init__(name = name, lm = lm)
-        self.predict = dspy.ChainOfThought(CallGraphProgramSignature)
+        self.predict = dspy.Predict(CallGraphProgramSignature)
         self.prediction_parser = PredictionOutputParser()
         self.agent_state = agent_state
         self.program_memory = program_memory
@@ -63,9 +64,11 @@ class CallGraphProgramTool(Tool):
             pred.selected_name = self.prediction_parser.parse(
                 pred.selected_name,
                 prefix = "Name:",
+                stop = [" "],
             )
             pred.selected_name = pred.selected_name.strip("\"")
             pred.selected_name = pred.selected_name.replace(".cypher", "")
+            pred.selected_name = re.sub('(?<!^)(?=[A-Z])', '_', pred.selected_name).lower()
             observation = self.call_program(pred.selected_name)
             return CallGraphProgramOutput(
                 name = pred.selected_name,

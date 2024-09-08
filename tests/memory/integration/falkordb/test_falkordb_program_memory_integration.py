@@ -5,28 +5,112 @@ import hybridagi.core.graph_program as gp
 import pytest
 import uuid
 
-@pytest.fixture
-def falkordb_program_memory():
+def test_local_program_memory_constructor():
+    program_memory = FalkorDBProgramMemory(index_name="test_prog_memory_constructor", wipe_on_start=True)
+
+def test_falkorDB_program_memory_update_one_prog():
+    program_memory = FalkorDBProgramMemory(index_name="test_update_one_prog", wipe_on_start=True)
+    
+    main = gp.GraphProgram(
+        name="main",
+        description="The main program",
+    )
+    
+    main.add(gp.Action(
+        id="answer",
+        purpose="Answer the Objective's question",
+        tool="Speak",
+        prompt="Please answer to the Objective's question",
+    ))
+
+    main.connect("start", "answer")
+    main.connect("answer", "end")
+    
+    main.build()
+    
+    program_memory.update(main)
+    assert program_memory.exist("main")
+    
+def test_falkorDB_program_memory_get_one_prog():
+    program_memory = FalkorDBProgramMemory(index_name="test_get_one_prog", wipe_on_start=True)
+    
+    main = gp.GraphProgram(
+        name="main",
+        description="The main program",
+    )
+    
+    main.add(gp.Action(
+        id="answer",
+        purpose="Answer the Objective's question",
+        tool="Speak",
+        prompt="Please answer to the Objective's question",
+    ))
+
+    main.connect("start", "answer")
+    main.connect("answer", "end")
+    
+    main.build()
+    
+    program_memory.update(main)
+    result_prog = program_memory.get("main").progs[0]
+    assert result_prog.name == main.name
+    assert result_prog.to_cypher() == main.to_cypher()
+    assert result_prog.metadata == main.metadata
+    
+def test_falkorDB_program_memory_override_one_prog():
+    program_memory = FalkorDBProgramMemory(index_name="test_override_one_prog", wipe_on_start=True)
+    
+    main = gp.GraphProgram(
+        name="main",
+        description="The main program",
+    )
+    
+    main.add(gp.Action(
+        id="answer",
+        purpose="Answer the Objective's question",
+        tool="Speak",
+        prompt="Please answer to the Objective's question",
+    ))
+
+    main.connect("start", "answer")
+    main.connect("answer", "end")
+    
+    main.build()
+    
+    program_memory.update(main)
+    assert program_memory.exist("main")
+    program_memory.update(main)
+    assert program_memory.exist("main")
+    assert len(program_memory.get("main").progs) == 1
+    
+def test_falkorDB_program_memory_update_one_embedded_prog():
     embeddings = FakeEmbeddings(dim=250)
-    return FalkorDBProgramMemory(
-        index_name="test_index_01",
-        embeddings=embeddings,
-        hostname="localhost",
-        port=6379,
-        username="",
-        password="",
-        indexed_label="Program",
-        wipe_on_start=True,
+    program_memory = FalkorDBProgramMemory(index_name="test_update_one_prog_with_embeddings", wipe_on_start=True)
+    
+    main = gp.GraphProgram(
+        name="main",
+        description="The main program",
     )
+    
+    main.add(gp.Action(
+        id="answer",
+        purpose="Answer the Objective's question",
+        tool="Speak",
+        prompt="Please answer to the Objective's question",
+    ))
 
-def test_falkordb_program_memory_empty(falkordb_program_memory):
-    assert falkordb_program_memory is not None
-    assert falkordb_program_memory.get_all_programs().progs == []
-
-def test_init(falkordb_program_memory):
-    assert falkordb_program_memory is not None
-
-def test_local_program_memory_update_one_prog(falkordb_program_memory):
+    main.connect("start", "answer")
+    main.connect("answer", "end")
+    
+    main.build()
+    main.vector = embeddings.embed_text("test")
+    
+    program_memory.update(main)
+    assert program_memory.exist("main")
+    
+def test_falkorDB_program_memory_remove_one_prog():
+    program_memory = FalkorDBProgramMemory(index_name="test_remove_one_prog", wipe_on_start=True)
+    
     main = gp.GraphProgram(
         name="main",
         description="The main program",
@@ -44,36 +128,15 @@ def test_local_program_memory_update_one_prog(falkordb_program_memory):
     
     main.build()
     
-    falkordb_program_memory.update(main)
-
-    assert falkordb_program_memory._programs["main"] == main
-
-
-def test_local_program_memory_remove_one_prog(falkordb_program_memory):
-    main = gp.GraphProgram(
-        name="main",
-        description="The main program",
-    )
+    program_memory.update(main)
     
-    main.add(gp.Action(
-        id="answer",
-        purpose="Answer the Objective's question",
-        tool="Speak",
-        prompt="Please answer to the Objective's question",
-    ))
-
-    main.connect("start", "answer")
-    main.connect("answer", "end")
+    assert program_memory.exist("main")
+    program_memory.remove("main")
+    assert not program_memory.exist("main")
     
-    main.build()
+def test_local_program_memory_update_dependencies_prog():
+    program_memory = FalkorDBProgramMemory(index_name="test_dependency", wipe_on_start=True)
     
-    falkordb_program_memory.update(main)
-    
-    assert falkordb_program_memory._programs["main"] == main
-    falkordb_program_memory.remove("main")
-    assert len(falkordb_program_memory._programs) == 0
-    
-def test_local_program_memory_update_dependencies_prog(falkordb_program_memory):
     clarify_objective = gp.GraphProgram(
         name = "clarify_objective",
         description = "Clarify the objective by asking question to the user",
@@ -131,36 +194,73 @@ def test_local_program_memory_update_dependencies_prog(falkordb_program_memory):
 
     main.build()
     
-    falkordb_program_memory.update(clarify_objective)
-    falkordb_program_memory.update(main)
+    program_memory.update(main)
+    program_memory.update(clarify_objective)
 
-    assert falkordb_program_memory.depends_on("main", "clarify_objective")
+    assert program_memory.depends_on("main", "clarify_objective")
+    
+def test_local_program_memory_protected_prog():
+    program_memory = FalkorDBProgramMemory(index_name="test_protected", wipe_on_start=True)
+    
+    clarify_objective = gp.GraphProgram(
+        name = "clarify_objective",
+        description = "Clarify the objective by asking question to the user",
+    )
 
-def test_is_protected(falkordb_program_memory):
-    # Test with a reserved name
-    assert falkordb_program_memory.is_protected("main") == True
-    assert falkordb_program_memory.is_protected("playground") == True
-    
-    # Test with a non-reserved name
-    assert falkordb_program_memory.is_protected("test_program") == False
-    
-    # Test with a program that "main" depends on
-    main = gp.GraphProgram(name="main", description="The main program")
-    dependent_program = gp.GraphProgram(name="dependent_program", description="A program that main depends on")
-    
-    # Build dependent_program
-    dependent_program.add(gp.Action(id="dummy_action", purpose="Dummy action", tool="DummyTool", prompt="Dummy prompt"))
-    dependent_program.connect("start", "dummy_action")
-    dependent_program.connect("dummy_action", "end")
-    dependent_program.build()
+    clarify_objective.add(gp.Decision(
+        id = "is_anything_unclear",
+        purpose = "Check if the question is unclear",
+        question = "Is the Objective's question still unclear?",
+    ))
 
-    # Build main program
-    main.add(gp.Program(id="dependent", purpose="Use dependent program", program="dependent_program"))
-    main.connect("start", "dependent")
-    main.connect("dependent", "end")
+    clarify_objective.add(gp.Action(
+        id = "ask_question",
+        purpose = "Ask question to clarify the Objective",
+        tool = "AskUser",
+        prompt = "Pick one question to clarify the Objective's question",
+    ))
+
+    clarify_objective.add(gp.Action(
+        id = "refine_objective",
+        purpose = "Refine the question",
+        tool = "UpdateObjective",
+        prompt = "Refine the Objective's question",
+    ))
+
+    clarify_objective.connect("start", "is_anything_unclear")
+    clarify_objective.connect("ask_question", "refine_objective")
+    clarify_objective.connect("is_anything_unclear", "ask_question", label="Clarify")
+    clarify_objective.connect("is_anything_unclear", "end", label="Answer")
+    clarify_objective.connect("refine_objective", "end")
+
+    clarify_objective.build()
+
+    main = gp.GraphProgram(
+        name="main",
+        description="The main program",
+    )
+
+    main.add(gp.Program(
+        id = "clarify_objective",
+        purpose = "Clarify the Objective if needed",
+        program = "clarify_objective"
+    ))
+
+    main.add(gp.Action(
+        id = "answer",
+        purpose = "Answer the Objective's question",
+        tool = "Speak",
+        prompt = "Answer the Objective's question",
+    ))
+
+    main.connect("start", "clarify_objective")
+    main.connect("clarify_objective", "answer")
+    main.connect("answer", "end")
+
     main.build()
     
-    falkordb_program_memory.update(dependent_program)
-    falkordb_program_memory.update(main)
-    
-    assert falkordb_program_memory.is_protected("dependent_program") == True
+    program_memory.update(main)
+    program_memory.update(clarify_objective)
+
+    assert program_memory.is_protected("main")
+    assert program_memory.is_protected("clarify_objective")
