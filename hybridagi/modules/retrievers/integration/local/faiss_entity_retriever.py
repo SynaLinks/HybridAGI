@@ -47,6 +47,7 @@ class FAISSEntityRetriever(EntityRetriever):
         self.max_distance = max_distance
         self.reranker = reranker
         self.k = k
+        self.reverse = reverse
         vector_dim = self.embeddings.dim
         if self.distance == "euclidean":
             self.index = faiss.IndexFlatL2(vector_dim)
