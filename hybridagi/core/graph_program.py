@@ -283,6 +283,14 @@ class GraphProgram(BaseModel, dspy.Prediction):
                 if step_type == "Control":
                     self.add(Control(id=step_props["id"]))
                 elif step_type == "Action":
+                    if "id" not in step_props:
+                        raise ValueError(f"{step_id} Action node should have \"{step_id}\" in its id field")
+                    if "purpose" not in step_props:
+                        raise ValueError(f"{step_id} Action node should have a purpose field")
+                    if "tool" not in step_props:
+                        raise ValueError(f"{step_id} Action node should have a tool field")
+                    if "prompt" not in step_props:
+                        raise ValueError(f"{step_id} Action node should have a prompt field")
                     self.add(Action(
                         id=step_props["id"],
                         purpose=step_props["purpose"],
@@ -293,6 +301,12 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         disable_inference=True if "disable_inference" in step_props else False,
                     ))
                 elif step_type == "Decision":
+                    if "id" not in step_props:
+                        raise ValueError(f"{step_id} Decision node should have \"{step_id}\" in its id field")
+                    if "purpose" not in step_props:
+                        raise ValueError(f"{step_id} Decision node should have a purpose field")
+                    if "question" not in step_props:
+                        raise ValueError(f"{step_id} Decision node should have a question field")
                     self.add(Decision(
                         id=step_props["id"],
                         purpose=step_props["purpose"],
@@ -300,6 +314,12 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         inputs=step_props["inputs"] if "inputs" in step_props else None,
                     ))
                 elif step_type == "Program":
+                    if "id" not in step_props:
+                        raise ValueError(f"{step_id} Program node should have \"{step_id}\" in its id field")
+                    if "purpose" not in step_props:
+                        raise ValueError(f"{step_id} Program node should have a purpose field")
+                    if "program" not in step_props:
+                        raise ValueError(f"{step_id} Program node should have a program field")
                     self.add(Program(
                         id=step_props["id"],
                         purpose=step_props["purpose"],
