@@ -8,14 +8,14 @@ from hybridagi.core.datatypes import (
     QueryWithDocuments,
 )
 from hybridagi.output_parsers import PredictionOutputParser
-from hybridagi.output_parsers import QueryOutputParser
+from hybridagi.output_parsers import QueryListOutputParser
 
 class DocumentSearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity search query")
+    query = dspy.OutputField(desc = "The comma separated similarity search queries")
 
 class DocumentSearchTool(Tool):
     def __init__(
@@ -28,11 +28,7 @@ class DocumentSearchTool(Tool):
         self.retriever = retriever
         self.predict = dspy.Predict(DocumentSearchSignature)
         self.prediction_parser = PredictionOutputParser()
-        self.query_parser = QueryOutputParser()
-        
-    def document_search(self, query: str):
-        retriver_input = Query(query=query)
-        return self.retriever(retriver_input)
+        self.query_parser = QueryListOutputParser()
     
     def forward(self, tool_input: ToolInput) -> QueryWithDocuments:
         if not isinstance(tool_input, ToolInput):
@@ -49,8 +45,8 @@ class DocumentSearchTool(Tool):
                 pred.query,
                 prefix = "Query:",
             )
-            pred.query = self.query_parser.parse(pred.query)
-            query_with_documents = self.document_search(pred.query)
+            query = self.query_parser.parse(pred.query)
+            query_with_documents = self.retriever(query)
             return query_with_documents
         else:
             query_with_documents = self.document_search(tool_input.prompt)

@@ -8,14 +8,14 @@ from hybridagi.core.datatypes import (
     AgentStepList,
 )
 from hybridagi.output_parsers import PredictionOutputParser
-from hybridagi.output_parsers import QueryOutputParser
+from hybridagi.output_parsers import QueryListOutputParser
 
 class PastActionSearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity search query")
+    query = dspy.OutputField(desc = "The comma separated similarity search queries")
 
 class PastActionSearchTool(Tool):
     def __init__(
@@ -28,11 +28,7 @@ class PastActionSearchTool(Tool):
         self.retriever = retriever
         self.predict = dspy.Predict(PastActionSearchSignature)
         self.prediction_parser = PredictionOutputParser()
-        self.query_parser = QueryOutputParser()
-        
-    def action_search(self, query: str):
-        retriver_input = Query(query=query)
-        return self.retriever(retriver_input)
+        self.query_parser = QueryListOutputParser()
     
     def forward(self, tool_input: ToolInput) -> AgentStepList:
         if not isinstance(tool_input, ToolInput):
@@ -49,11 +45,12 @@ class PastActionSearchTool(Tool):
                 pred.query,
                 prefix = "Query:",
             )
-            pred.query = self.query_parser.parse(pred.query)
-            action_list = self.action_search(pred.query)
+            query = self.query_parser.parse(pred.query)
+            action_list = self.retriever(query)
             return action_list
         else:
-            action_list = self.action_search(tool_input.prompt)
+            query = self.query_parser.parse(tool_input.prompt)
+            action_list = self.retriever(query)
             return action_list
         
     def __deepcopy__(self, memo):

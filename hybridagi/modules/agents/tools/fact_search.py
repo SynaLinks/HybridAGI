@@ -7,14 +7,14 @@ from hybridagi.core.datatypes import (
     QueryWithFacts,
 )
 from hybridagi.output_parsers import PredictionOutputParser
-from hybridagi.output_parsers import QueryOutputParser
+from hybridagi.output_parsers import QueryListOutputParser
 
 class FactSearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity search query")
+    query = dspy.OutputField(desc = "The comma separated similarity search queries")
 
 class FactSearchTool(Tool):
     def __init__(
@@ -27,7 +27,7 @@ class FactSearchTool(Tool):
         self.retriever = retriever
         self.predict = dspy.Predict(FactSearchSignature)
         self.prediction_parser = PredictionOutputParser()
-        self.query_parser = QueryOutputParser()
+        self.query_parser = QueryListOutputParser()
         
     def fact_search(self, query: str):
         retriver_input = Query(query=query)
@@ -48,11 +48,12 @@ class FactSearchTool(Tool):
                 pred.query,
                 prefix = "Query:",
             )
-            pred.query = self.query_parser.parse(pred.query)
-            query_with_facts = self.fact_search(pred.query)
+            query = self.query_parser.parse(pred.query)
+            query_with_facts = self.retriever(query)
             return query_with_facts
         else:
-            query_with_facts = self.fact_search(tool_input.prompt)
+            query = self.query_parser.parse(tool_input.prompt)
+            query_with_facts = self.retriever(query)
             return query_with_facts
         
     def __deepcopy__(self, memo):

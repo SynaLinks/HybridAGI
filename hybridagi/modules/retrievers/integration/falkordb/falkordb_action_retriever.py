@@ -1,21 +1,18 @@
-import dspy
+"""The action retriever. Copyright (C) 2024 Yoan Sallami - SynaLinks. License: GPL-3.0"""
+
 import numpy as np
-from enum import Enum
-from typing import Optional, Union
-import faiss
-from hybridagi.memory import TraceMemory
+import dspy
+from typing import Union, Optional, List
+from dsp.utils import dotdict
 from hybridagi.embeddings import Embeddings
-from hybridagi.core.datatypes import Query, QueryList, QueryWithSteps
+from hybridagi.memory import TraceMemory
 from hybridagi.modules.retrievers import ActionRetriever
+from hybridagi.core.datatypes import Query, QueryList, QueryWithSteps
 from hybridagi.core.pipeline import Pipeline
 
-class EmbeddingsDistance(str, Enum):
-    Cosine = "cosine"
-    Euclidean = "euclidean"
-
-class FAISSActionRetriever(ActionRetriever):
+class FalkorDBActionRetriever(ActionRetriever):
     """
-    A class for retrieving actions using FAISS (Facebook AI Similarity Search) and embeddings.
+    A class for retrieving actions using FalkorDB approximate nearest neighbor vector search.
 
     Parameters:
         trace_memory (TraceMemory): An instance of TraceMemory class which stores the memory of the agent.
@@ -26,7 +23,7 @@ class FAISSActionRetriever(ActionRetriever):
         reverse (bool, optional): Weither or not to reverse the final result. Default to True.
         reranker (Optional[Pipeline], optional): An instance of Pipeline class which is used to re-rank the retrieved actions. Defaults to None.
     """
-    
+
     def __init__(
             self,
             trace_memory: TraceMemory,
@@ -37,24 +34,25 @@ class FAISSActionRetriever(ActionRetriever):
             reverse: bool = True,
             reranker: Optional[Pipeline] = None,
         ):
+        """The retriever constructor"""
         self.trace_memory = trace_memory
         self.embeddings = embeddings
-        if distance == EmbeddingsDistance.Cosine:
-            self.distance = EmbeddingsDistance.Cosine
-        elif distance == EmbeddingsDistance.Euclidean:
-            self.distance = EmbeddingsDistance.Euclidean
-        else:
-            raise ValueError("Invalid distance provided, should be cosine or euclidean") 
+        if distance != "cosine" and distance != "euclidean":
+            raise ValueError("Invalid distance provided, should be cosine or euclidean")
+        self.distance = distance
         self.max_distance = max_distance
         self.reranker = reranker
         self.k = k
         self.reverse = reverse
-        vector_dim = self.embeddings.dim
-        if self.distance == "euclidean":
-            self.index = faiss.IndexFlatL2(vector_dim)
-        else:
-            self.index = faiss.IndexFlatIP(vector_dim)
-    
+        try:
+            params = {"dim": self.embeddings.dim, "distance": self.distance}
+            self.trace_memory._graph.query(
+                "CREATE VECTOR INDEX FOR (s:AgentStep) ON (s.vector) OPTIONS {dimension:$dim, similarityFunction:$distance}",
+                params,
+            )
+        except Exception:
+            pass
+
     def forward(self, query_or_queries: Union[Query, QueryList]) -> QueryWithSteps:
         """
         Retrieve actions based on the given query.
@@ -69,28 +67,40 @@ class FAISSActionRetriever(ActionRetriever):
             raise ValueError(f"{type(self).__name__} input must be a Query or QueryList")
         if isinstance(query_or_queries, Query):
             queries = QueryList()
-            queries.queries = [query_or_queries.query]
+            queries.queries = [query_or_queries]
         else:
             queries = query_or_queries
         result = QueryWithSteps()
         result.queries.queries = queries.queries
-        embeddings_map = self.trace_memory._embeddings
-        vectors = np.array(list(embeddings_map.values()), dtype="float32")
-        if vectors.shape[0] > 0:
-            self.index.reset()
-            if self.distance == "euclidean":
-                faiss.normalize_L2(vectors)
-            self.index.add(vectors)
-            query_vectors = np.array(self.embeddings.embed_text([q.query for q in queries.queries]), dtype="float32")
-            distances, indexes = self.index.search(query_vectors, min(vectors.shape[0], self.k))
-            for i in range(min(vectors.shape[0], self.k)):
-                if distances[0][i] < self.max_distance:
-                    action_index = indexes[0][i]
-                    action_id = list(embeddings_map.keys())[action_index]
-                    action = self.trace_memory.get(action_id).steps[0]
-                    result.steps.append(action)
-                else:
-                    break
+        query_vectors = self.embeddings.embed_text([q.query for q in queries.queries])
+        items = []
+        indexes = {}
+        for vector in query_vectors:
+            params = {"vector": list(vector), "k": int(2*self.k)}
+            query = " ".join([
+                "CALL db.idx.vector.queryNodes('AgentStep', 'vector', $k, vecf32($vector)) YIELD node, score",
+                'RETURN node.id AS id, score'])
+            result = self.trace_memory._graph.query(
+                query,
+                params = params,
+            )
+            if len(result.result_set) > 0:
+                for record in result.result_set:
+                    if record[0] not in indexes:
+                        indexes[record[0]] = True
+                    else:
+                        continue
+                    step = self.trace_memory.get(record[0])
+                    distance = float(record[1])
+                    if distance < self.max_distance:
+                        items.extend([{"step": step.steps[0], "distance": distance}])
+        if len(items) > 0:
+            sorted_items = sorted(
+                items,
+                key=lambda x: x["distance"],
+                reverse=False,
+            )[:self.k]
+            result.steps = [s["step"] for s in sorted_items]
             if self.reranker is not None:
                 result = self.reranker(result)
             if self.reverse:

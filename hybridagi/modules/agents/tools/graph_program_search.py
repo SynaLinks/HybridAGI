@@ -8,13 +8,14 @@ from hybridagi.core.datatypes import (
     GraphProgramList,
 )
 from hybridagi.output_parsers import PredictionOutputParser
+from hybridagi.output_parsers import QueryListOutputParser
 
 class GraphProgramSearchSignature(dspy.Signature):
     objective = dspy.InputField(desc = "The long-term objective (what you are doing)")
     context = dspy.InputField(desc = "The previous actions (what you have done)")
     purpose = dspy.InputField(desc = "The purpose of the action (what you have to do now)")
     prompt = dspy.InputField(desc = "The action specific instructions (How to do it)")
-    query = dspy.OutputField(desc = "The similarity search query")
+    query = dspy.OutputField(desc = "The comma separated similarity search queries")
 
 class GraphProgramSearchTool(Tool):
     def __init__(
@@ -27,6 +28,7 @@ class GraphProgramSearchTool(Tool):
         self.retriever = retriever
         self.predict = dspy.Predict(GraphProgramSearchSignature)
         self.prediction_parser = PredictionOutputParser()
+        self.query_parser = QueryListOutputParser()
         
     def program_search(self, query: str):
         retriver_input = Query(query=query)
@@ -47,12 +49,13 @@ class GraphProgramSearchTool(Tool):
                 pred.query,
                 prefix = "Query:",
             )
-            pred.query = pred.query.strip("\"")
-            program_list = self.program_search(pred.query)
-            return program_list
+            query = self.query_parser.parse(pred.query)
+            query_with_programs = self.retriever(query)
+            return query_with_programs
         else:
-            program_list = self.program_search(tool_input.prompt)
-            return program_list
+            query = self.query_parser.parse(tool_input.prompt)
+            query_with_programs = self.retriever(query)
+            return query_with_programs
         
     def __deepcopy__(self, memo):
         cpy = (type)(self)(

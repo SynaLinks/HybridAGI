@@ -14,6 +14,20 @@
 
 **Disclaimer:** We are currently refactoring the project for better modularity and better ease of use. For now, only the Local integration if available, the FalkorDB & Kuzu integration will be done at the end of this refactoring. At that time we will accept contributions for the integration of other Cypher-based graph databases. For more information, join the Discord channel.
 
+## Key Features
+
+- **Turing Complete DSL**: HybridAGI's Turing Complete Domain Specific Language (DSL) has been specifically designed to describe an infinite number of algorithms using only 4 different types of nodes (Control, Action, Decision, Program). The interpreter Agent can loop and call subprograms, similar to a traditional programming language.
+
+- **Graph Program Search & Dynamic Call**: Because our agent system is not a static finite state machine but an interpreter that interprets a graph-based DSL node by node, it can search programs into memory and dynamically call the best one to solve the user query.
+
+- **Optimizable Pipeline & Agent**: With HybridAGI and DSPy, you can optimize the data processing pipelines and the agent system to your own needs. Since each HybridAGI module is also a DSPy module, you can use DSPy optimizers seamlessly with them.
+
+- **Agent Behavior as Software**: With HybridAGI, you can ship the Agent's behavior as Cypher software, enabling start-ups and companies to create their own IP based on their business logic implemented in Cypher.
+
+- **Memory-Centric System**: HybridAGI is a memory-centric system that heavily uses Knowledge Graphs, both for executing programs and to store structured knowledge. This enables Knowledge Graph RAG applications for critical domains.
+
+- **Secure and Safe**: Special attention has been given to prevent Cypher Injections but also to prevent the Agent system from modifying its own main prompting mechanism by introducing the concept of protected programs.
+
 ## Notebooks
 
 - [Datatypes](notebooks/datatypes.ipynb)

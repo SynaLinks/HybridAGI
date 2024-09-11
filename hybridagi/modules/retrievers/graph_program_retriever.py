@@ -1,11 +1,12 @@
 import dspy
 from abc import abstractmethod
-from hybridagi.core.datatypes import Query, QueryWithGraphPrograms
+from typing import Union
+from hybridagi.core.datatypes import Query, QueryList, QueryWithGraphPrograms
 
 class GraphProgramRetriever(dspy.Module):
     
     @abstractmethod
-    def forward(self, query: Query) -> QueryWithGraphPrograms:
+    def forward(self, query_or_queries: Union[Query, QueryList]) -> QueryWithGraphPrograms:
         raise NotImplementedError(
             f"GraphProgramRetriever {type(self).__name__} is missing the required 'forward' method."
         )

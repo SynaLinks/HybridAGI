@@ -77,6 +77,8 @@ class GraphInterpreterAgent(dspy.Module):
             entrypoint: str = "main",
             num_history: int = 5,
             max_iters: int = 20,
+            commit_decision_steps: bool = False,
+            decision_lm: Optional[dspy.LM] = None,
             verbose: bool = True,
             debug: bool = False,
         ):
@@ -104,6 +106,8 @@ class GraphInterpreterAgent(dspy.Module):
         self.max_iters = max_iters
         self.decision_parser = DecisionOutputParser()
         self.prediction_parser = PredictionOutputParser()
+        self.commit_decision_steps = commit_decision_steps
+        self.decision_lm = decision_lm
         self.verbose = verbose
         self.debug = debug
         self.previous_agent_step = None
@@ -139,7 +143,8 @@ class GraphInterpreterAgent(dspy.Module):
                 print(f"{ACTION_COLOR}{agent_step}{Style.RESET_ALL}")
         elif isinstance(current_step, Decision):
             agent_step = self.decide(current_step)
-            self.agent_state.program_trace.steps.append(str(agent_step))
+            if self.commit_decision_steps:
+                self.agent_state.program_trace.steps.append(str(agent_step))
             if self.verbose:
                 print(f"{DECISION_COLOR}{agent_step}{Style.RESET_ALL}")
         elif isinstance(current_step, Control):
@@ -281,25 +286,26 @@ class GraphInterpreterAgent(dspy.Module):
             trace = "Nothing done yet"
         choices = self.agent_state.get_current_program().get_decision_choices(step.id)
         possible_answers = " or ".join(choices)
-        pred = self.decisions[self.agent_state.decision_hop](
-            objective = self.agent_state.objective.query,
-            context = trace,
-            purpose = step.purpose,
-            question = step.question,
-            options = possible_answers,
-        )
-        pred.choice = pred.choice.replace("\"", "")
-        pred.choice = self.prediction_parser.parse(pred.choice, prefix="Choice:", stop=["."])
-        pred.choice = self.decision_parser.parse(pred.choice, options=choices)
-        if pred.choice not in choices:
-            corrected_pred = self.correct_decision(
-                answer = pred.choice,
+        with dspy.context(lm=self.decision_lm if self.decision_lm is not None else dspy.settings.lm):
+            pred = self.decisions[self.agent_state.decision_hop](
+                objective = self.agent_state.objective.query,
+                context = trace,
+                purpose = step.purpose,
+                question = step.question,
                 options = possible_answers,
             )
-            corrected_pred.choice = corrected_pred.choice.replace("\"", "")
-            corrected_pred.choice = self.prediction_parser.parse(corrected_pred.choice, prefix="Choice:", stop=["."])
-            corrected_pred.choice = self.decision_parser.parse(corrected_pred.choice, options=choices)
-            pred.choice = corrected_pred.choice
+            pred.choice = pred.choice.replace("\"", "")
+            pred.choice = self.prediction_parser.parse(pred.choice, prefix="Choice:", stop=["."])
+            pred.choice = self.decision_parser.parse(pred.choice, options=choices)
+            if pred.choice not in choices:
+                corrected_pred = self.correct_decision(
+                    answer = pred.choice,
+                    options = possible_answers,
+                )
+                corrected_pred.choice = corrected_pred.choice.replace("\"", "")
+                corrected_pred.choice = self.prediction_parser.parse(corrected_pred.choice, prefix="Choice:", stop=["."])
+                corrected_pred.choice = self.decision_parser.parse(corrected_pred.choice, options=choices)
+                pred.choice = corrected_pred.choice
         self.agent_state.decision_hop += 1
         agent_step = AgentStep(
             hop = self.agent_state.current_hop,

@@ -33,7 +33,7 @@ class QueryList(BaseModel, dspy.Prediction):
         dspy.Prediction.__init__(self, **kwargs)
         
     def to_dict(self):
-        return {"queries": [q.to_dict() for q in self.queries]}
+        return {"queries": [q.query for q in self.queries]}
 
 class Document(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the document", default_factory=uuid4)
@@ -59,7 +59,7 @@ class DocumentList(BaseModel, dspy.Prediction):
         return {"documents": [d.to_dict() for d in self.docs]}
 
 class QueryWithDocuments(BaseModel, dspy.Prediction):
-    query: Query = Field(description="The input query", default_factory=Query)
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
     docs: Optional[List[Document]] = Field(description="List of documents", default=[])
     
     def __init__(self, **kwargs):
@@ -67,7 +67,7 @@ class QueryWithDocuments(BaseModel, dspy.Prediction):
         dspy.Prediction.__init__(self, **kwargs)
         
     def to_dict(self):
-        return {"query": self.query.query, "documents": [d.to_dict() for d in self.docs]}
+        return {"queries": [q.query for q in self.queries.queries], "documents": [d.to_dict() for d in self.docs]}
 
 class Entity(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the entity", default_factory=uuid4)
@@ -100,7 +100,7 @@ class EntityList(BaseModel, dspy.Prediction):
         return {"entities": [e.to_dict() for e in self.entities]}
     
 class QueryWithEntities(BaseModel, dspy.Prediction):
-    query: Query = Field(description="The input query", default_factory=Query)
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
     entities: List[Entity] = Field(description="List of entities", default=[])
     
     def __init__(self, **kwargs):
@@ -108,7 +108,7 @@ class QueryWithEntities(BaseModel, dspy.Prediction):
         dspy.Prediction.__init__(self, **kwargs)
     
     def to_dict(self):
-        return {"query": self.query.query, "entities": [e.to_dict() for e in self.entities]}
+        return {"queries": [q.query for q in self.queries.queries], "entities": [e.to_dict() for e in self.entities]}
     
 class Relationship(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the relation", default_factory=uuid4)
@@ -240,7 +240,7 @@ class GraphSchema(BaseModel, dspy.Prediction):
         return {"schema": [s.to_dict() for s in self.schemas]}
     
 class QueryWithFacts(BaseModel, dspy.Prediction):
-    query: Query = Field(description="The input query", default_factory=Query)
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
     facts: Optional[List[Fact]] = Field(description="List of facts", default=[])
     
     def __init__(self, **kwargs):
@@ -248,7 +248,7 @@ class QueryWithFacts(BaseModel, dspy.Prediction):
         dspy.Prediction.__init__(self, **kwargs)
         
     def to_dict(self):
-        return {"query": self.query.query, "facts": [f.to_dict() for f in self.facts]}
+        return {"queries": [q.query for q in self.queries.queries], "facts": [f.to_dict() for f in self.facts]}
 
 class UserProfile(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the user", default_factory=uuid4)
@@ -379,11 +379,11 @@ class AgentStepList(BaseModel, dspy.Prediction):
         return {"steps": [s.to_dict() for s in self.steps]}
     
 class QueryWithSteps(BaseModel, dspy.Prediction):
-    query: Query = Field(description="The input query", default_factory=Query)
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
     steps: List[AgentStep] = Field(description="List of agent steps", default=[])
     
     def to_dict(self):
-        return {"query": self.query.query, "steps": [s.to_dict() for s in self.steps]}
+        return {"queries": [q.query for q in self.queries.queries], "steps": [s.to_dict() for s in self.steps]}
     
 class FinishReason(str, Enum):
     MaxIters = "max_iters"
@@ -466,7 +466,7 @@ class GraphProgramList(BaseModel, dspy.Prediction):
         return {"routines": [p.to_dict() for p in self.progs]}
     
 class QueryWithGraphPrograms(BaseModel, dspy.Prediction):
-    query: Query = Field(description="The input query", default_factory=Query)
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
     progs: Optional[List[GraphProgram]] = Field(description="List of graph programs", default=[])
     
     def __init__(self, **kwargs):
@@ -474,4 +474,4 @@ class QueryWithGraphPrograms(BaseModel, dspy.Prediction):
         dspy.Prediction.__init__(self, **kwargs)
         
     def to_dict(self):
-        return {"query": self.query.query, "routines": [p.to_dict() for p in self.progs]}
+        return {"queries": [q.query for q in self.queries.queries], "routines": [p.to_dict() for p in self.progs]}

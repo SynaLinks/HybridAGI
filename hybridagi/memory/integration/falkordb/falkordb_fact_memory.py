@@ -31,7 +31,6 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
     def __init__(
         self,
         index_name: str,
-        embeddings: Embeddings,
         graph_index: str = "fact_memory",
         hostname: str = "localhost",
         port: int = 6379,
@@ -68,7 +67,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             "MATCH ()-[r:RELATION {id: $id}]->() RETURN COUNT(r) AS count"
         )
         params = {"id": str(fact_or_entity_id)}
-        result = self.hybridstore.query(query, params=params)
+        result = self._graph.query(query, params=params)
         return sum(int(count[0]) for count in result.result_set) > 0
 
     def _update_entities(self, entities: Union[Entity, EntityList]) -> None:
@@ -101,12 +100,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                 }
             }
             query = "MERGE (e:Entity {id: $id}) SET e += $properties"
-            self.hybridstore.query(query, params=params)
-
-            # Update local cache
-            self._entities[str(entity.id)] = entity
-            if entity.vector is not None:
-                self._entities_embeddings[str(entity.id)] = list(entity.vector)
+            self._graph.query(query, params=params)
 
     def _update_facts(self, facts: Union[Fact, FactList]) -> None:
         """
@@ -138,7 +132,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                     "vector": list(fact.vector) if fact.vector is not None else None
                 }
             }
-            self.hybridstore.query(
+            self._graph.query(
                 "MATCH (s:Entity {id: $subject_id}), (o:Entity {id: $object_id}) "
                 "MERGE (s)-[r:RELATION {id: $id}]->(o) "
                 "SET r += $properties",
@@ -157,7 +151,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             EntityList: A list of retrieved entities.
         """
         ids = [str(id_or_ids)] if isinstance(id_or_ids, (UUID, str)) else [str(id) for id in id_or_ids]
-        result = self.hybridstore.query(
+        result = self._graph.query(
             "MATCH (e:Entity) WHERE e.id IN $ids "
             "RETURN e",
             params={"ids": ids}
@@ -187,7 +181,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             FactList: A list of retrieved facts.
         """
         ids = [str(id_or_ids)] if isinstance(id_or_ids, (UUID, str)) else [str(id) for id in id_or_ids]
-        result = self.hybridstore.query(
+        result = self._graph.query(
             "MATCH (s:Entity)-[r:RELATION]->(o:Entity) WHERE r.id IN $ids "
             "RETURN r, s, o",
             params={"ids": ids}
@@ -227,7 +221,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             "RETURN r AS fact, s AS subject, e AS object"
         )
         params = {"entity_id": str(entity_id), "relation": relation}
-        result = self.hybridstore.query(query, params=params)
+        result = self._graph.query(query, params=params)
         
         facts = FactList()
         for row in result.result_set:
@@ -255,40 +249,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         """
         query = "MATCH (e:Entity {label: $entity_type}) RETURN e"
         params = {"entity_type": entity_type}
-        result = self.hybridstore.query(query, params=params)
-        
-        entities = EntityList()
-        for row in result.result_set:
-            entity_data = row[0]
-            entity = Entity(
-                id=entity_data.properties.get('id'),
-                name=entity_data.properties.get('name'),
-                label=entity_data.properties.get('label'),
-                description=entity_data.properties.get('description'),
-                vector=entity_data.properties.get('vector')
-            )
-            entities.entities.append(entity)
-        return entities
-
-    def search_entities(self, query: str, limit: int = 10) -> EntityList:
-        """
-        Search for entities based on a query string.
-
-        Args:
-            query: The search query string.
-            limit: The maximum number of results to return.
-
-        Returns:
-            EntityList: A list of entities matching the search query.
-        """
-        cypher_query = (
-            "MATCH (e:Entity) "
-            "WHERE e.name CONTAINS $query OR e.description CONTAINS $query "
-            "RETURN e "
-            "LIMIT $limit"
-        )
-        params = {"query": query, "limit": limit}
-        result = self.hybridstore.query(cypher_query, params=params)
+        result = self._graph.query(query, params=params)
         
         entities = EntityList()
         for row in result.result_set:
@@ -332,21 +293,6 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             self._update_facts(entities_or_facts)
         else:
             raise ValueError("Invalid datatype provided must be Entity or EntityList or Fact or FactList")
-
-    def clear(self) -> None:
-        """
-        Clear all entities and facts from the FalkorDB graph.
-
-        This method removes all entities and their relationships (facts) from the graph.
-        It ensures that the entire graph is cleared of all data.
-        """
-        self.hybridstore.query("MATCH (n:Entity) DETACH DELETE n")
-        self.hybridstore.query("MATCH (n:Fact) DETACH DELETE n")
-        self.hybridstore.query("MATCH (n:Relationship) DETACH DELETE n")
-        self.hybridstore.query("MATCH (n:GraphProgram) DETACH DELETE n")
-        self.hybridstore.query("MATCH (n:UserProfile) DETACH DELETE n")
-        self.hybridstore.query("MATCH (n:Message) DETACH DELETE n")
-        self.hybridstore.query("MATCH ()-[r:RELATION]->() DELETE r")
     
     def remove(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> None:
         """
@@ -369,12 +315,12 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         ids = [str(id_or_ids)] if isinstance(id_or_ids, (UUID, str)) else [str(id) for id in id_or_ids]
         for id in ids:
             # Remove entity (if it exists)
-            self.hybridstore.query(
+            self._graph.query(
                 "MATCH (e:Entity {id: $id}) DETACH DELETE e",
                 params={"id": id}
             )
             # Remove fact/relationship (if it exists)
-            self.hybridstore.query(
+            self._graph.query(
                 "MATCH ()-[r:RELATION {id: $id}]->() DELETE r",
                 params={"id": id}
             )

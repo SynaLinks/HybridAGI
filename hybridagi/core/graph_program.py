@@ -296,7 +296,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         purpose=step_props["purpose"],
                         tool=step_props["tool"],
                         prompt=step_props["prompt"],
-                        inputs=step_props["inputs"] if "inputs" in step_props else None,
+                        inputs=step_props["inputs"] if "inputs" in step_props else [],
                         output=step_props["output"] if "output" in step_props else None,
                         disable_inference=True if "disable_inference" in step_props else False,
                     ))
@@ -311,7 +311,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         id=step_props["id"],
                         purpose=step_props["purpose"],
                         question=step_props["question"],
-                        inputs=step_props["inputs"] if "inputs" in step_props else None,
+                        inputs=step_props["inputs"] if "inputs" in step_props else [],
                     ))
                 elif step_type == "Program":
                     if "id" not in step_props:
