@@ -84,12 +84,12 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
             }
             self._graph.query(
                 " ".join([
-                "MERGE (d:Document {id: $id})"
-                "SET"
-                "d.text=$text",
-                "d.parent_id=$parent_id", 
-                "d.metadata=$metadata",
-                "d.vector:vecf32($vector)"]),
+                "MERGE (d:Document {id: $id})",
+                "SET",
+                "d.text=$text,",
+                "d.parent_id=$parent_id,",
+                "d.metadata=$metadata,",
+                "d.vector=vecf32($vector)"]),
                 params = params,
             )
             params = {
@@ -103,12 +103,12 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
                 parent_id = str(doc.parent_id)
                 params = {
                     "id": doc_id,
-                    "parent": parent_id,
+                    "parent_id": parent_id,
                 }
                 self._graph.query(
                     " ".join([
                     "MATCH (d:Document {id: $id})",
-                    "MERGE (d)-[:PART_OF]->(:Document {id: $parent})"]),
+                    "MERGE (d)-[:PART_OF]->(:Document {id: $parent_id})"]),
                     params = params,
                 )
 
@@ -166,7 +166,10 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
                 )
                 text = query_result.result_set[0][0].properties["text"]
                 metadata = query_result.result_set[0][0].properties["metadata"]
-                parent_id = query_result.result_set[0][0].properties["parent_id"]
+                if "parent_id" in query_result.result_set[0][0].properties:
+                    parent_id = query_result.result_set[0][0].properties["parent_id"]
+                else:
+                    parent_id = None
                 if parent_id:
                     try:
                         parent_id = UUID(parent_id)

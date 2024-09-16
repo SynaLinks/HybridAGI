@@ -88,9 +88,10 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
                     "created_at": step.created_at.strftime(DATETIME_FORMAT),
                 }
                 self._graph.query(
-                    "".join([
+                    " ".join([
                     "MERGE (s:AgentStep {id: $id})",
-                    "SET s.parent_id=$parent_id,",
+                    "SET",
+                    "s.parent_id=$parent_id,",
                     "s.hop=$hop,",
                     "s.step_type=$step_type,",
                     "s.inputs=$inputs,",
@@ -104,10 +105,10 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
                 parent_id = str(step.parent_id)
                 params = {
                     "id": step_id,
-                    "parent": parent_id,
+                    "parent_id": parent_id,
                 }
                 self._graph.query(
-                    "MATCH (child:AgentStep {id: $id}), (parent:AgentStep {id: $parent}) MERGE (parent)-[:NEXT]->(child)",
+                    "MATCH (child:AgentStep {id: $id}), (parent:AgentStep {id: $parent_id}) MERGE (parent)-[:NEXT]->(child)",
                     params = params,
                 )
 

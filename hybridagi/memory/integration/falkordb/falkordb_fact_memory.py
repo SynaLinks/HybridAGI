@@ -81,15 +81,15 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                     "metadata": json.dumps(ent.metadata),
                 }
                 self._graph.query(
-                    "".join([
+                    " ".join([
                     "MERGE (e:Entity,",
                     str(ent.label),
                     "{id: $id})",
-                    "SET"
+                    "SET",
                     "e.name=$name,",
                     "e.description=$description,",
                     "e.metadata=$metadata,",
-                    "e.vector:vecf32($vector)"]),
+                    "e.vector=vecf32($vector)"]),
                     params = params,
                 )
         else:
