@@ -78,7 +78,7 @@ class FalkorDBActionRetriever(ActionRetriever):
         for vector in query_vectors:
             params = {"vector": list(vector), "k": int(2*self.k)}
             query = " ".join([
-                "CALL db.idx.vector.queryNodes('AgentStep', 'vector', $k, vecf32($vector)) YIELD node, score",
+                'CALL db.idx.vector.queryNodes("AgentStep", "vector", $k, vecf32($vector)) YIELD node, score',
                 'RETURN node.id AS id, score'])
             result = self.trace_memory._graph.query(
                 query,
@@ -100,7 +100,7 @@ class FalkorDBActionRetriever(ActionRetriever):
                 key=lambda x: x["distance"],
                 reverse=False,
             )[:self.k]
-            result.steps = [s["step"] for s in sorted_items]
+            result.steps = [i["step"] for i in sorted_items]
             if self.reranker is not None:
                 result = self.reranker(result)
             if self.reverse:

@@ -65,12 +65,6 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
 
         Raises:
             ValueError: If the input is neither a Document nor a DocumentList.
-
-        Note:
-            - If a document with the given ID already exists, it will be updated.
-            - If a document with the given ID doesn't exist, a new one will be created.
-            - For documents with a parent_id, a PART_OF relationship is created or updated.
-            - Document metadata is stored as properties on the Document node.
         """
         if not isinstance(doc_or_docs, (Document, DocumentList)):
             raise ValueError("Invalid datatype provided must be Document or DocumentList")
@@ -81,29 +75,23 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
             documents = doc_or_docs
         for doc in documents.docs:
             doc_id = str(doc.id)
-            if doc.vector is not None:
-                params = {
-                    "id": doc_id,
-                    "parent_id": str(doc.parent_id) if doc.parent_id else "",
-                    "text": doc.text,
-                    "vector": doc.vector,
-                    "metadata": json.dumps(doc.metadata)
-                }
-                self._graph.query(
-                    "MERGE (d:Document {id: $id}) SET d.text=$text, d.parent_id=$parent_id d.metadata=$metadata, d.vector:vecf32($vector)",
-                    params = params,
-                )
-            else:
-                params = {
-                    "id": doc_id,
-                    "parent_id": str(doc.parent_id) if doc.parent_id else "",
-                    "text": doc.text,
-                    "metadata": json.dumps(doc.metadata)
-                }
-                self._graph.query(
-                    "MERGE (d:Document {id: $id}) SET d.text=$text, d.parent_id=$parent_id, d.metadata=$metadata",
-                    params = params,
-                )
+            params = {
+                "id": doc_id,
+                "parent_id": str(doc.parent_id) if doc.parent_id else None,
+                "text": doc.text,
+                "vector": list(doc.vector) if doc.vector is not None else None,
+                "metadata": json.dumps(doc.metadata)
+            }
+            self._graph.query(
+                " ".join([
+                "MERGE (d:Document {id: $id})"
+                "SET"
+                "d.text=$text",
+                "d.parent_id=$parent_id", 
+                "d.metadata=$metadata",
+                "d.vector:vecf32($vector)"]),
+                params = params,
+            )
             params = {
                 "id": doc_id,
             }
@@ -118,7 +106,9 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
                     "parent": parent_id,
                 }
                 self._graph.query(
-                    "MATCH (d:Document {id: $id}) MERGE (d)-[:PART_OF]->(:Document {id: $parent})",
+                    " ".join([
+                    "MATCH (d:Document {id: $id})",
+                    "MERGE (d)-[:PART_OF]->(:Document {id: $parent})"]),
                     params = params,
                 )
 
@@ -139,11 +129,10 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
             documents_ids = id_or_ids
         for doc_id in documents_ids:
             doc_id = str(doc_id)
-            if self.exist(doc_id):
-                self._graph.query(
-                    "MATCH (n:Document {id: $id}) DETACH DELETE n",
-                    params={"id": doc_id}
-                )
+            self._graph.query(
+                "MATCH (n:Document {id: $id}) DETACH DELETE n",
+                params={"id": doc_id}
+            )
 
     def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> DocumentList:
         """

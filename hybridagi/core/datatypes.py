@@ -127,7 +127,6 @@ class Fact(BaseModel):
     subj: Entity = Field(description="Entity that is the subject of the fact", default=None)
     rel: Relationship = Field(description="Relation between the subject and object entities", default=None)
     obj: Entity = Field(description="Entity that is the object of the fact", default=None)
-    weight: float = Field(description="The fact weight (between 0.0 and 1.0, default 1.0)", default=1.0)
     vector: Optional[List[float]] = Field(description="Vector representation of the fact", default=None)
     metadata: Optional[Dict[str, Any]] = Field(description="Additional information about the fact", default={})
     

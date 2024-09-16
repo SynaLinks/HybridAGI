@@ -74,9 +74,8 @@ class LocalFactMemory(LocalMemory, FactMemory):
         Raises:
             ValueError: If the input is not an Entity, EntityList, Fact, or FactList.
         """
-        if not isinstance(entities_or_facts, Entity) and not isinstance(entities_or_facts, EntityList) and \
-            not isinstance(entities_or_facts, Fact) and not isinstance(entities_or_facts, FactList):
-            raise ValueError("Invalid datatype provided must be Entity or EntityList or Fact or FactList")
+        if not isinstance(entities_or_facts, (Entity, EntityList, Fact, FactList)):
+            raise ValueError("Invalid datatype provided must be Entity, EntityList, Fact or FactList")
         if isinstance(entities_or_facts, Entity) or isinstance(entities_or_facts, EntityList):
             if isinstance(entities_or_facts, Entity):
                 entities = EntityList()

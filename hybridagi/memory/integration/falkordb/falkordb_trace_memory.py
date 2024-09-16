@@ -78,32 +78,26 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
             if step.vector is not None:
                 params = {
                     "id": step_id,
-                    "parent_id": str(step.parent_id) if step.parent_id else "",
+                    "parent_id": str(step.parent_id) if step.parent_id else None,
                     "hop": step.hop,
                     "step_type": step.step_type.value,
                     "inputs": json.dumps(step.inputs) if step.inputs else "{}",
                     "outputs": json.dumps(step.outputs) if step.inputs else "{}",
-                    "vector": list(step.vector),
+                    "vector": list(step.vector) if step.vector is not None else None,
                     "metadata": json.dumps(step.metadata),
                     "created_at": step.created_at.strftime(DATETIME_FORMAT),
                 }
                 self._graph.query(
-                    "MERGE (s:AgentStep {id: $id}) SET s.parent_id=$parent_id, s.hop=$hop, s.step_type=$step_type, s.inputs=$inputs, s.outputs=$outputs, s.vector=vecf32($vector), s.metadata=$metadata, s.created_at=$created_at",
-                    params = params,
-                )
-            else:
-                params = {
-                    "id": step_id,
-                    "parent_id": str(step.parent_id) if step.parent_id else "",
-                    "hop": step.hop,
-                    "step_type": step.step_type.value,
-                    "inputs": json.dumps(step.inputs) if step.inputs else "{}",
-                    "outputs": json.dumps(step.outputs) if step.inputs else "{}",
-                    "metadata": json.dumps(step.metadata),
-                    "created_at": step.created_at.strftime(DATETIME_FORMAT),
-                }
-                self._graph.query(
-                    "MERGE (s:AgentStep {id: $id}) SET s.parent_id=$parent_id, s.hop=$hop, s.step_type=$step_type, s.inputs=$inputs, s.outputs=$outputs, s.metadata=$metadata, s.created_at=$created_at",
+                    "".join([
+                    "MERGE (s:AgentStep {id: $id})",
+                    "SET s.parent_id=$parent_id,",
+                    "s.hop=$hop,",
+                    "s.step_type=$step_type,",
+                    "s.inputs=$inputs,",
+                    "s.outputs=$outputs,",
+                    "s.vector=vecf32($vector),",
+                    "s.metadata=$metadata,",
+                    "s.created_at=$created_at"]),
                     params = params,
                 )
             if step.parent_id is not None:

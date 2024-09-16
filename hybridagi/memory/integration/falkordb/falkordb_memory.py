@@ -56,9 +56,13 @@ class FalkorDBMemory():
             self.clear()
             
     def exist(self, index: Union[UUID, str], label:str) -> bool:
-        index = str(index)
         query = "MATCH (n:"+label+" {id: $index}) RETURN n"
-        result = self._graph.query(query, params={"index": index})
+        result = self._graph.query(query, params={"index": str(index)})
+        return len(result.result_set) > 0
+    
+    def exist_fact(self, index: Union[UUID, str]) -> bool:
+        query = "MATCH ()-[f:FACT {id: $index}]->() RETURN f"
+        result = self._graph.query(query, params={"index": str(index)})
         return len(result.result_set) > 0
 
     def get_graph(self, graph_index: str) -> Graph:

@@ -66,27 +66,20 @@ class FalkorDBProgramMemory(FalkorDBMemory, ProgramMemory):
             programs = program_or_programs
         for prog in programs.progs:
             prog_id = str(prog.name)
-            if prog.vector is not None:
-                params = {
-                    "id": prog_id,
-                    "program": prog.to_cypher(),
-                    "vector": list(prog.vector),
-                    "metadata": json.dumps(prog.metadata)
-                }
-                self._graph.query(
-                    "MERGE (p:Program {id: $id}) SET p.program=$program, p.metadata=$metadata, p.vector=vecf32($vector)",
-                    params = params,
-                )
-            else:
-                params = {
-                    "id": prog_id,
-                    "program": prog.to_cypher(),
-                    "metadata": json.dumps(prog.metadata)
-                }
-                self._graph.query(
-                    "MERGE (p:Program {id: $id}) SET p.program=$program, p.metadata=$metadata",
-                    params = params,
-                )
+            params = {
+                "id": prog_id,
+                "program": prog.to_cypher(),
+                "vector": list(prog.vector) if prog.vector is not None else None,
+                "metadata": json.dumps(prog.metadata)
+            }
+            self._graph.query(
+                " ".join([
+                "MERGE (p:Program {id: $id})",
+                "SET p.program=$program,",
+                "p.metadata=$metadata,",
+                "p.vector=vecf32($vector)"]),
+                params = params,
+            )
             params = {
                 "id": prog_id,
             }
@@ -117,11 +110,10 @@ class FalkorDBProgramMemory(FalkorDBMemory, ProgramMemory):
             programs_ids = id_or_ids
         for prog_id in programs_ids:
             prog_id = str(prog_id)
-            if self.exist(prog_id):
-                self._graph.query(
-                    "MATCH (n:Program {id: $id}) DETACH DELETE n",
-                    params={"id": prog_id}
-                )
+            self._graph.query(
+                "MATCH (n:Program {id: $id}) DETACH DELETE n",
+                params={"id": prog_id}
+            )
                 
     def get(self, id_or_ids: Union[UUID, str, List[Union[UUID, str]]]) -> GraphProgramList:
         """
