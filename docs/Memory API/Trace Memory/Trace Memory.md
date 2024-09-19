@@ -1,7 +1,6 @@
 
 The trace memory is where the Agent system store each executed step of the graph programs, it allow the system to recall actions between session, very much like the human episodic memory that allow us to remember past events and actions we performed.
 
-
 ```python
 from abc import ABC, abstractmethod
 from typing import Union, List

@@ -42,7 +42,10 @@
 - [Using External Tools](notebooks/using_external_tools.ipynb)
 - [Add Documents (on the fly)](notebooks/updating_documents.ipynb)
 - [Add Facts (on the fly)](notebooks/updating_facts.ipynb)
+- [Interactive ReACT](notebooks/interactive_react.ipynb)
 - [ReACT Agent](notebooks/react_agent.ipynb)
+- [Reflexion Agent](notebooks/reflexion_agent.ipynb)
+- [Using FalkorDB](notebooks/using_falkordb.ipynb)
 
 ## What is HybridAGI?
 
@@ -139,9 +142,11 @@ You can add more tools by using the `FunctionTool` and python functions like now
 
 ### Graph Databases Integrations
 
-- Local Graph Memory for rapid prototyping based on [NetworkX](https://networkx.org/)
-- [FalkorDB](https://www.falkordb.com/) low latency in-memory hybrid vector/graph database (coming soon)
-- [Kuzu](https://kuzudb.com/) A highly scalable, extremely fast, easy-to-use embeddable graph database (coming soon)
+- Local Graph Memory for rapid prototyping based on [NetworkX](https://networkx.org/).
+- [FalkorDB](https://www.falkordb.com/) low latency in-memory hybrid vector/graph database.
+- [Kuzu](https://kuzudb.com/) A highly scalable, extremely fast, easy-to-use embeddable graph database (coming soon).
+
+We accept the contributions for more database integrations. Feel free to join the discord channel for more information!
 
 ### LLM Agent as Graph VS LLM Agent as Graph Interpreter
 

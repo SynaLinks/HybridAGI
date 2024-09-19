@@ -2,14 +2,15 @@
 
 Documents are the atomic data used in HybridAGI's Document Memory, they are used to represent textual data and their chunks in the system. Allowing the system to implement vector-only [Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) systems.
 
-`Document`: Represent an unstructured textual data to be processed or saved into memory
+`Document`: Represent an unstructured textual data to be processed or saved into memory.
 
-`DocumentList`: A list of documents to be processed or saved into memory
+`DocumentList`: A list of documents to be processed or saved into memory.
+
+`QueryWithDocuments`: A list of document associated with a Query used by the retrievers and rerankers.
   
 ## Definition
 
 ```python
-
 class Document(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the document", default_factory=uuid4)
     text: str = Field(description="The actual text content of the document")
@@ -33,12 +34,21 @@ class DocumentList(BaseModel, dspy.Prediction):
     def to_dict(self):
         return {"documents": [d.to_dict() for d in self.docs]}
 
+class QueryWithDocuments(BaseModel, dspy.Prediction):
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
+    docs: Optional[List[Document]] = Field(description="List of documents", default=[])
+    
+    def __init__(self, **kwargs):
+        BaseModel.__init__(self, **kwargs)
+        dspy.Prediction.__init__(self, **kwargs)
+        
+    def to_dict(self):
+        return {"queries": [q.query for q in self.queries.queries], "documents": [d.to_dict() for d in self.docs]}
 ```
 
 ## Usage
 
 ```python
-
 input_data = \
 [
     {
@@ -60,6 +70,4 @@ for data in input_data:
             metadata={"title": data["title"]},
         )
     )
-
->>>
 ```

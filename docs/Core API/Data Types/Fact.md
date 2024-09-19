@@ -1,6 +1,6 @@
 # Fact
 
-Facts are the atomic data of a [Knowledge Graph](https://en.wikipedia.org/wiki/Knowledge_graph). They represent the relations between two entities (a subject and object). They are the basis of knowledge based systems and allowing to represent precise and formal knowledge. With them you can implement [Knowledge Graph based Retrieval Augmented Generation]().
+Facts are the atomic data of a [Knowledge Graph](https://en.wikipedia.org/wiki/Knowledge_graph). They represent the relations between two entities (respectively a subject and an object). They are the basis of knowledge based systems they allow to represent precise and formal knowledge. With them you can implement Knowledge Graph based Retrieval Augmented Generation.
 
 `Entity`: Represent an entity like a person, object, place or document to be processed or saved into memory
 
@@ -43,6 +43,17 @@ class EntityList(BaseModel, dspy.Prediction):
         
     def to_dict(self):
         return {"entities": [e.to_dict() for e in self.entities]}
+
+class QueryWithEntities(BaseModel, dspy.Prediction):
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
+    entities: List[Entity] = Field(description="List of entities", default=[])
+    
+    def __init__(self, **kwargs):
+        BaseModel.__init__(self, **kwargs)
+        dspy.Prediction.__init__(self, **kwargs)
+    
+    def to_dict(self):
+        return {"queries": [q.query for q in self.queries.queries], "entities": [e.to_dict() for e in self.entities]}
 
 class Relationship(BaseModel):
     id: Union[UUID, str] = Field(description="Unique identifier for the relation", default_factory=uuid4)
@@ -117,9 +128,21 @@ class FactList(BaseModel, dspy.Prediction):
     def to_dict(self):
         return {"facts": [f.to_dict() for f in self.facts]}
 
+class QueryWithFacts(BaseModel, dspy.Prediction):
+    queries: QueryList = Field(description="The input query list", default_factory=QueryList)
+    facts: Optional[List[Fact]] = Field(description="List of facts", default=[])
+    
+    def __init__(self, **kwargs):
+        BaseModel.__init__(self, **kwargs)
+        dspy.Prediction.__init__(self, **kwargs)
+        
+    def to_dict(self):
+        return {"queries": [q.query for q in self.queries.queries], "facts": [f.to_dict() for f in self.facts]}
+
 ```
 
 ## Usage
 
 ```
+
 ```

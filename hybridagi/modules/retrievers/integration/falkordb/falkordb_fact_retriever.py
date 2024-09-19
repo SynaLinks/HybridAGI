@@ -84,7 +84,6 @@ class FalkorDBFactRetriever(FactRetriever):
                 query,
                 params = params,
             )
-            print(query_result.result_set)
             if len(query_result.result_set) > 0:
                 for record in query_result.result_set:
                     if record[0] not in indexes:

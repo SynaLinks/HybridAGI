@@ -310,7 +310,6 @@ Action: {prediction}"""
 DECISION_TEMPLATE = \
 """--- Step {hop} ---
 Decision Purpose: {purpose}
-Decision Question: {question}
 Decision: {choice}"""
 
 CALL_PROGRAM_TEMPLATE = \
@@ -347,8 +346,7 @@ class AgentStep(BaseModel):
             return DECISION_TEMPLATE.format(
                 hop=self.hop,
                 purpose=self.inputs.get("purpose", ""),
-                question=self.inputs.get("question", ""),
-                choice=self.outputs["choice"] if self.outputs and "choice" in self.outputs else "",
+                choice=self.outputs.get("choice", ""),
             )
         elif self.step_type == AgentStepType.ProgramCall:
             return CALL_PROGRAM_TEMPLATE.format(
