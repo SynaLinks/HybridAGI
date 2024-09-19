@@ -51,7 +51,12 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
         if result:
             return result
         else:
-            return super().exist_fact(entity_or_fact_id)
+            return self.exist_fact(entity_or_fact_id)
+        
+    def exist_fact(self, index: Union[UUID, str]) -> bool:
+        query = "MATCH ()-[r:FACT {id: $index}]->() RETURN r"
+        result = self._graph.query(query, params={"index": str(index)})
+        return len(result.result_set) > 0
 
     def update(self, entities_or_facts: Union[Entity, EntityList, Fact, FactList]) -> None:
         """
@@ -75,6 +80,7 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                 ent_id = str(ent.id)
                 params = {
                     "id": ent_id,
+                    "label": ent.label,
                     "name": ent.name,
                     "description": ent.description,
                     "vector": list(ent.vector) if ent.vector is not None else None,
@@ -82,11 +88,10 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                 }
                 self._graph.query(
                     " ".join([
-                    "MERGE (e:Entity,",
-                    str(ent.label),
-                    "{id: $id})",
+                    "MERGE (e:"+ent.label+":Entity {id: $id})",
                     "SET",
                     "e.name=$name,",
+                    "e.label=$label,",
                     "e.description=$description,",
                     "e.metadata=$metadata,",
                     "e.vector=vecf32($vector)"]),
@@ -106,20 +111,21 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                     self.update(fact.obj)
                 params = {
                     "id": fact_id,
-                    "subject_id": fact.subj.id,
-                    "object_id": fact.obj.id,
-                    "properties": {
-                        "relationship": fact.rel.name,
-                        "vector": list(fact.vector) if fact.vector is not None else None,
-                        "metadata": json.dumps(fact.metadata),
-                    },
+                    "subject_id": str(fact.subj.id),
+                    "object_id": str(fact.obj.id),
+                    "relationship": fact.rel.name,
+                    "vector": list(fact.vector) if fact.vector is not None else None,
+                    "metadata": json.dumps(fact.metadata),
                 }
                 self._graph.query(
                     " ".join([
                         "MATCH (s:Entity {id: $subject_id}),",
                         "(o:Entity {id: $object_id})",
-                        "MERGE (s)-[r:FACT {id: $id}]->(o)",
-                        "SET r += $properties",
+                        "MERGE (s)-[r:FACT {_id_: $id}]->(o)",
+                        "SET",
+                        "r.relationship=$relationship,",
+                        "r.vector=vecf32($vector),",
+                        "r.metadata=$metadata",
                     ]),
                     params=params,
                 )
@@ -179,11 +185,15 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
                 entity_id = UUID(entity_data.properties["id"])
             except Exception:
                 entity_id = entity_data.properties["id"]
+            if "description" in entity_data.properties:
+                description = entity_data.properties["description"]
+            else:
+                description = None
             entity = Entity(
                 id=entity_id,
                 name=entity_data.properties["name"],
                 label=entity_data.properties["label"],
-                description=entity_data.properties["description"],
+                description=description,
                 vector=entity_data.properties["vector"],
             )
             result.entities.append(entity)
@@ -200,56 +210,64 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             FactList: A list of facts that match the input ids.
         """
         if not isinstance(id_or_ids, list):
-            entities_ids = [id_or_ids]
+            facts_ids = [id_or_ids]
         else:
-            entities_ids = id_or_ids
-        result = EntityList()
-        ids = [str(i) for i in id_or_ids]
-        query_result = self._graph.query(
-            " ".join([
-                "MATCH (s:Entity)-[r:FACT {id: $id}]->(o:Entity)",
-                "WHERE e.id IN $ids",
-                "RETURN r, s, o"]),
-            params={"ids": ids}
-        )
-        for row in query_result.result_set:
-            fact_data, subject_data, object_data = row
-            try:
-                subject_id = UUID(subject_data.properties["id"])
-            except Exception:
-                subject_id = subject_data.properties["id"]
-            subj = Entity(
-                id=subject_id,
-                name=subject_data.properties["name"], 
-                label=subject_data.properties["label"],
-                description=subject_data.properties["description"], 
-                vector=subject_data.properties["vector"],
-                metadata=json.loads(subject_data.properties["metadata"]), 
+            facts_ids = id_or_ids
+        result = FactList()
+        for fact_id in facts_ids:
+            fact_id = str(fact_id)
+            query_result = self._graph.query(
+                " ".join([
+                    "MATCH (s:Entity)-[r:FACT {_id_:$id}]->(o:Entity)",
+                    "RETURN r, s, o"]),
+                params={"id": fact_id},
             )
-            rel = Relationship(name=fact_data.properties["relationship"])
-            try:
-                object_id = UUID(object_data.properties["id"])
-            except Exception:
-                object_id = object_data.properties["id"]
-            obj = Entity(
-                id=object_id,
-                name=object_data.properties["name"], 
-                label=object_data.properties["label"],
-                description=object_data.properties["description"], 
-                vector=object_data.properties["vector"],
-                metadata=json.loads(object_data.properties["metadata"]),
-            )
-            try:
-                fact_id = UUID(entity_data.properties["id"])
-            except Exception:
-                fact_id = entity_data.properties["id"]
-            fact = Fact(
-                id=fact_id,
-                subj=subj,
-                rel=rel,
-                obj=obj,
-                vector=fact_data.properties["vector"],
-                metadata=json.loads(fact_data.properties["vector"]),
-            )
-            result.facts.append(fact)
+            if len(query_result.result_set) > 0:
+                fact_data, subject_data, object_data = query_result.result_set[0]
+                try:
+                    subject_id = UUID(subject_data.properties["id"])
+                except Exception:
+                    subject_id = subject_data.properties["id"]
+                if "description" in subject_data.properties:
+                    description = subject_data.properties["description"]
+                else:
+                    description = None
+                subj = Entity(
+                    id=subject_id,
+                    name=subject_data.properties["name"], 
+                    label=subject_data.properties["label"],
+                    description=description,
+                    vector=subject_data.properties["vector"],
+                    metadata=json.loads(subject_data.properties["metadata"]), 
+                )
+                rel = Relationship(name=fact_data.properties["relationship"])
+                try:
+                    object_id = UUID(object_data.properties["id"])
+                except Exception:
+                    object_id = object_data.properties["id"]
+                if "description" in object_data.properties:
+                    description = object_data.properties["description"]
+                else:
+                    description = None
+                obj = Entity(
+                    id=object_id,
+                    name=object_data.properties["name"], 
+                    label=object_data.properties["label"],
+                    description=description, 
+                    vector=object_data.properties["vector"],
+                    metadata=json.loads(object_data.properties["metadata"]),
+                )
+                try:
+                    fact_id = UUID(fact_data.properties["_id_"])
+                except Exception:
+                    fact_id = fact_data.properties["_id_"]
+                fact = Fact(
+                    id=fact_id,
+                    subj=subj,
+                    rel=rel,
+                    obj=obj,
+                    vector=fact_data.properties["vector"],
+                    metadata=json.loads(fact_data.properties["metadata"]),
+                )
+                result.facts.append(fact)
         return result

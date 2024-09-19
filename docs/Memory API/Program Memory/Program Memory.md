@@ -1,10 +1,9 @@
 
-The program memory is where the the Agent system store each plan, in our innovative solution, we decided to see planning as the execution of graph software. Making more reliable our solution (as opposed to React agents) while giving the system *algorithmic flexibility*.
+The program memory is where the the Agent system store each graph program, in our innovative solution, we decided to see planning as the execution of turing complete DSL describing a graph software. Making more reliable and customizable our solution (as opposed to React agents) while giving the system the required *flexibility* to handle many usecases.
 
-The Agent have a *deterministic plan* that it will execute reliably, you can see the execution of the plan as a navigation task for the Agent where it have to decide at each decision step which branch to take to complete the task.
+The Agent have a *deterministic program* that it will execute reliably, you can see the execution of the program as a navigation task for the Agent where it have to decide at each decision step which branch to take to complete the task.
 
-Because it can only execute plans it have in memory, the system can only learn on the fly new plans by programming itself. However, for businesses we encourage them to *build the programs themselves* as self-programming agents is still an open research problem.
-
+Because it can only execute plans it have in memory, the system can only learn on the fly new methodologies by programming itself. However, for businesses we encourage them to *build the programs themselves* as self-programming agents is still an open research problem.
 
 ```python
 from abc import ABC, abstractmethod

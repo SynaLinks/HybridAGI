@@ -6,7 +6,7 @@ from typing import Union, Optional, List
 from dsp.utils import dotdict
 from hybridagi.embeddings import Embeddings
 from hybridagi.memory import ProgramMemory
-from hybridagi.modules.retrievers import DocumentRetriever
+from hybridagi.modules.retrievers import GraphProgramRetriever
 from hybridagi.core.datatypes import Query, QueryList, QueryWithGraphPrograms
 from hybridagi.core.pipeline import Pipeline
 
@@ -80,12 +80,12 @@ class FalkorDBGraphProgramRetriever(GraphProgramRetriever):
             query = " ".join([
                 'CALL db.idx.vector.queryNodes("GraphProgram", "vector", $k, vecf32($vector)) YIELD node, score',
                 'RETURN node.id AS id, score'])
-            result = self.program_memory._graph.query(
+            query_result = self.program_memory._graph.query(
                 query,
                 params = params,
             )
-            if len(result.result_set) > 0:
-                for record in result.result_set:
+            if len(query_result.result_set) > 0:
+                for record in query_result.result_set:
                     if record[0] not in indexes:
                         indexes[record[0]] = True
                     else:

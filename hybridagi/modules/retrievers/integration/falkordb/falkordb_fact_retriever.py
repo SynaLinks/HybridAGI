@@ -47,7 +47,7 @@ class FalkorDBFactRetriever(FactRetriever):
         try:
             params = {"dim": self.embeddings.dim, "distance": self.distance}
             self.fact_memory._graph.query(
-                "CREATE VECTOR INDEX FOR ()-(r:FACT)->() ON (r.vector) OPTIONS {dimension:$dim, similarityFunction:$distance}",
+                "CREATE VECTOR INDEX FOR ()-[r:FACT]->() ON (r.vector) OPTIONS {dimension:$dim, similarityFunction:$distance}",
                 params,
             )
         except Exception:
@@ -78,14 +78,15 @@ class FalkorDBFactRetriever(FactRetriever):
         for vector in query_vectors:
             params = {"vector": list(vector), "k": int(2*self.k)}
             query = " ".join([
-                'CALL db.idx.vector.queryRelationships("FACT", "vector", $k, vecf32($vector)) YIELD relation, score',
-                'RETURN relation.id AS id, score'])
-            result = self.fact_memory._graph.query(
+                'CALL db.idx.vector.queryRelationships("FACT", "vector", $k, vecf32($vector)) YIELD relationship, score',
+                'RETURN relationship._id_ AS id, score'])
+            query_result = self.fact_memory._graph.query(
                 query,
                 params = params,
             )
-            if len(result.result_set) > 0:
-                for record in result.result_set:
+            print(query_result.result_set)
+            if len(query_result.result_set) > 0:
+                for record in query_result.result_set:
                     if record[0] not in indexes:
                         indexes[record[0]] = True
                     else:

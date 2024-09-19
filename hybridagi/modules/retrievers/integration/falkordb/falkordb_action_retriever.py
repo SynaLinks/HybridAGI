@@ -80,12 +80,12 @@ class FalkorDBActionRetriever(ActionRetriever):
             query = " ".join([
                 'CALL db.idx.vector.queryNodes("AgentStep", "vector", $k, vecf32($vector)) YIELD node, score',
                 'RETURN node.id AS id, score'])
-            result = self.trace_memory._graph.query(
+            query_result = self.trace_memory._graph.query(
                 query,
                 params = params,
             )
-            if len(result.result_set) > 0:
-                for record in result.result_set:
+            if len(query_result.result_set) > 0:
+                for record in query_result.result_set:
                     if record[0] not in indexes:
                         indexes[record[0]] = True
                     else:

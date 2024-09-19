@@ -1,27 +1,23 @@
+# Graph Program
+
 The Graph Programs are a special data type representing a workflow of actions and decisions with calls to other programs. They are used by our own custom Agent, the `GraphProgramInterpreter`. In order help you to build them, we provide two ways of doing it: Using Python or Cypher.
 
-The two ways are equivalent and allows you to choose the one you prefer.
+The two ways are equivalent and allows you to choose the one you prefer, we recommend you however to use the pythonic way, to avoid syntax errors, and eventually save them into Cypher format for later use.
 
-### Python Usage:
+### Python Usage
 
 ```python
 import hybridagi.core.graph_program as gp
 
 main = gp.GraphProgram(
-	id = "main",
-	desc = "The main program",
+	name = "main",
+	description = "The main program",
 )
 
 main.add("answer", gp.Action(
-	tool = "Speak"
-	purpose = ""
-	prompt = \
-"""
-Please answer to the following question: 
-{{objective}}
-"""
-	inputs=["objective"],
-	ouput="answer",
+	tool = "Speak",
+	purpose = "Answer the Objective's question",
+	prompt = "Please answer to the Objective's question",
 ))
 
 main.connect("start", "answer")

@@ -1,14 +1,14 @@
-A pipeline is a structure that allows you to cascade DSPy modules into a sequence that you can use in other pipelines. Like Keras sequential model, each block in a pipeline have only **one input** and **one output**.
+# Pipelines
 
-It have been implemented to provide a simple way of creating sequence of modules while giving you access to the modules output after processing. The pipelines are mostly used for data processing as the 
+A `Pipeline` is a structure that allows you to cascade data processing `Modules` into a sequence. Like Keras sequential model, each block in a pipeline have only **one input** and **one output**.
 
-### Usage:
+Pipelines have been implemented to provide a simple way of creating sequence of modules while giving you access to the modules output after processing.
 
-```python
-import hybridagi as hagi
-from hybridagi.memory.integration.local import LocalDocumentMemory
-import hybridagi.core.datatypes as dt
+## Usage
+
+``` py
 from hybridagi.core.pipeline import Pipeline
+from hybridagi.core.datatypes import DocumentList, Document
 
 input_data = [
     {
@@ -21,17 +21,18 @@ input_data = [
     }
 ]
 
-input_docs = [dt.Document(text=d["content"], metadata={"title": d["title"]}) for d in input_data]
+input_docs = DocumentList()
+
+input_docs.docs = [dt.Document(text=d["content"], metadata={"title": d["title"]}) for d in input_data]
 
 pipeline = Pipeline()
 
-pipeline.add("split_chunk", hagi.DocumentSplitter(
-	method="sentence",
-	chunk_size=1,
-))
-pipeline.add("embed_docs", hagi.DocumentEmbedder(
-	embeddings=embeddings
-))
+pipeline.add("split_into_chunk", DocumentSplitter())
+pipeline.add("embed_docs", DocumentEmbedder(embeddings=embeddings))
 
 final_docs = pipeline(input_docs)
+
+# You can also access intermediary output by using the 'get_output' method
+
+splitted_chunks = pipeline.get_output("split_into_chunk")
 ```
