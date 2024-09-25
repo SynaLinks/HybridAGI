@@ -172,7 +172,7 @@ CREATE
 (answer)-[:NEXT]->(end)
 """
 
-main = gp.GraphProgram().from_cypher(cypher)
+main = gp.GraphProgram(name="main").from_cypher(cypher)
 
 ```
 

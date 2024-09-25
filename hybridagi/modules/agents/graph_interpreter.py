@@ -229,7 +229,7 @@ class GraphInterpreterAgent(dspy.Module):
             raise ValueError(f"Invalid tool: '{step.tool}' does not exist, should be one of {list(self.tools.keys())}")
         jinja_template = Template(step.prompt)
         prompt_kwargs = {}
-        for key in step.inputs:
+        for key in step.var_in:
             if key in self.agent_state.variables:
                 prompt_kwargs[key] = self.agent_state.variables[key]
             else:
@@ -245,7 +245,7 @@ class GraphInterpreterAgent(dspy.Module):
         tool_output = self.tools[step.tool](
             tool_input = tool_input,
         )
-        if step.output is not None:
+        if step.var_out is not None:
             if len(dict(tool_output).keys()) > 1:
                 self.agent_state.variables[output] = tool_output.to_dict()
             else:

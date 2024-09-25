@@ -4,7 +4,7 @@ Welcome to HybridAGI documentation, you will find the ressources to understand a
 
 ### LLM Agent as Graph VS LLM Agent as Graph Interpreter
 
-What makes our approach different from Agent as Graph is the fact that our Agent system is *not a static finite state machine*, but an interpreter that can read/write and execute node by node a *dynamic graph data (the graph programs) structure separated from that process*. Making possible for the Agent to learn by executing, reading and modifying the graph programs (like any other data), in its essence HybridAGI is intended to be a self-programming system centered around the Cypher language.
+What makes our approach different from Agent as Graph (like LangGraph or LLama-Index) is the fact that our Agent system is *not a static finite state machine*, but an interpreter that can read/write and execute node by node a *dynamic graph data* (the graph programs) structure separated from that process. Making possible for the Agent to learn by executing, reading and modifying the graph programs (like any other data), in its essence HybridAGI is intended to be a self-programming system centered around the Cypher language.
 
 ## Install
 

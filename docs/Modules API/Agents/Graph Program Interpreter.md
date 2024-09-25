@@ -1,3 +1,0 @@
-# Graph Program Interpreter
-
-## 

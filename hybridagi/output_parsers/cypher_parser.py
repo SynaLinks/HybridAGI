@@ -1,7 +1,7 @@
-import abc
+from .output_parser import OutputParser
 from typing import Any
 
-class CypherParser():
+class CypherOutputParser(OutputParser):
     """
     The output parser for Cypher requests
     """

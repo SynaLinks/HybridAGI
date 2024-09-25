@@ -42,15 +42,15 @@ class Action(BaseModel):
     tool: str = Field(description="The tool name")
     purpose: str = Field(description="The action purpose")
     prompt: Optional[str] = Field(description="The prompt used to infer to tool inputs")
-    inputs: Optional[List[str]] = Field(description="The input for the prompt", default=[])
-    output: Optional[str] = Field(description="The variable to store the action output", default=None)
+    var_in: Optional[List[str]] = Field(description="The list of input variables for the prompt", default=[])
+    var_out: Optional[str] = Field(description="The variable to store the action output", default=None)
     disable_inference: bool = Field(description="Weither or not to disable the inference", default=False)
 
 class Decision(BaseModel):
     id: str = Field(description="Unique identifier for the step")
     purpose: str = Field(description="The decision purpose")
     question: str = Field(description="The question to assess")
-    inputs: Optional[List[str]] = Field(description="The input prompt variables", default=[])
+    var_in: Optional[List[str]] = Field(description="The list of input variables for the prompt", default=[])
 
 class Program(BaseModel):
     id: str = Field(description="Unique identifier for the step")
@@ -296,8 +296,8 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         purpose=step_props["purpose"],
                         tool=step_props["tool"],
                         prompt=step_props["prompt"],
-                        inputs=step_props["inputs"] if "inputs" in step_props else [],
-                        output=step_props["output"] if "output" in step_props else None,
+                        var_in=step_props["var_in"] if "var_in" in step_props else [],
+                        var_out=step_props["var_out"] if "var_out" in step_props else None,
                         disable_inference=True if "disable_inference" in step_props else False,
                     ))
                 elif step_type == "Decision":
@@ -311,7 +311,7 @@ class GraphProgram(BaseModel, dspy.Prediction):
                         id=step_props["id"],
                         purpose=step_props["purpose"],
                         question=step_props["question"],
-                        inputs=step_props["inputs"] if "inputs" in step_props else [],
+                        var_in=step_props["var_in"] if "var_in" in step_props else [],
                     ))
                 elif step_type == "Program":
                     if "id" not in step_props:
@@ -364,10 +364,10 @@ class GraphProgram(BaseModel, dspy.Prediction):
                 }
                 if step.prompt:
                     args["prompt"] = step.prompt
-                if step.inputs and len(step.inputs) > 0:
-                    args["inputs"] = step.inputs
-                if step.output:
-                    args["output"] = step.output
+                if step.var_in and len(step.var_in) > 0:
+                    args["var_in"] = step.var_in
+                if step.var_out:
+                    args["var_out"] = step.var_out
                 if step.disable_inference is True:
                     args["disable_inference"] = True
                 cleaned_args = re.sub(key_quotes_regex, sub_regex, json.dumps(args, indent=2))
@@ -378,8 +378,8 @@ class GraphProgram(BaseModel, dspy.Prediction):
                     "purpose": step.purpose,
                     "question": step.question,
                 }
-                if len(step.inputs) > 0:
-                    args["inputs"] = step.inputs
+                if len(step.var_in) > 0:
+                    args["var_in"] = step.var_in
                 cleaned_args = re.sub(key_quotes_regex, sub_regex, json.dumps(args, indent=2))
                 cypher += f"\n({step_id}:Decision "+cleaned_args+"),"
             elif isinstance(step, Program):
