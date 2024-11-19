@@ -1,3 +1,5 @@
+from .tool import Tool
+
 # Interaction related tools
 from .speak import SpeakTool
 from .ask_user import AskUserTool
@@ -16,6 +18,7 @@ from .fact_search import FactSearchTool
 # Memorization related tools
 from .add_document import AddDocumentTool
 from .add_fact import AddFactTool
+from .add_graph_program import AddGraphProgramTool
 
 # Agent state related tools
 from .update_objective import UpdateObjectiveTool
@@ -25,6 +28,8 @@ from .call_graph_program import CallGraphProgramTool
 from .function_tool import FunctionTool
 
 __all__ = [
+    Tool,
+    
     SpeakTool,
     AskUserTool,
     
@@ -39,6 +44,7 @@ __all__ = [
     
     AddDocumentTool,
     AddFactTool,
+    AddGraphProgramTool,
     
     UpdateObjectiveTool,
     CallGraphProgramTool,

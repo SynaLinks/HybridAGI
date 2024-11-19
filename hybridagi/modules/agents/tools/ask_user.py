@@ -35,11 +35,16 @@ class AskUserTool(Tool):
             self,
             agent_state: AgentState,
             name: str = "AskUser",
+            description: str = "Usefull to ask information to the user",
             ask_user_func: Optional[Callable[[str], str]] = None,
             simulated: bool = True,
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.predict = dspy.Predict(AskUserSignature)
         self.prediction_parser = PredictionOutputParser()
         self.simulated = simulated

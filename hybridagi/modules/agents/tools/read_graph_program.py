@@ -26,9 +26,14 @@ class ReadGraphProgramTool(Tool):
             self,
             program_memory = program_memory,
             name: str = "ReadGraphProgram",
+            description: str = "Usefull to read a sub-routine from memory",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.predict = dspy.Predict(PredictSignature)
         self.prediction_parser = PredictionOutputParser()
         self.program_memory = program_memory

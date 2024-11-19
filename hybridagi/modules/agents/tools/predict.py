@@ -24,9 +24,14 @@ class PredictTool(Tool):
     def __init__(
             self,
             name: str = "Predict",
+            description: str = "Usefull to ak yourself a question, summarize topics, elaborate on a subject or write texts",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.predict = dspy.Predict(PredictSignature)
         self.prediction_parser = PredictionOutputParser()
         

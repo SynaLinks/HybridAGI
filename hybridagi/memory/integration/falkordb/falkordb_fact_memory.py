@@ -173,7 +173,6 @@ class FalkorDBFactMemory(FalkorDBMemory, FactMemory):
             entities_ids = id_or_ids
         result = EntityList()
         ids = [str(i) for i in id_or_ids]
-        
         for entity_id in entities_ids:
             query_result = self._graph.query(
                 " ".join([

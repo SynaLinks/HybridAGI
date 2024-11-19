@@ -30,9 +30,14 @@ class CallGraphProgramTool(Tool):
             agent_state: AgentState,
             program_memory: ProgramMemory,
             name: str = "CallGraphProgram",
+            description: str = "Usefull to call sub-routines dynamically (imply that they are searched before hand)",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.predict = dspy.Predict(CallGraphProgramSignature)
         self.prediction_parser = PredictionOutputParser()
         self.agent_state = agent_state

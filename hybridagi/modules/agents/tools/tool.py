@@ -10,9 +10,11 @@ class Tool(dspy.Module):
     def __init__(
             self,
             name: str,
+            description: str,
             lm: Optional[dspy.LM] = None,
         ):
         self.name = name
+        self.description = description
         self.lm = lm
 
     @abstractmethod

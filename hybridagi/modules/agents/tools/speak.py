@@ -27,11 +27,16 @@ class SpeakTool(Tool):
             self,
             agent_state: AgentState,
             name: str = "Speak",
+            description: str = "Usefull to speak to the user",
             speak_func: Optional[Callable[[str], None]] = None,
             simulated: bool = True,
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.predict = dspy.Predict(SpeakSignature)
         self.simulated = simulated
         self.agent_state = agent_state

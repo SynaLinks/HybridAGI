@@ -50,6 +50,7 @@ What makes our approach different from Agent as Graph is the fact that our Agent
 - [ReACT Agent](notebooks/react_agent.ipynb)
 - [Reflexion Agent](notebooks/reflexion_agent.ipynb)
 - [Using FalkorDB](notebooks/using_falkordb.ipynb)
+- [Graph Programs Copilot](notebooks/graph_programs_copilot.ipynb)
 
 ## What is HybridAGI?
 

@@ -26,9 +26,14 @@ class UpdateObjectiveTool(Tool):
             self,
             agent_state: AgentState,
             name: str = "UpdateObjective",
+            description: str = "Usefull to update your long-term objective",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.predict = dspy.Predict(UpdateObjectiveSignature)
         self.prediction_parser = PredictionOutputParser()
         self.agent_state = agent_state
