@@ -128,8 +128,19 @@ class FalkorDBTraceMemory(FalkorDBMemory, TraceMemory):
         """
         ids = [str(id_or_ids)] if isinstance(id_or_ids, (UUID, str)) else [str(id) for id in id_or_ids]
         result = self._graph.query(
-            "MATCH (s:AgentStep) WHERE s.id IN $ids "
-            "RETURN s.id, s.step_type, s.parent_id, s.vector, s.name, s.description",
+            " ".join(
+                [
+                    "MATCH (s:AgentStep)",
+                    "WHERE s.id IN $ids",
+                    "RETURN",
+                    "s.id as id,",
+                    "s.step_type as step_type,",
+                    "s.parent_id as parent_id,",
+                    "s.vector as vector,",
+                    "s.name as name,",
+                    "s.description as description",
+                ]
+            ),
             params={"ids": ids}
         )
         steps = AgentStepList()

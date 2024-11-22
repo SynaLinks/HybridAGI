@@ -161,30 +161,33 @@ class FalkorDBDocumentMemory(FalkorDBMemory, DocumentMemory):
             doc_id = str(doc_id)
             if self.exist(doc_id):
                 query_result = self._graph.query(
-                    "MATCH (d:Document {id: $id}) RETURN d",
-                    params={"id": doc_id}
+                    " ".join(
+                        [
+                            "MATCH (d:Document {id: $id})",
+                            "RETURN d.text as text,",
+                            "d.parent_id as parent_id,",
+                            "d.metadata as metadata,",
+                            "d.vector as vector",
+                        ]
+                    ),
+                    params={"id": doc_id},
                 )
-                text = query_result.result_set[0][0].properties["text"]
-                metadata = query_result.result_set[0][0].properties["metadata"]
-                if "parent_id" in query_result.result_set[0][0].properties:
-                    parent_id = query_result.result_set[0][0].properties["parent_id"]
-                else:
-                    parent_id = None
+                text = query_result.result_set[0][0]
+                parent_id = query_result.result_set[0][1]
+                metadata = query_result.result_set[0][2]
                 if parent_id:
                     try:
                         parent_id = UUID(parent_id)
                     except Exception:
                         pass
-                else:
-                    parent_id = None
                 try:
                     doc_id = UUID(doc_id)
                 except Exception:
                     pass
                 doc = Document(id=doc_id, parent_id=parent_id, text=text)
                 doc.metadata = json.loads(metadata)
-                if "vector" in query_result.result_set[0][0].properties:
-                    doc.vector = query_result.result_set[0][0].properties["vector"]
+                if query_result.result_set[0][3]:
+                    doc.vector = query_result.result_set[0][3]
                 result.docs.append(doc)
         return result
 
