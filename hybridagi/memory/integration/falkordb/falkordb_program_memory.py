@@ -134,16 +134,23 @@ class FalkorDBProgramMemory(FalkorDBMemory, ProgramMemory):
             prog_id = str(prog_id)
             if self.exist(prog_id):
                 query_result = self._graph.query(
-                    "MATCH (p:Program {id: $id}) RETURN p",
+                    " ".join(
+                        [
+                            "MATCH (p:Program {id: $id})",
+                            "RETURN",
+                            "p.program as program,",
+                            "p.metadata as metadata,",
+                            "p.vector as vector",
+                        ]
+                    ),
                     params={"id": prog_id}
                 )
-                cypher_program = query_result.result_set[0][0].properties["program"]
-                metadata = query_result.result_set[0][0].properties["metadata"]
+                cypher_program = query_result.result_set[0][0]
+                metadata = query_result.result_set[0][1]
                 prog = GraphProgram(name=prog_id)
                 prog.from_cypher(cypher_program)
                 prog.metadata = json.loads(metadata)
-                if "vector" in query_result.result_set[0][0].properties:
-                    prog.vector = query_result.result_set[0][0].properties["vector"]
+                prog.vector = query_result.result_set[0][2]
                 result.progs.append(prog)
         return result
 
@@ -179,7 +186,6 @@ class FalkorDBProgramMemory(FalkorDBMemory, ProgramMemory):
             "MATCH (n:Program {id:$source})-[r:DEPENDS_ON*]->(m:Program {id:$target}) RETURN r",
             params = params,
         )
-        print(result.result_set)
         if len(result.result_set) > 0:
             return True
         return False

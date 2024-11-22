@@ -24,9 +24,14 @@ class ChainOfThoughtTool(Tool):
     def __init__(
             self,
             name: str = "ChainOfThought",
+            description: str = "Usefull to reason about previous steps",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.predict = dspy.ChainOfThought(ChainOfThoughtSignature)
         self.prediction_parser = PredictionOutputParser()
         

@@ -22,9 +22,14 @@ class GraphProgramSearchTool(Tool):
             self,
             retriever: dspy.Module,
             name: str = "GraphProgramSearch",
+            description: str = "Useful to search for for known sub-routines in memory",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.retriever = retriever
         self.predict = dspy.Predict(GraphProgramSearchSignature)
         self.prediction_parser = PredictionOutputParser()

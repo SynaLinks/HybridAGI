@@ -24,10 +24,15 @@ class AddFactTool(Tool):
             self,
             fact_memory: FactMemory,
             pipeline: Pipeline,
-            name = "AddFact",
+            name: str = "AddFact",
+            description: str = "Usefull to save factual information into memory",
             lm: Optional[dspy.LM] = None
         ):
-        super().__init__(name=name, lm=lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.fact_memory = fact_memory
         self.pipeline = pipeline
         self.predict = dspy.Predict(AddFactSignature)

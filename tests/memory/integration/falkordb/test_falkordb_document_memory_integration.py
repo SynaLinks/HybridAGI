@@ -1,6 +1,7 @@
 from hybridagi.memory.integration.falkordb.falkordb_document_memory import FalkorDBDocumentMemory
 from hybridagi.embeddings.fake import FakeEmbeddings
 from hybridagi.core.datatypes import Document, DocumentList
+import numpy as np
 
 def test_falkordb_program_memory_empty():
     document_memory = FalkorDBDocumentMemory(index_name="test_doc_memory_constructor")
@@ -21,6 +22,20 @@ def test_local_document_memory_get_one_doc():
     assert result_doc.text == doc.text
     assert result_doc.parent_id == doc.parent_id
     assert result_doc.metadata == doc.metadata
+    
+def test_local_document_memory_get_one_embedded_doc():
+    embeddings = FakeEmbeddings(dim=256)
+    document_memory = FalkorDBDocumentMemory(index_name="test_get_one_doc")
+    doc = Document(text="This is a test text")
+    doc.vector = embeddings.embed_text("This is a test text")
+    document_memory.update(doc)
+    result_doc = document_memory.get(doc.id).docs[0]
+    assert len(document_memory.get(doc.id).docs) == 1
+    assert result_doc.id == doc.id
+    assert result_doc.text == doc.text
+    assert result_doc.parent_id == doc.parent_id
+    assert result_doc.metadata == doc.metadata
+    assert len(result_doc.vector) > 0
     
 def test_local_document_memory_override_doc():
     document_memory = FalkorDBDocumentMemory(index_name="test_override_doc")

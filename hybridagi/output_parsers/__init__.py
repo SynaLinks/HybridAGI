@@ -3,6 +3,7 @@ from .decision_parser import DecisionOutputParser
 from .prediction_parser import PredictionOutputParser
 from .query_parser import QueryOutputParser
 from .query_list_parser import QueryListOutputParser
+from .cypher_parser import CypherOutputParser
 
 __all__ = [
     OutputParser,
@@ -10,4 +11,5 @@ __all__ = [
     PredictionOutputParser,
     QueryOutputParser,
     QueryListOutputParser,
+    CypherOutputParser,
 ]

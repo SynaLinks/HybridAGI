@@ -21,9 +21,14 @@ class FactSearchTool(Tool):
             self,
             retriever: dspy.Module,
             name: str = "FactSearch",
+            description: str = "Useful to search for facts in memory",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.retriever = retriever
         self.predict = dspy.Predict(FactSearchSignature)
         self.prediction_parser = PredictionOutputParser()

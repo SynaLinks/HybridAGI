@@ -24,10 +24,15 @@ class AddDocumentTool(Tool):
             self,
             document_memory: DocumentMemory,
             pipeline: Pipeline,
-            name = "AddDocument",
+            name: str = "AddDocument",
+            description: str = "Usefull to save new documents into memory",
             lm: Optional[dspy.LM] = None
         ):
-        super().__init__(name=name, lm=lm)
+        super().__init__(
+            name=name,
+            description=description,
+            lm=lm,
+        )
         self.document_memory = document_memory
         self.pipeline = pipeline
         self.predict = dspy.Predict(AddDocumentSignature)

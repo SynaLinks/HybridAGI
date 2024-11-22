@@ -6,6 +6,14 @@ from typing import Union, Optional
 from hybridagi.modules.extractors import FactExtractor
 from hybridagi.core.datatypes import Document, DocumentList, Fact, Relationship, Entity, FactList, GraphSchema
 
+
+class EntityExtractSignature(dspy.Signature):
+    """Given the fields `document`, produce the fields `triplets`.
+    To infer the field `entities`, please infer the entities as a comma separated list of entities and their type
+    """
+    document: str = dspy.InputField(desc="The input document")
+    triplets: str = dspy.OutputField(desc="The comma separated entities extracted from the document")
+
 class FactExtractorSignature(dspy.Signature):
     """Given the fields `document`, produce the fields `triplets`.
     To infer the field `triplets`, please use the following syntax:

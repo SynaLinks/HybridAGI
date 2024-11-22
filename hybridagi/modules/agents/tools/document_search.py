@@ -22,9 +22,14 @@ class DocumentSearchTool(Tool):
             self,
             retriever: dspy.Module,
             name: str = "DocumentSearch",
+            description = "Usefull to search for documents in memory",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.retriever = retriever
         self.predict = dspy.Predict(DocumentSearchSignature)
         self.prediction_parser = PredictionOutputParser()

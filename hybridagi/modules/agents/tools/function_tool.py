@@ -20,7 +20,11 @@ class FunctionTool(Tool):
             func: Callable,
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(lm = lm, name = name)
+        super().__init__(
+            name = name,
+            description = func.__doc__,
+            lm = lm,
+        )
         signature_dict = {}
         signature_dict["objective"] = dspy.InputField(
             prefix = "Objective:",

@@ -22,9 +22,14 @@ class EntitySearchTool(Tool):
             self,
             retriever: dspy.Module,
             name: str = "EntitySearch",
+            description: str = "Usefull to search for entities in memory",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.retriever = retriever
         self.predict = dspy.Predict(EntitySearchSignature)
         self.prediction_parser = PredictionOutputParser()

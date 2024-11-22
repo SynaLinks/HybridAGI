@@ -56,7 +56,7 @@ class FalkorDBMemory():
             self.clear()
             
     def exist(self, index: Union[UUID, str], label:str) -> bool:
-        query = "MATCH (n:"+label+" {id: $index}) RETURN n"
+        query = "MATCH (n:"+label+" {id: $index}) RETURN n.id as id"
         result = self._graph.query(query, params={"index": str(index)})
         return len(result.result_set) > 0
 

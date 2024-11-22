@@ -195,7 +195,10 @@ class GraphInterpreterAgent(dspy.Module):
         self.agent_state.decision_hop = 0
         self.agent_state.final_answer = ""
         self.agent_state.program_trace = AgentStepList()
-        main_program = self.program_memory.get(self.entrypoint).progs[0]
+        result_progs = self.program_memory.get(self.entrypoint).progs
+        if len(result_progs) == 0:
+            raise ValueError(f"No entrypoint detected, please ensure that the {self.entrypoint} program is loaded into memory")
+        main_program = result_progs[0]
         self.agent_state.call_program(main_program)
         agent_step = AgentStep(
             hop = self.agent_state.current_hop,
@@ -331,7 +334,10 @@ class GraphInterpreterAgent(dspy.Module):
         next_step = current_program.get_next_step(step.id)
         if next_step is not None:
             self.agent_state.set_current_step(next_step)
-        graph_program = self.program_memory.get(step.program).progs[0]
+        result_progs = self.program_memory.get(step.program).progs
+        if len(result_progs) == 0:
+            raise ValueError(f"Program {step.program} does not exist, please ensure that it is loaded into memory")
+        graph_program = result_progs[0]
         self.agent_state.call_program(graph_program)
         agent_step = AgentStep(
             hop = self.agent_state.current_hop,

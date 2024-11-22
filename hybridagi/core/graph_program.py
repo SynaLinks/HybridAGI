@@ -181,16 +181,19 @@ class GraphProgram(BaseModel, dspy.Prediction):
         Raises:
             ValueError: If the graph program is not valid.
         """
+        errors = []
         for step_id, step in self.steps.items():
             if self._graph.degree(step_id) == 0:
-                raise ValueError(f"Step {step_id} is not connected to any Step.")
+                errors.append(f"Step {step_id} is not connected to any Step.")
         for step_id, step in self.steps.items():
             if step_id != "start":
                 if not self._is_reacheable("start", step_id):
-                    raise ValueError(f"There is no path from the Start Step to {step_id} Step.")
+                    errors.append(f"There is no path from the Start Step to {step_id} Step.")
             if step_id != "end":
                 if not self._is_reacheable(step_id, "end"):
-                    raise ValueError(f"There is no path from {step_id} Step to the End Step.")
+                    errors.append(f"There is no path from {step_id} Step to the End Step.")
+        if errors:
+            raise ValueError("\n".join(errors))
     
     def _is_reacheable(self, source_step: str, target_step: str) -> bool:
         """
@@ -262,11 +265,10 @@ class GraphProgram(BaseModel, dspy.Prediction):
             ValueError: If the Cypher query is invalid.
         """
         # Get description
+        errors = []
         description = re.search(r'// @desc:(.*)', cypher_query)
         if description:
             self.description = description.group().replace("// @desc:","").strip()
-        else:
-            raise ValueError("You should provide a description using `// @desc:`")
         create_command = re.search(r'CREATE(.*)', cypher_query, re.DOTALL)
         if create_command:
             self.clear()
@@ -274,6 +276,8 @@ class GraphProgram(BaseModel, dspy.Prediction):
             cleaned_query = re.sub(r'//.*?\n', '', create_command.group(1))
             # Parse steps
             steps = re.findall(r'\(([^:]+):([^ ]+)\s*\{(.*?)\}\)', cleaned_query, re.DOTALL)
+            correct_steps = []
+            nodes_error = False
             for step in steps:
                 step_id, step_type, step_props = step
                 step_id = step_id.strip()
@@ -283,58 +287,93 @@ class GraphProgram(BaseModel, dspy.Prediction):
                 if step_type == "Control":
                     self.add(Control(id=step_props["id"]))
                 elif step_type == "Action":
+                    error = False
                     if "id" not in step_props:
-                        raise ValueError(f"{step_id} Action node should have \"{step_id}\" in its id field")
+                        errors.append(f"{step_id} Action node should have \"{step_id}\" in its id field")
+                        error = True
                     if "purpose" not in step_props:
-                        raise ValueError(f"{step_id} Action node should have a purpose field")
+                        errors.append(f"{step_id} Action node should have a purpose field")
+                        error = True
                     if "tool" not in step_props:
-                        raise ValueError(f"{step_id} Action node should have a tool field")
+                        errors.append(f"{step_id} Action node should have a tool field")
+                        error = True
                     if "prompt" not in step_props:
-                        raise ValueError(f"{step_id} Action node should have a prompt field")
-                    self.add(Action(
-                        id=step_props["id"],
-                        purpose=step_props["purpose"],
-                        tool=step_props["tool"],
-                        prompt=step_props["prompt"],
-                        var_in=step_props["var_in"] if "var_in" in step_props else [],
-                        var_out=step_props["var_out"] if "var_out" in step_props else None,
-                        disable_inference=True if "disable_inference" in step_props else False,
-                    ))
+                        errors.append(f"{step_id} Action node should have a prompt field")
+                        error = True
+                    if not error:
+                        correct_steps.append(step_id)
+                        self.add(Action(
+                            id=step_props["id"],
+                            purpose=step_props["purpose"],
+                            tool=step_props["tool"],
+                            prompt=step_props["prompt"],
+                            var_in=step_props["var_in"] if "var_in" in step_props else [],
+                            var_out=step_props["var_out"] if "var_out" in step_props else None,
+                            disable_inference=True if "disable_inference" in step_props else False,
+                        ))
+                    else:
+                        nodes_error = True
                 elif step_type == "Decision":
+                    error = False
                     if "id" not in step_props:
-                        raise ValueError(f"{step_id} Decision node should have \"{step_id}\" in its id field")
+                        errors.append(f"{step_id} Decision node should have \"{step_id}\" in its id field")
+                        error = True
                     if "purpose" not in step_props:
-                        raise ValueError(f"{step_id} Decision node should have a purpose field")
+                        errors.append(f"{step_id} Decision node should have a purpose field")
+                        error = True
                     if "question" not in step_props:
-                        raise ValueError(f"{step_id} Decision node should have a question field")
-                    self.add(Decision(
-                        id=step_props["id"],
-                        purpose=step_props["purpose"],
-                        question=step_props["question"],
-                        var_in=step_props["var_in"] if "var_in" in step_props else [],
-                    ))
+                        errors.append(f"{step_id} Decision node should have a question field")
+                        error = True
+                    if not error:
+                        correct_steps.append(step_id)
+                        self.add(Decision(
+                            id=step_props["id"],
+                            purpose=step_props["purpose"],
+                            question=step_props["question"],
+                            var_in=step_props["var_in"] if "var_in" in step_props else [],
+                        ))
+                    else:
+                        nodes_error = True
                 elif step_type == "Program":
+                    error = False
                     if "id" not in step_props:
-                        raise ValueError(f"{step_id} Program node should have \"{step_id}\" in its id field")
+                        errors.append(f"{step_id} Program node should have \"{step_id}\" in its id field")
+                        error = True
                     if "purpose" not in step_props:
-                        raise ValueError(f"{step_id} Program node should have a purpose field")
+                        errors.append(f"{step_id} Program node should have a purpose field")
+                        error = True
                     if "program" not in step_props:
-                        raise ValueError(f"{step_id} Program node should have a program field")
-                    self.add(Program(
-                        id=step_props["id"],
-                        purpose=step_props["purpose"],
-                        program=step_props["program"],
-                    ))
+                        errors.append(f"{step_id} Program node should have a program field")
+                        error = True
+                    if not error:
+                        correct_steps.append(step_id)
+                        self.add(Program(
+                            id=step_props["id"],
+                            purpose=step_props["purpose"],
+                            program=step_props["program"],
+                        ))
+                    else:
+                        nodes_error = True
                 else:
-                    raise ValueError(f"Invalid step type for {step_id} should be between: Control, Action, Decision, Program")
+                    nodes_error = True
+                    errors.append(f"Invalid step type for {step_id} should be between: Control, Action, Decision, Program")
             # Parse relations
-            relations = re.findall(r'\((.*?)\)-(\[.*?\])\s*->\s*\((.*?)\)', cleaned_query)
-            for relation in relations:
-                source_name, label, target_name = relation
-                label = label.strip("[:]")
-                self.connect(source_name, target_name, label=label)
+            if not nodes_error:
+                relations = re.findall(r'\((.*?)\)-(\[.*?\])\s*->\s*\((.*?)\)', cleaned_query)
+                for relation in relations:
+                    source_name, label, target_name = relation
+                    label = label.strip("[:]")
+                    try:
+                        self.connect(source_name, target_name, label=label)
+                    except Exception as e:
+                        errors.append(str(e))
+        else:
+            errors.append("Invalid format, no CREATE command detected")
+        if errors:
+            errors = "\n".join(errors)
+            raise ValueError(f"Errror occured while parsing:\n{errors}")
+        else:
             return self
-        raise ValueError("Invalid format, no CREATE command detected")
     
     def __str__(self):
         return self.to_cypher()

@@ -22,9 +22,14 @@ class PastActionSearchTool(Tool):
             self,
             retriever: dspy.Module,
             name: str = "PastActionSearch",
+            description: str = "Useful to search for past actions in memory",
             lm: Optional[dspy.LM] = None,
         ):
-        super().__init__(name = name, lm = lm)
+        super().__init__(
+            name = name,
+            description = description,
+            lm = lm,
+        )
         self.retriever = retriever
         self.predict = dspy.Predict(PastActionSearchSignature)
         self.prediction_parser = PredictionOutputParser()

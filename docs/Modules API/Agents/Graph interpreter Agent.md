@@ -1,6 +1,6 @@
 # Graph Interpreter Agent
 
-The `GraphInterpreterAgent` is the agent system that execute the Cypher software stored in memory, it can branch over the graph programs by asking itself question when encountering decision steps, and use tools when encountering an Action step and jump to other programs when encountering Program steps. 
+The `GraphInterpreterAgent` is the agent system that execute the Cypher software stored in memory, it can branch over the graph programs by asking itself questions when encountering Decision steps, and use tools when encountering an Action step and jump to other programs when encountering Program steps. 
 
 ## Usage
 
