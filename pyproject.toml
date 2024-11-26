@@ -24,6 +24,7 @@ homepage = "https://github.com/SynaLinks/HybridAGI"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 sentence-transformers = ">=2.6.0"
+ollama = ">=0.3.3"
 falkordb = ">=1.0.7"
 dspy-ai = "==2.4.10"
 colorama = ">=0.4.6"
