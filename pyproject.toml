@@ -29,7 +29,7 @@ falkordb = ">=1.0.7"
 dspy-ai = "==2.4.10"
 colorama = ">=0.4.6"
 faiss-cpu = ">=1.8.0.post1"
-
+docling = ">=2.7.1"
 pytest = ">=8.2.2"
 
 pyjson5 = "^1.6.6"
