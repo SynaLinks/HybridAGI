@@ -1,4 +1,4 @@
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Optional
 from hybridagi.readers import DocumentReader
 from hybridagi.core.datatypes import Document, DocumentList
 from docling_core.types.doc.document import DoclingDocument
@@ -15,7 +15,7 @@ class DoclingReader(DocumentReader):
     Inherits From:
         DocumentReader: Base class for document reading operations
     """
-    def read(self, filepath: str, format: Literal['text', 'markdown', 'json'] = 'text') -> Tuple[DocumentList, DoclingDocument]:
+    def read(self, filepath: str, format: Literal['text', 'markdown', 'json'] = 'text', raise_mode=True) -> Tuple[Optional[DocumentList], Optional[DoclingDocument]]:
         """Reads and converts a document file using Docling.
 
         This method takes a file path and converts the document using Docling's DocumentConverter.
@@ -25,6 +25,8 @@ class DoclingReader(DocumentReader):
             filepath (str): Path to the input document file
             format (Literal['text', 'markdown', 'json'], optional): Output format for the converted document. 
                 Defaults to 'text'.
+            raise_mode (bool): If True (default), it will raise ValueError when the file cannot be converted properly.
+                It will return None, None when set to False.
 
         Returns:
             Tuple[DocumentList, DoclingDocument]: A tuple containing:
@@ -51,23 +53,46 @@ class DoclingReader(DocumentReader):
             presentation_memory.update(presentation_chunks)
             ```
         """
-        converter = DocumentConverter()
-        result = converter.convert(filepath)
-        doclingdoc = result.document
+        try:
+            converter = DocumentConverter()
+            try:
+                result = converter.convert(filepath)
+            except StopIteration:
+                if raise_mode:
+                    raise ValueError(f"Converter produced no results for {filepath}")
+                return None, None
+            except Exception as e:
+                if raise_mode:
+                    raise ValueError(f"Conversion failed for {filepath}: {str(e)}")
+                return None, None
 
-        match format:
-            case "text": 
-                text = doclingdoc.export_to_text()
-            case "markdown":
-                text = doclingdoc.export_to_markdown()
-            case "json":
-                text = json.dumps(doclingdoc.export_to_dict())
-        
-        dl = DocumentList()
-        dl.docs.append( # type: ignore
-            Document(
+            doclingdoc = result.document
+
+            # Format conversion with error handling
+            try:
+                match format:
+                    case "text": 
+                        text = doclingdoc.export_to_text()
+                    case "markdown":
+                        text = doclingdoc.export_to_markdown()
+                    case "json":
+                        text = json.dumps(doclingdoc.export_to_dict())
+                    case _:
+                        if raise_mode:
+                            raise ValueError(f"{format} not supported. Only text, markdown or json")
+                        return None, None
+            except Exception as e:
+                if raise_mode:
+                    raise ValueError(f"Export to {format} failed: {str(e)}")
+                return None, None
+            docs_list = [Document(
                 text=text,
                 metadata={"filepath": filepath, "format": format, "converter": "docling"},
-            )
-        )
-        return dl, doclingdoc
+            )]
+            dl = DocumentList(docs=docs_list)
+            return dl, doclingdoc
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            if raise_mode:
+                raise ValueError(f"Unexpected error processing {filepath}: {str(e)}")
+            return None, None
