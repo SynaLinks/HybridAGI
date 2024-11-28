@@ -68,14 +68,26 @@ class TestDoclingReader:
             assert doc_list.docs[0].metadata["filepath"] == "dummy/path.txt" # type: ignore
             assert doc_list.docs[0].metadata["converter"] == "docling" # type: ignore
 
-    def test_read_invalid_filepath(self):
-        """Test that reading an invalid filepath raises appropriate error."""
+    def test_read_invalid_filepath_with_raise_mode(self):
+        """Test that reading an invalid filepath raises ValueError when raise_mode is True."""
         with patch('docling.document_converter.DocumentConverter.convert') as mock_convert:
             mock_convert.side_effect = FileNotFoundError
             
             reader = DoclingReader()
-            with pytest.raises(FileNotFoundError):
-                reader.read("nonexistent/file.txt")
+            with pytest.raises(ValueError) as exc_info:
+                reader.read("nonexistent/file.txt", raise_mode=True)
+            assert "Conversion failed" in str(exc_info.value)
+
+    def test_read_invalid_filepath_without_raise_mode(self):
+        """Test that reading an invalid filepath returns None values when raise_mode is False."""
+        with patch('docling.document_converter.DocumentConverter.convert') as mock_convert:
+            mock_convert.side_effect = FileNotFoundError
+            
+            reader = DoclingReader()
+            doc_list, docling_doc = reader.read("nonexistent/file.txt", raise_mode=False)
+            
+            assert doc_list is None
+            assert docling_doc is None
 
 # Tests for DoclingHierarchicalChunker
 class TestDoclingHierarchicalChunker:
