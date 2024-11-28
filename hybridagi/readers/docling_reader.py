@@ -15,7 +15,7 @@ class DoclingReader(DocumentReader):
     Inherits From:
         DocumentReader: Base class for document reading operations
     """
-    def read(self, filepath: str, format: Literal['text', 'markdown', 'json'] = 'text', raise_mode=True) -> Tuple[Optional[DocumentList], Optional[DoclingDocument]]:
+    def read(self, filepath: str, format: Literal['text', 'markdown', 'json'] = 'text', raise_mode=False) -> Tuple[Optional[DocumentList], Optional[DoclingDocument]]:
         """Reads and converts a document file using Docling.
 
         This method takes a file path and converts the document using Docling's DocumentConverter.
@@ -25,8 +25,8 @@ class DoclingReader(DocumentReader):
             filepath (str): Path to the input document file
             format (Literal['text', 'markdown', 'json'], optional): Output format for the converted document. 
                 Defaults to 'text'.
-            raise_mode (bool): If True (default), it will raise ValueError when the file cannot be converted properly.
-                It will return None, None when set to False.
+            raise_mode (bool): If True, it will raise ValueError when the file cannot be converted properly.
+                It will return None, None when set to False. Defaults to False.
 
         Returns:
             Tuple[DocumentList, DoclingDocument]: A tuple containing:
