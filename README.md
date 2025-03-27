@@ -1,4 +1,8 @@
-# HybridAGI: for people who want AI to behave as expected
+This repository is no longer maintained.
+
+Its more robust and production-first successor is located [here](https://github.com/SynaLinks/synalinks)
+
+<!-- # HybridAGI: for people who want AI to behave as expected
 ## The (self)Programmable Cypher-based Neuro-Symbolic AGI
 
 ### Your All-In-One framework for interactive knowledge intensive LLM applications
@@ -223,4 +227,4 @@ Become a part of our community of developers, researchers, and AI enthusiasts. C
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=SynaLinks/HybridAGI&type=Date)](https://star-history.com/#SynaLinks/HybridAGI&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=SynaLinks/HybridAGI&type=Date)](https://star-history.com/#SynaLinks/HybridAGI&Date) -->
